@@ -16,6 +16,11 @@
 | 心智圖 | 標題層級（`#`）與清單縮排（`-`），由 markmap 轉成心智圖 |
 | 快閃卡 | 每行一張卡 `問題 :: 答案`；以 `#` 開頭的行是標籤（例 `#flashcards/iPAS`） |
 
+## 自動部署（Workers Builds）
+
+GitHub `finrod-chen/learning_site` 已連到 Cloudflare Worker `justnote-learning`：推送到 `main` 會自動執行
+`npm run build` → `npx wrangler deploy`。設定可在 Cloudflare Dashboard → Workers → justnote-learning → Settings → Builds 調整。
+
 ## 開發與部署
 
 ```bash
