@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && node scripts/gen-assets.mjs && tsc --noEmit -p worker",
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy"
   },

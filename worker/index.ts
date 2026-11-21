@@ -1,5 +1,7 @@
 /// <reference types="@cloudflare/workers-types" />
 
+import { ASSETS } from './assets.generated'
+
 interface Env {
   KV: KVNamespace
   SYNC_TOKEN?: string
@@ -81,6 +83,41 @@ async function handleSync(request: Request, env: Env): Promise<Response> {
   return json({ courses: Object.values(store.courses), items: Object.values(store.items), serverTime: Date.now() })
 }
 
+const decoded = new Map<string, Uint8Array>()
+function serveStatic(pathname: string, head: boolean): Response {
+  let key = pathname
+  let asset = ASSETS[key]
+  if (!asset) {
+    // unknown file-like paths are real 404s; everything else is the SPA shell
+    if (/\.[a-z0-9]+$/i.test(pathname)) return new Response('Not found', { status: 404 })
+    key = '/index.html'
+    asset = ASSETS[key]
+  }
+  if (key === '/') asset = ASSETS['/index.html']
+  let body: BodyInit | null
+  if (head) body = null
+  else if (asset.text !== undefined) body = asset.text
+  else {
+    let bytes = decoded.get(key)
+    if (!bytes) {
+      const bin = atob(asset.b64!)
+      bytes = new Uint8Array(bin.length)
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+      decoded.set(key, bytes)
+    }
+    body = bytes
+  }
+  const immutable = key.startsWith('/assets/')
+  return new Response(body, {
+    headers: {
+      'content-type': asset.type,
+      'cache-control': immutable ? 'public, max-age=31536000, immutable' : 'no-cache',
+      'x-content-type-options': 'nosniff',
+      ...(key === '/sw.js' ? { 'service-worker-allowed': '/' } : {}),
+    },
+  })
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url)
@@ -89,6 +126,7 @@ export default {
     }
     if (url.pathname === '/api/health') return json({ ok: true })
     if (url.pathname.startsWith('/api/')) return json({ error: 'not found' }, 404)
-    return new Response('Not found', { status: 404 })
+    if (request.method !== 'GET' && request.method !== 'HEAD') return new Response('Method not allowed', { status: 405 })
+    return serveStatic(url.pathname, request.method === 'HEAD')
   },
 } satisfies ExportedHandler<Env>

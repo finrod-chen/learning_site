@@ -5,7 +5,7 @@
 
 - 前端：Vite + React + [Arc UI](https://uiarc.dev)（`src/components/arc`）
 - PWA：vite-plugin-pwa（precache 全部資源、自動更新）
-- 後端：`worker/index.ts`（`/api/sync`，Workers KV）＋ Workers Static Assets
+- 後端：`worker/index.ts`（`/api/sync`，Workers KV）；建置後的靜態檔由 `scripts/gen-assets.mjs` 內嵌進 Worker
 - 網域：`learning.finrod.xyz`（見 `wrangler.jsonc`）
 
 ## Markdown 格式
@@ -21,7 +21,7 @@
 ```bash
 npm install
 npm run dev          # 前端開發（無 /api）
-npx wrangler dev     # 先 npm run build，再以 Worker + 本機 KV 完整預覽
+npm run build && npx wrangler dev   # 以 Worker + 本機 KV 完整預覽
 npm run deploy       # build + wrangler deploy（需 CLOUDFLARE_API_TOKEN）
 ```
 
