@@ -1,0 +1,8 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "justnote-learning",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-11-01",
+  "kv_namespaces": [{ "binding": "KV", "id": "640fb350dca647b39677163c52c5c67e" }],
+  "routes": [{ "pattern": "learning.finrod.xyz", "custom_domain": true }]
+}
