@@ -221,7 +221,9 @@ export async function syncNow(): Promise<void> {
     const headers: Record<string, string> = { 'content-type': 'application/json' }
     const token = getToken()
     if (token) headers['x-sync-token'] = token
-    const res = await fetch('/api/sync', { method: 'POST', headers, body: JSON.stringify({ courses, items }) })
+    const payload = JSON.stringify({ courses, items })
+    // keepalive lets a final push survive the tab closing (the browser caps it at 64 KB)
+    const res = await fetch('/api/sync', { method: 'POST', headers, body: payload, keepalive: payload.length < 60000 })
     if (res.status === 401) {
       setSync('auth')
       return
@@ -259,7 +261,10 @@ export async function syncNow(): Promise<void> {
 window.addEventListener('online', () => void syncNow())
 window.addEventListener('offline', () => setSync('offline'))
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') void syncNow()
+  if (document.visibilityState === 'visible' || dirty.size > 0) void syncNow()
 })
-window.addEventListener('pagehide', () => flush())
+window.addEventListener('pagehide', () => {
+  flush()
+  if (dirty.size > 0) void syncNow()
+})
 window.setTimeout(() => void syncNow(), 300)

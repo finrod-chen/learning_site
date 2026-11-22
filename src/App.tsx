@@ -4,6 +4,8 @@ import { ThemeSwitch } from '@/components/arc/theme-switch/theme-switch'
 import { Badge } from '@/components/arc/badge/badge'
 import { Logo } from '@/ui/Logo'
 import { Toaster } from '@/ui/toaster'
+import { PlayerBar } from '@/ui/PlayerBar'
+import { usePlayer } from '@/lib/player'
 import { TokenDialog } from '@/ui/Dialogs'
 import { useTheme } from '@/lib/theme'
 import { href, useRoute } from '@/lib/router'
@@ -39,6 +41,7 @@ function Router({ path }: { path: string }) {
     const cid = seg[1]
     const section = seg[2] ?? 'notes'
     const type = ROUTE_TYPE[section] ?? 'note'
+    if (type === 'audio') return <Course courseId={cid} section={section} />
     if (seg[3] === 'new') return <Editor key={`new-${cid}-${section}`} courseId={cid} type={type} />
     if (seg[3] && seg[4] === 'edit') return <Editor key={seg[3]} courseId={cid} type={type} itemId={seg[3]} />
     if (seg[3]) return <ItemView key={seg[3]} courseId={cid} itemId={seg[3]} />
@@ -52,6 +55,7 @@ export default function App() {
   const path = useRoute()
   const [askToken, setAskToken] = useState(false)
   const s = useSync()
+  const player = usePlayer()
   useEffect(() => {
     if (s.state === 'auth') setAskToken(true)
   }, [s.state])
@@ -72,9 +76,10 @@ export default function App() {
           </div>
         </div>
       </header>
-      <main className="shell" key={path.split('/').slice(0, 5).join('/')}>
+      <main className={player.itemId ? 'shell has-player' : 'shell'} key={path.split('/').slice(0, 5).join('/')}>
         <Router path={path} />
       </main>
+      <PlayerBar />
       <Toaster />
       <TokenDialog open={askToken} onSubmit={setToken} onClose={() => setAskToken(false)} />
     </>

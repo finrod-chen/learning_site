@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Download, Pencil, SquarePen, Trash2 } from 'lucide-react'
+import { audioDownloadUrl, audioMeta, deleteAudioFile } from '@/lib/audio'
 import { DropdownMenu } from '@/components/arc/dropdown-menu/dropdown-menu'
 import { ConfirmDialog, PromptDialog } from './Dialogs'
 import { deleteCourse, deleteItem, renameCourse, updateItem } from '@/lib/store'
@@ -10,6 +11,17 @@ import { toast } from './toaster'
 
 const ic = { size: 16, strokeWidth: 1.75 }
 
+function downloadAudio(item: Item) {
+  const meta = audioMeta(item)
+  if (!meta) return
+  const a = document.createElement('a')
+  a.href = audioDownloadUrl(meta, `${item.title}.${meta.key.split('.').pop()}`)
+  a.rel = 'noopener'
+  document.body.append(a)
+  a.click()
+  a.remove()
+}
+
 export function ItemMenu({ item, onEdit, onDeleted }: { item: Item; onEdit: () => void; onDeleted?: () => void }) {
   const [dlg, setDlg] = useState<'rename' | 'delete' | null>(null)
   return (
@@ -17,9 +29,11 @@ export function ItemMenu({ item, onEdit, onDeleted }: { item: Item; onEdit: () =
       <DropdownMenu
         label="更多"
         items={[
-          { label: '編輯內容', icon: <SquarePen {...ic} />, onSelect: onEdit },
+          ...(item.type === 'audio' ? [] : [{ label: '編輯內容', icon: <SquarePen {...ic} />, onSelect: onEdit }]),
           { label: '更名', icon: <Pencil {...ic} />, onSelect: () => setDlg('rename') },
-          { label: '匯出 Markdown', icon: <Download {...ic} />, onSelect: () => download(item.title, item.content) },
+          item.type === 'audio'
+            ? { label: '下載音檔', icon: <Download {...ic} />, onSelect: () => downloadAudio(item) }
+            : { label: '匯出 Markdown', icon: <Download {...ic} />, onSelect: () => download(item.title, item.content) },
           { label: '刪除', icon: <Trash2 {...ic} />, destructive: true, separatorBefore: true, onSelect: () => setDlg('delete') },
         ]}
       />
@@ -41,7 +55,9 @@ export function ItemMenu({ item, onEdit, onDeleted }: { item: Item; onEdit: () =
         description={`這份${TYPE_LABEL[item.type]}會被永久刪除，無法復原。`}
         confirmLabel="刪除"
         onConfirm={() => {
+          const meta = item.type === 'audio' ? audioMeta(item) : null
           deleteItem(item.id)
+          if (meta) deleteAudioFile(meta)
           toast('已刪除', item.title)
           onDeleted?.()
         }}

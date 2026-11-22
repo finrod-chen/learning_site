@@ -10,11 +10,12 @@ interface PromptProps {
   label: string
   initial?: string
   confirmLabel: string
+  secret?: boolean
   onSubmit: (value: string) => void
   onClose: () => void
 }
 
-export function PromptDialog({ open, title, description, label, initial = '', confirmLabel, onSubmit, onClose }: PromptProps) {
+export function PromptDialog({ open, title, description, label, initial = '', confirmLabel, secret, onSubmit, onClose }: PromptProps) {
   const [value, setValue] = useState(initial)
   useEffect(() => {
     if (open) setValue(initial)
@@ -29,7 +30,7 @@ export function PromptDialog({ open, title, description, label, initial = '', co
     <Dialog open={open} onOpenChange={o => !o && onClose()}>
       <DialogContent title={title} description={description}>
         <form className="dialog-form" onSubmit={submit}>
-          <Input label={label} value={value} onChange={e => setValue(e.target.value)} autoFocus maxLength={120} />
+          <Input label={label} value={value} onChange={e => setValue(e.target.value)} autoFocus maxLength={120} {...(secret ? { type: 'password', autoComplete: 'current-password' } : {})} />
           <div className="dialog-actions">
             <Button type="button" variant="ghost" onClick={onClose}>取消</Button>
             <Button type="submit" disabled={!value.trim()}>{confirmLabel}</Button>
@@ -79,6 +80,7 @@ export function TokenDialog({ open, onSubmit, onClose }: { open: boolean; onSubm
       description="雲端同步受到保護。輸入密碼後，資料會自動同步；不輸入也能繼續在本機使用。"
       label="同步密碼"
       confirmLabel="儲存密碼"
+      secret
       onSubmit={onSubmit}
       onClose={onClose}
     />
