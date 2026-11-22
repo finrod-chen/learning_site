@@ -1,10 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { CalendarClock, Pencil, Plus, Trash2 } from 'lucide-react'
-import { Button } from '@/components/arc/button/button'
-import { Dialog, DialogContent } from '@/components/arc/dialog/dialog'
-import { DropdownMenu } from '@/components/arc/dropdown-menu/dropdown-menu'
-import { Input } from '@/components/arc/input/input'
+import { Button } from '@/components/ui/button'
+import { DialogClose } from '@/components/ui/dialog'
+import { AppDialog } from '@/ui/AppDialog'
 import { ConfirmDialog } from '@/ui/Dialogs'
+import { ActionMenu, TextField } from '@/ui/kit'
 import { toast } from '@/ui/toaster'
 import { describeDays, formatDate, listCountdowns, removeCountdown, saveCountdown, type CountdownRow } from '@/lib/countdown'
 import { useDB } from '@/lib/store'
@@ -29,23 +29,27 @@ function CountdownDialog({ open, courseId, initial, onClose }: { open: boolean; 
     onClose()
   }
   return (
-    <Dialog open={open} onOpenChange={o => !o && onClose()}>
-      <DialogContent title={initial ? '編輯倒數' : '新增倒數'} description="替重要的日期取個名字，系統會自動算出還剩幾天。">
-        <form className="dialog-form" onSubmit={submit}>
-          <Input label="名稱" value={name} onChange={e => setName(e.target.value)} maxLength={40} placeholder="例如：考試日" autoFocus />
-          <div className="cd-presets" role="group" aria-label="常用名稱">
-            {PRESETS.map(p => (
-              <Button key={p} type="button" variant="ghost" size="sm" onClick={() => setName(p)}>{p}</Button>
-            ))}
-          </div>
-          <Input label="日期" type="date" value={date} onChange={e => setDate(e.target.value)} />
-          <div className="dialog-actions">
-            <Button type="button" variant="ghost" onClick={onClose}>取消</Button>
-            <Button type="submit" disabled={!valid}>儲存倒數</Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <AppDialog
+      open={open}
+      onOpenChange={o => !o && onClose()}
+      title={initial ? '編輯倒數' : '新增倒數'}
+      description="替重要的日期取個名字，系統會自動算出還剩幾天。"
+      onSubmit={submit}
+      footer={
+        <>
+          <DialogClose render={<Button variant="ghost" />}>取消</DialogClose>
+          <Button type="submit" disabled={!valid}>儲存倒數</Button>
+        </>
+      }
+    >
+      <TextField label="名稱" value={name} onChange={e => setName(e.target.value)} maxLength={40} placeholder="例如：考試日" autoFocus />
+      <div className="-mt-2 flex flex-wrap gap-1" role="group" aria-label="常用名稱">
+        {PRESETS.map(p => (
+          <Button key={p} type="button" variant="ghost" size="sm" onClick={() => setName(p)}>{p}</Button>
+        ))}
+      </div>
+      <TextField label="日期" type="date" value={date} onChange={e => setDate(e.target.value)} />
+    </AppDialog>
   )
 }
 
@@ -55,7 +59,7 @@ function CountdownCard({ row, onEdit, onDelete }: { row: CountdownRow; onEdit: (
     <li className="cd-card" data-past={row.days < 0 || undefined} data-today={row.days === 0 || undefined}>
       <div className="cd-head">
         <span className="cd-name">{row.name}</span>
-        <DropdownMenu
+        <ActionMenu
           label="管理"
           items={[
             { label: '編輯', icon: <Pencil {...ic} />, onSelect: onEdit },
@@ -82,8 +86,8 @@ export function CountdownStrip({ courseId }: { courseId: string }) {
     <section className="cd-strip" aria-labelledby="cd-h">
       <div className="cd-bar">
         <h2 id="cd-h" className="quiz-h"><CalendarClock size={18} strokeWidth={1.75} aria-hidden="true" /> 倒數</h2>
-        <Button variant="secondary" size="sm" onClick={() => setCreating(true)}>
-          <Plus size={14} strokeWidth={1.75} aria-hidden="true" /> 新增倒數
+        <Button variant="outline" size="sm" onClick={() => setCreating(true)}>
+          <Plus aria-hidden="true" /> 新增倒數
         </Button>
       </div>
       {rows.length === 0 ? (

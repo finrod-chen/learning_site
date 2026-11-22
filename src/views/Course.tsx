@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ArrowLeft, FileText, Headphones, Layers, ListChecks, Network, Plus, Upload } from 'lucide-react'
-import { Button } from '@/components/arc/button/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/arc/tabs/tabs'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
 import { CourseMenu, ItemMenu } from '@/ui/Menus'
 import { EmptyState } from '@/ui/EmptyState'
 import { listItems, useDB } from '@/lib/store'
@@ -40,7 +40,7 @@ function FileList({ courseId, type, onUpload }: { courseId: string; type: ItemTy
         title={`還沒有${TYPE_LABEL[type]}`}
         description={HINT[type]}
         action={
-          <Button variant="secondary" onClick={() => go(`/c/${courseId}/${TYPE_ROUTE[type]}/new`)}>
+          <Button variant="outline" onClick={() => go(`/c/${courseId}/${TYPE_ROUTE[type]}/new`)}>
             新增{TYPE_LABEL[type]}
           </Button>
         }
@@ -51,8 +51,8 @@ function FileList({ courseId, type, onUpload }: { courseId: string; type: ItemTy
     <>
     {type === 'quiz' && (
       <div className="quiz-tools">
-        <Button variant="secondary" onClick={() => go(`/c/${courseId}/${TYPE_ROUTE.quiz}/mixed`)}>混合測驗</Button>
-        <Button variant="secondary" onClick={() => go(`/c/${courseId}/${TYPE_ROUTE.quiz}/insights`)}>弱點分析</Button>
+        <Button variant="outline" onClick={() => go(`/c/${courseId}/${TYPE_ROUTE.quiz}/mixed`)}>混合測驗</Button>
+        <Button variant="outline" onClick={() => go(`/c/${courseId}/${TYPE_ROUTE.quiz}/insights`)}>弱點分析</Button>
       </div>
     )}
     <ul className="file-list">
@@ -82,7 +82,7 @@ export function Course({ courseId, section }: { courseId: string; section: strin
   if (!course || course.deleted) {
     return (
       <section className="page">
-        <EmptyState title="找不到這個課程" description="它可能已被刪除。" action={<Button variant="secondary" onClick={() => go('/')}>回到課程列表</Button>} />
+        <EmptyState title="找不到這個課程" description="它可能已被刪除。" action={<Button variant="outline" onClick={() => go('/')}>回到課程列表</Button>} />
       </section>
     )
   }
@@ -104,11 +104,11 @@ export function Course({ courseId, section }: { courseId: string; section: strin
 
       <Tabs value={TYPE_ROUTE[type]} onValueChange={v => go(`/c/${courseId}/${v}`)}>
         <div className="tabs-bar">
-          <TabsList>
+          <TabsList className="max-w-full overflow-x-auto">
             {ALL_TYPES.map(t => (
-              <TabsTrigger key={t} value={TYPE_ROUTE[t]}>
+              <TabsTab key={t} value={TYPE_ROUTE[t]}>
                 {TYPE_LABEL[t]} <span className="count">{count(t)}</span>
-              </TabsTrigger>
+              </TabsTab>
             ))}
           </TabsList>
           {type === 'audio' ? (
@@ -122,9 +122,9 @@ export function Course({ courseId, section }: { courseId: string; section: strin
           )}
         </div>
         {ALL_TYPES.map(t => (
-          <TabsContent key={t} value={TYPE_ROUTE[t]}>
+          <TabsPanel key={t} value={TYPE_ROUTE[t]}>
             {t === type && <FileList courseId={courseId} type={t} onUpload={() => setUploading(true)} />}
-          </TabsContent>
+          </TabsPanel>
         ))}
       </Tabs>
       <UploadDialog open={uploading} courseId={courseId} onClose={() => setUploading(false)} />

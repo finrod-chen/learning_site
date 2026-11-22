@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Download, Pencil, SquarePen, Trash2 } from 'lucide-react'
 import { audioDownloadUrl, audioMeta, deleteAudioFile } from '@/lib/audio'
-import { DropdownMenu } from '@/components/arc/dropdown-menu/dropdown-menu'
+import { ActionMenu } from './kit'
 import { ConfirmDialog, PromptDialog } from './Dialogs'
 import { deleteCourse, deleteItem, renameCourse, updateItem } from '@/lib/store'
 import { download } from '@/lib/md'
@@ -26,7 +26,7 @@ export function ItemMenu({ item, onEdit, onDeleted }: { item: Item; onEdit: () =
   const [dlg, setDlg] = useState<'rename' | 'delete' | null>(null)
   return (
     <>
-      <DropdownMenu
+      <ActionMenu
         label="更多"
         items={[
           ...(item.type === 'audio' ? [] : [{ label: '編輯內容', icon: <SquarePen {...ic} />, onSelect: onEdit }]),
@@ -71,7 +71,7 @@ export function CourseMenu({ course, onDeleted }: { course: Course; onDeleted?: 
   const [dlg, setDlg] = useState<'rename' | 'delete' | null>(null)
   return (
     <>
-      <DropdownMenu
+      <ActionMenu
         label="管理"
         items={[
           { label: '更名課程', icon: <Pencil {...ic} />, onSelect: () => setDlg('rename') },

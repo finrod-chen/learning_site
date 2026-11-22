@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Cloud, CloudOff } from 'lucide-react'
-import { ThemeSwitch } from '@/components/arc/theme-switch/theme-switch'
-import { Badge } from '@/components/arc/badge/badge'
+import { Moon, Sun } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { ToastProvider } from '@/components/ui/toast'
+import { Badge } from '@/components/ui/badge'
 import { Logo } from '@/ui/Logo'
-import { Toaster } from '@/ui/toaster'
 import { PlayerBar } from '@/ui/PlayerBar'
 import { usePlayer } from '@/lib/player'
 import { TokenDialog } from '@/ui/Dialogs'
@@ -20,18 +21,18 @@ import { InsightsPage, MixedQuizPage } from '@/views/QuizHub'
 function SyncBadge({ onAuth }: { onAuth: () => void }) {
   const s = useSync()
   const map = {
-    idle: { tone: 'neutral', text: '本機' },
-    syncing: { tone: 'neutral', text: '同步中' },
-    synced: { tone: 'success', text: '已同步' },
-    offline: { tone: 'warning', text: '離線，已存本機' },
-    error: { tone: 'warning', text: '同步失敗，稍後重試' },
-    auth: { tone: 'warning', text: '需要密碼' },
+    idle: { variant: 'secondary', text: '本機' },
+    syncing: { variant: 'secondary', text: '同步中' },
+    synced: { variant: 'success', text: '已同步' },
+    offline: { variant: 'warning', text: '離線，已存本機' },
+    error: { variant: 'warning', text: '同步失敗，稍後重試' },
+    auth: { variant: 'warning', text: '需要密碼' },
   } as const
   const m = map[s.state]
   const Icon = s.state === 'offline' || s.state === 'error' ? CloudOff : Cloud
   return (
     <button type="button" className="sync" onClick={s.state === 'auth' ? onAuth : undefined} aria-live="polite" disabled={s.state !== 'auth'}>
-      <Badge tone={m.tone} size="sm" icon={<Icon size={12} />}>{m.text}</Badge>
+      <Badge variant={m.variant} size="sm"><Icon aria-hidden="true" />{m.text}</Badge>
     </button>
   )
 }
@@ -66,7 +67,7 @@ export default function App() {
     window.scrollTo(0, 0)
   }, [path])
   return (
-    <>
+    <ToastProvider position="bottom-center">
       <header className="topbar">
         <div className="topbar-in">
           <a className="brand" href={href('/')} aria-label="JustNote Learning 首頁">
@@ -75,7 +76,9 @@ export default function App() {
           </a>
           <div className="topbar-right">
             <SyncBadge onAuth={() => setAskToken(true)} />
-            <ThemeSwitch theme={theme} iconOnly label={theme === 'dark' ? '切換為淺色' : '切換為深色'} onThemeChange={next => setTheme(next)} />
+            <Button variant="outline" size="icon" aria-label={theme === 'dark' ? '切換為淺色' : '切換為深色'} aria-pressed={theme === 'dark'} onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+              {theme === 'dark' ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+            </Button>
           </div>
         </div>
       </header>
@@ -83,8 +86,7 @@ export default function App() {
         <Router path={path} />
       </main>
       <PlayerBar />
-      <Toaster />
       <TokenDialog open={askToken} onSubmit={setToken} onClose={() => setAskToken(false)} />
-    </>
+    </ToastProvider>
   )
 }

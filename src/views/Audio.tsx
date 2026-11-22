@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Headphones, Pause, Play } from 'lucide-react'
-import { Button } from '@/components/arc/button/button'
-import { Dialog, DialogContent } from '@/components/arc/dialog/dialog'
-import { Progress } from '@/components/arc/progress/progress'
+import { Button } from '@/components/ui/button'
+import { DialogClose } from '@/components/ui/dialog'
+import { AppDialog } from '@/ui/AppDialog'
 import { ItemMenu } from '@/ui/Menus'
 import { EmptyState } from '@/ui/EmptyState'
 import { toast } from '@/ui/toaster'
@@ -10,6 +10,7 @@ import { AUDIO_ACCEPT, audioMeta, extOf, formatDuration, formatSize, titleOf, up
 import { play, toggle, usePlayer } from '@/lib/player'
 import { listItems, useDB } from '@/lib/store'
 import { formatTime } from '@/lib/md'
+import { Prog } from '@/ui/kit'
 
 export function AudioList({ courseId, onUpload }: { courseId: string; onUpload: () => void }) {
   const db = useDB()
@@ -21,7 +22,7 @@ export function AudioList({ courseId, onUpload }: { courseId: string; onUpload: 
       <EmptyState
         title="還沒有有聲書"
         description="上傳 mp3 等音檔，之後就能在這裡直接播放，進度會自動記住。"
-        action={<Button variant="secondary" onClick={onUpload}>上傳有聲書</Button>}
+        action={<Button variant="outline" onClick={onUpload}>上傳有聲書</Button>}
       />
     )
   }
@@ -118,45 +119,52 @@ export function UploadDialog({ open, courseId, onClose }: { open: boolean; cours
   const allDone = rows.length > 0 && !busy
 
   return (
-    <Dialog open={open} onOpenChange={o => !o && close()}>
-      <DialogContent title="上傳有聲書" description="支援 mp3、m4a、wav、ogg、flac。大檔案會分段上傳，上傳中請保持此頁開啟。">
-        <div className="upload">
-          {rows.length === 0 ? (
-            <div
-              className="dropzone"
-              data-drag={drag || undefined}
-              onDragOver={e => {
-                e.preventDefault()
-                setDrag(true)
-              }}
-              onDragLeave={() => setDrag(false)}
-              onDrop={e => {
-                e.preventDefault()
-                setDrag(false)
-                void start([...e.dataTransfer.files])
-              }}
-            >
-              <p>把音檔拖曳到這裡</p>
-              <Button variant="secondary" onClick={() => input.current?.click()}>選擇檔案</Button>
-            </div>
-          ) : (
-            <ul className="upload-list">
-              {rows.map(r => (
-                <li key={r.id} className="upload-row">
-                  <Progress value={Math.round(r.progress * 100)} max={100} label={r.title} showValue />
-                  {r.status === 'err' && <p className="form-error" role="alert">{r.error}</p>}
-                  {r.status === 'wait' && <p className="muted">等待上傳</p>}
-                </li>
-              ))}
-            </ul>
-          )}
-          {skipped.length > 0 && <p className="form-error" role="alert">不支援的檔案已略過：{skipped.join('、')}</p>}
-          <input ref={input} type="file" accept={AUDIO_ACCEPT} multiple hidden onChange={e => void start([...(e.target.files ?? [])]).then(() => (e.target.value = ''))} />
-          <div className="dialog-actions">
-            {busy ? <Button variant="secondary" onClick={close}>取消上傳</Button> : <Button variant={allDone ? 'primary' : 'ghost'} onClick={close}>{allDone ? '完成' : '關閉'}</Button>}
-          </div>
+    <AppDialog
+      open={open}
+      onOpenChange={o => !o && close()}
+      title="上傳有聲書"
+      description="支援 mp3、m4a、wav、ogg、flac。大檔案會分段上傳，上傳中請保持此頁開啟。"
+      footer={
+        busy ? (
+          <Button variant="outline" onClick={close}>取消上傳</Button>
+        ) : allDone ? (
+          <DialogClose render={<Button />}>完成</DialogClose>
+        ) : (
+          <DialogClose render={<Button variant="ghost" />}>關閉</DialogClose>
+        )
+      }
+    >
+      {rows.length === 0 ? (
+        <div
+          className="dropzone"
+          data-drag={drag || undefined}
+          onDragOver={e => {
+            e.preventDefault()
+            setDrag(true)
+          }}
+          onDragLeave={() => setDrag(false)}
+          onDrop={e => {
+            e.preventDefault()
+            setDrag(false)
+            void start([...e.dataTransfer.files])
+          }}
+        >
+          <p>把音檔拖曳到這裡</p>
+          <Button variant="outline" onClick={() => input.current?.click()}>選擇檔案</Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      ) : (
+        <ul className="upload-list">
+          {rows.map(r => (
+            <li key={r.id} className="upload-row">
+              <Prog value={Math.round(r.progress * 100)} max={100} label={r.title} showValue />
+              {r.status === 'err' && <p className="form-error" role="alert">{r.error}</p>}
+              {r.status === 'wait' && <p className="muted">等待上傳</p>}
+            </li>
+          ))}
+        </ul>
+      )}
+      {skipped.length > 0 && <p className="form-error" role="alert">不支援的檔案已略過：{skipped.join('、')}</p>}
+      <input ref={input} type="file" accept={AUDIO_ACCEPT} multiple hidden onChange={e => void start([...(e.target.files ?? [])]).then(() => (e.target.value = ''))} />
+    </AppDialog>
   )
 }

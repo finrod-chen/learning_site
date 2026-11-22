@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
-import { Badge } from '@/components/arc/badge/badge'
-import { Button } from '@/components/arc/button/button'
-import { Progress } from '@/components/arc/progress/progress'
-import Switch from '@/components/arc/switch/switch'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/ui/EmptyState'
 import { HistoryTable, Launcher, QuizSession, inScope, type QuizCtx, type SQ } from './Quiz'
 import { parseQuiz } from '@/lib/quiz'
@@ -11,6 +9,7 @@ import { TOPICS, TOPIC_SUBJECT, UNCLASSIFIED } from '@/lib/topics'
 import { getDoc, getProgress, listItems, useDB } from '@/lib/store'
 import { href, go } from '@/lib/router'
 import { TYPE_ROUTE, type DB, type Item, type QuizProgress } from '@/lib/types'
+import { LabeledSwitch, Prog } from '@/ui/kit'
 
 const pct = (a: number, b: number) => (b ? Math.round((a / b) * 100) : 0)
 
@@ -42,7 +41,7 @@ function Shell({ courseId, title, lead, children }: { courseId: string; title: s
 }
 
 function NoQuiz({ courseId }: { courseId: string }) {
-  return <EmptyState title="這個課程還沒有題庫" description="先新增或匯入題庫，才能使用這個功能。" action={<Button variant="secondary" onClick={() => go(`/c/${courseId}/${TYPE_ROUTE.quiz}`)}>回到題庫</Button>} />
+  return <EmptyState title="這個課程還沒有題庫" description="先新增或匯入題庫，才能使用這個功能。" action={<Button variant="outline" onClick={() => go(`/c/${courseId}/${TYPE_ROUTE.quiz}`)}>回到題庫</Button>} />
 }
 
 /* ---------------------------- mixed quiz ---------------------------- */
@@ -67,9 +66,9 @@ export function MixedQuizPage({ courseId }: { courseId: string }) {
               <section className="quiz-card" aria-labelledby="src-h">
                 <h2 id="src-h" className="quiz-h">題庫來源　<span className="muted">共 {pool.length} 題</span></h2>
                 <div className="quiz-actions">
-                  <Button variant="secondary" size="sm" onClick={() => setOff({})}>全選</Button>
+                  <Button variant="outline" size="sm" onClick={() => setOff({})}>全選</Button>
                   {subjects.map(s => (
-                    <Button key={s} variant="secondary" size="sm" onClick={() => setOff(Object.fromEntries(parsed.filter(p => !p.it.title.includes(s)).map(p => [p.it.id, true])))}>
+                    <Button key={s} variant="outline" size="sm" onClick={() => setOff(Object.fromEntries(parsed.filter(p => !p.it.title.includes(s)).map(p => [p.it.id, true])))}>
                       只選{s}
                     </Button>
                   ))}
@@ -77,7 +76,7 @@ export function MixedQuizPage({ courseId }: { courseId: string }) {
                 <ul className="src-list">
                   {parsed.map(p => (
                     <li key={p.it.id}>
-                      <Switch label={`${p.it.title}（${p.qs.length} 題）`} checked={!off[p.it.id]} onCheckedChange={c => setOff(o => ({ ...o, [p.it.id]: !c }))} />
+                      <LabeledSwitch label={`${p.it.title}（${p.qs.length} 題）`} checked={!off[p.it.id]} onCheckedChange={c => setOff(o => ({ ...o, [p.it.id]: !c }))} />
                     </li>
                   ))}
                 </ul>
@@ -183,18 +182,18 @@ export function InsightsPage({ courseId }: { courseId: string }) {
                       <li key={r.topic} className="topic-row">
                         <div className="topic-head">
                           <span className="topic-name">{r.topic}</span>
-                          {TOPIC_SUBJECT[r.topic] && <Badge size="sm">{TOPIC_SUBJECT[r.topic]}</Badge>}
-                          {isWeak && <Badge tone="warning" size="sm">優先加強</Badge>}
-                          {r.topic === UNCLASSIFIED && <Badge size="sm">未分類</Badge>}
+                          {TOPIC_SUBJECT[r.topic] && <Badge variant="secondary" size="sm">{TOPIC_SUBJECT[r.topic]}</Badge>}
+                          {isWeak && <Badge variant="warning" size="sm">優先加強</Badge>}
+                          {r.topic === UNCLASSIFIED && <Badge variant="secondary" size="sm">未分類</Badge>}
                         </div>
-                        <Progress value={acc} max={100} label={r.total ? `正確率 ${acc}%` : '尚未練習'} />
+                        <Prog value={acc} max={100} label={r.total ? `正確率 ${acc}%` : '尚未練習'} />
                         <p className="muted topic-meta">
                           已練習 {r.attempted} / {r.qs.length} 題 · 錯題 {r.wrong.length}
                           {r.due > 0 ? ` · 今天到期 ${r.due}` : ''}
                         </p>
                         <div className="quiz-actions">
                           <Button
-                            variant="secondary"
+                            variant="outline"
                             size="sm"
                             onClick={() => {
                               const rank = (q: SQ) => (inScope([q], db, 'wrong').length ? 0 : inScope([q], db, 'fresh').length ? 1 : 2)

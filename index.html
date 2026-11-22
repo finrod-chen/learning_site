@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-Hant" data-accent="blue">
+<html lang="zh-Hant">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -15,7 +15,7 @@
       try {
         var t = localStorage.getItem('jn:theme')
         if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-        document.documentElement.dataset.theme = t
+        document.documentElement.classList.toggle('dark', t === 'dark')
       } catch (e) {}
     </script>
   </head>

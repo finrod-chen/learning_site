@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { BookOpen, Plus } from 'lucide-react'
-import { Button } from '@/components/arc/button/button'
+import { Button } from '@/components/ui/button'
 import { PromptDialog } from '@/ui/Dialogs'
 import { CourseMenu } from '@/ui/Menus'
 import { EmptyState } from '@/ui/EmptyState'
@@ -41,7 +41,7 @@ export function Home() {
                     {r.courseName} · {r.kind === 'flashcards' ? `${r.due} 張到期${r.fresh ? `、${r.fresh} 張新卡` : ''}` : `${r.due} 題錯題到期`}
                   </span>
                 </span>
-                <Button variant="secondary" size="sm" onClick={() => go(r.path)}>開始複習</Button>
+                <Button variant="outline" size="sm" onClick={() => go(r.path)}>開始複習</Button>
               </li>
             ))}
           </ul>
@@ -52,7 +52,7 @@ export function Home() {
         <EmptyState
           title="還沒有課程"
           description="建立第一個課程，把筆記、心智圖和快閃卡放在一起。"
-          action={<Button variant="secondary" onClick={() => setCreating(true)}>新增課程</Button>}
+          action={<Button variant="outline" onClick={() => setCreating(true)}>新增課程</Button>}
         />
       ) : (
         <ul className="course-grid">
