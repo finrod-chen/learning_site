@@ -1,6 +1,6 @@
 # JustNote Learning
 
-自我學習 PWA：每個課程有「筆記、心智圖、快閃卡」三個區塊，內容皆為 Markdown。
+自我學習 PWA：每個課程有「筆記、心智圖、快閃卡、有聲書」四個區塊，內容皆為 Markdown。
 資料先存本機（離線可用），連線時同步到 Cloudflare Workers KV。
 
 - 前端：Vite + React + [Arc UI](https://uiarc.dev)（`src/components/arc`）
@@ -15,6 +15,9 @@
 | 筆記 | 一般 Markdown（GFM） |
 | 心智圖 | 標題層級（`#`）與清單縮排（`-`），由 markmap 轉成心智圖 |
 | 快閃卡 | 每行一張卡 `問題 :: 答案`；以 `#` 開頭的行是標籤（例 `#flashcards/iPAS`） |
+
+有聲書：檔案存在 R2（`AUDIO` binding），清單與名稱存在 KV（同筆記）。刪除有聲書會一併刪除 R2 檔案。
+上傳與串流端點在 `/api/audio/*`；若設定了 `SYNC_TOKEN`，這些端點也會要求密碼（強烈建議設定，否則任何人都能上傳）。
 
 ## 自動部署（Workers Builds）
 

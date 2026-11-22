@@ -4,5 +4,6 @@
   "main": "worker/index.ts",
   "compatibility_date": "2026-11-01",
   "kv_namespaces": [{ "binding": "KV", "id": "640fb350dca647b39677163c52c5c67e" }],
+  "r2_buckets": [{ "binding": "AUDIO", "bucket_name": "justnote-audio" }],
   "routes": [{ "pattern": "learning.finrod.xyz", "custom_domain": true }]
 }

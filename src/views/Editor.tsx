@@ -12,7 +12,7 @@ import { toast } from '@/ui/toaster'
 import { countNodes, parseFlashcards, renderInline } from '@/lib/md'
 import { createItem, updateItem, useDB } from '@/lib/store'
 import { go } from '@/lib/router'
-import { TYPE_LABEL, TYPE_ROUTE, type ItemType } from '@/lib/types'
+import { TYPE_LABEL, TYPE_ROUTE, type TextType as ItemType } from '@/lib/types'
 import { MindmapCanvas, Note } from './Viewers'
 
 const PLACEHOLDER: Record<ItemType, string> = {
@@ -62,14 +62,14 @@ export function Editor({ courseId, type, itemId }: { courseId: string; type: Ite
   const base = existing ?? { title: '', content: '' }
   const [title, setTitle] = useState(base.title)
   const [content, setContent] = useState(base.content)
-  const [previewAs, setPreviewAs] = useState<ItemType>(existing?.type ?? type)
+  const [previewAs, setPreviewAs] = useState<ItemType>((existing?.type ?? type) as ItemType)
   const [pane, setPane] = useState<'edit' | 'preview'>('edit')
   const [error, setError] = useState('')
   const [leave, setLeave] = useState(false)
   const saved = useRef(false)
   const area = useRef<HTMLTextAreaElement>(null)
 
-  const home = existing ? existing.type : type
+  const home = (existing ? existing.type : type) as ItemType
   const dirty = !saved.current && (title !== base.title || content !== base.content)
 
   useEffect(() => {

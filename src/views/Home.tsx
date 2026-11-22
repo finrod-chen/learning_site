@@ -44,7 +44,7 @@ export function Home() {
                   <span className="course-name">{c.name}</span>
                 </a>
                 <p className="course-meta">
-                  筆記 <b>{n('note')}</b> · 心智圖 <b>{n('mindmap')}</b> · 快閃卡 <b>{n('flashcards')}</b>
+                  筆記 <b>{n('note')}</b> · 心智圖 <b>{n('mindmap')}</b> · 快閃卡 <b>{n('flashcards')}</b> · 有聲書 <b>{n('audio')}</b>
                 </p>
                 <div className="course-foot">
                   <span className="muted">更新 {formatTime(last)}</span>
