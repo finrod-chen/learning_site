@@ -3,7 +3,7 @@
 自我學習 PWA：每個課程有「筆記、心智圖、快閃卡、題庫、有聲書」五個區塊，內容皆為 Markdown。
 資料先存本機（離線可用），連線時同步到 Cloudflare Workers KV。
 
-- 前端：Vite + React + [Arc UI](https://uiarc.dev)（`src/components/arc`）
+- 前端：Vite + React + [coss ui](https://coss.com/ui)（Tailwind CSS v4 + Base UI，元件在 `src/components/ui`，設計權杖在 `src/styles.css`）
 - PWA：vite-plugin-pwa（precache 全部資源、自動更新）
 - 後端：`worker/index.ts`（`/api/sync`，Workers KV）；建置後的靜態檔由 `scripts/gen-assets.mjs` 內嵌進 Worker
 - 網域：`learning.finrod.xyz`（見 `wrangler.jsonc`）
@@ -34,6 +34,12 @@
 
 GitHub `finrod-chen/learning_site` 已連到 Cloudflare Worker `justnote-learning`：推送到 `main` 會自動執行
 `npm run build` → `npx wrangler deploy`。設定可在 Cloudflare Dashboard → Workers → justnote-learning → Settings → Builds 調整。
+
+## 介面元件（coss ui）
+
+元件來自 coss ui registry，可用 shadcn CLI 新增：`npx shadcn@latest add @coss/<name>`。
+`src/ui/kit.tsx` 是專案自己的薄包裝（分段控制、選單、帶標籤的輸入／進度／開關），讓頁面程式碼維持簡潔。
+深色模式以 `<html class="dark">` 切換。
 
 ## 開發與部署
 

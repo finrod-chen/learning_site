@@ -1,11 +1,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
-import { Button } from '@/components/arc/button/button'
-import { Input } from '@/components/arc/input/input'
-import { SplitButton } from '@/components/arc/split-button/split-button'
-import SegmentedControl from '@/components/arc/segmented-control/segmented-control'
-import { Skeleton } from '@/components/arc/skeleton/skeleton'
-import { Badge } from '@/components/arc/badge/badge'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/ui/Dialogs'
 import { EmptyState } from '@/ui/EmptyState'
 import { toast } from '@/ui/toaster'
@@ -15,6 +11,7 @@ import { createItem, updateItem, useDB } from '@/lib/store'
 import { go } from '@/lib/router'
 import { TYPE_LABEL, TYPE_ROUTE, type TextType as ItemType } from '@/lib/types'
 import { MindmapCanvas, Note } from './Viewers'
+import { Loading, Segmented, SplitButton, TextField } from '@/ui/kit'
 
 const PLACEHOLDER: Record<ItemType, string> = {
   note: '# 標題\n\n用 Markdown 寫筆記。\n\n- 重點一\n- 重點二',
@@ -35,7 +32,7 @@ function Preview({ as, md }: { as: ItemType; md: string }) {
   if (as === 'mindmap')
     return (
       <div className="mm-canvas mm-small">
-        <Suspense fallback={<Skeleton label="載入心智圖" lines={5} />}>
+        <Suspense fallback={<Loading label="載入心智圖" lines={5} />}>
           <MindmapCanvas md={md} level={0} />
         </Suspense>
       </div>
@@ -45,7 +42,7 @@ function Preview({ as, md }: { as: ItemType; md: string }) {
       <div className="fc-preview">
         <div className="fc-top">
           {quiz.tags.map(t => (
-            <Badge key={t} tone="info" size="sm">{t.replace(/^#/, '')}</Badge>
+            <Badge key={t} variant="info" size="sm">{t.replace(/^#/, '')}</Badge>
           ))}
           <span className="muted">{quiz.questions.length} 題{quiz.skipped ? `，${quiz.skipped} 題格式不完整已略過` : ''}</span>
         </div>
@@ -63,7 +60,7 @@ function Preview({ as, md }: { as: ItemType; md: string }) {
     <div className="fc-preview">
       <div className="fc-top">
         {deck!.tags.map(t => (
-          <Badge key={t} tone="info" size="sm">{t.replace(/^#/, '')}</Badge>
+          <Badge key={t} variant="info" size="sm">{t.replace(/^#/, '')}</Badge>
         ))}
         <span className="muted">{deck!.cards.length} 張卡片{deck!.skipped ? `，${deck!.skipped} 行未使用（缺少 ::）` : ''}</span>
       </div>
@@ -136,7 +133,7 @@ export function Editor({ courseId, type, itemId }: { courseId: string; type: Ite
   if (!course || course.deleted || (itemId && (!existing || existing.deleted))) {
     return (
       <section className="page">
-        <EmptyState title="找不到要編輯的內容" description="它可能已被刪除。" action={<Button variant="secondary" onClick={() => go('/')}>回到課程列表</Button>} />
+        <EmptyState title="找不到要編輯的內容" description="它可能已被刪除。" action={<Button variant="outline" onClick={() => go('/')}>回到課程列表</Button>} />
       </section>
     )
   }
@@ -158,14 +155,14 @@ export function Editor({ courseId, type, itemId }: { courseId: string; type: Ite
         />
       </header>
 
-      <Input label="名稱" value={title} onChange={e => setTitle(e.target.value)} maxLength={120} placeholder="例如：第一章重點整理" error={error && !title.trim() ? error : undefined} />
+      <TextField label="名稱" value={title} onChange={e => setTitle(e.target.value)} maxLength={120} placeholder="例如：第一章重點整理" error={error && !title.trim() ? error : undefined} />
       {error && title.trim() && <p className="form-error" role="alert">{error}</p>}
 
       <div className="editor-bar">
         <div className="pane-toggle">
-          <SegmentedControl label="編輯或預覽" value={pane} onValueChange={v => setPane(v as 'edit' | 'preview')} options={[{ value: 'edit', label: '編輯' }, { value: 'preview', label: '預覽' }]} />
+          <Segmented label="編輯或預覽" value={pane} onValueChange={v => setPane(v as 'edit' | 'preview')} options={[{ value: 'edit', label: '編輯' }, { value: 'preview', label: '預覽' }]} />
         </div>
-        <SegmentedControl
+        <Segmented
           label="預覽方式"
           value={previewAs}
           onValueChange={v => setPreviewAs(v as ItemType)}

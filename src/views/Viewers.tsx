@@ -1,11 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, Check, ChevronLeft, ChevronRight, Maximize2, RotateCcw, Shuffle } from 'lucide-react'
-import { Button } from '@/components/arc/button/button'
-import { Badge } from '@/components/arc/badge/badge'
-import { Input } from '@/components/arc/input/input'
-import { Progress } from '@/components/arc/progress/progress'
-import SegmentedControl from '@/components/arc/segmented-control/segmented-control'
-import { Skeleton } from '@/components/arc/skeleton/skeleton'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { ItemMenu } from '@/ui/Menus'
 import { EmptyState } from '@/ui/EmptyState'
 import { cardKey, formatTime, parseFlashcards, renderInline, renderMarkdown, type Card } from '@/lib/md'
@@ -16,6 +12,7 @@ import { go, href } from '@/lib/router'
 import { TYPE_LABEL, TYPE_ROUTE, type Item, type SrsData } from '@/lib/types'
 import type { MindmapHandle } from './MindmapCanvas'
 import { QuizView } from './Quiz'
+import { Loading, Prog, Segmented, TextField } from '@/ui/kit'
 
 export const MindmapCanvas = lazy(() => import('./MindmapCanvas'))
 
@@ -41,7 +38,7 @@ export function Mindmap({ md }: { md: string }) {
   return (
     <div className="mm-wrap" ref={box}>
       <div className="mm-bar">
-        <SegmentedControl
+        <Segmented
           label="展開層級"
           value={String(level)}
           onValueChange={v => setLevel(Number(v))}
@@ -53,14 +50,14 @@ export function Mindmap({ md }: { md: string }) {
           ]}
         />
         <div className="mm-tools">
-          <Button variant="secondary" size="sm" onClick={() => handle.current?.fit()}>適配畫面</Button>
-          <Button variant="secondary" size="sm" onClick={full}>
+          <Button variant="outline" size="sm" onClick={() => handle.current?.fit()}>適配畫面</Button>
+          <Button variant="outline" size="sm" onClick={full}>
             <Maximize2 size={14} strokeWidth={1.75} aria-hidden="true" /> 全螢幕
           </Button>
         </div>
       </div>
       <div className="mm-canvas">
-        <Suspense fallback={<Skeleton label="載入心智圖" lines={6} />}>
+        <Suspense fallback={<Loading label="載入心智圖" lines={6} />}>
           <MindmapCanvas md={md} level={level} onReady={onReady} />
         </Suspense>
       </div>
@@ -162,7 +159,7 @@ function FlashReview({ itemId, cards }: { itemId: string; cards: KeyedCard[] }) 
   const hint = (g: Grade) => describeDue(schedule(srs, g, day))
   return (
     <>
-      <Progress value={done} max={done + queue.length} label={`剩餘 ${queue.length} 張，已完成 ${done}`} />
+      <Prog value={done} max={done + queue.length} label={`剩餘 ${queue.length} 張，已完成 ${done}`} />
       <div className="fc-stage">
         <button type="button" className="fc-card" data-flipped={flipped} aria-label={flipped ? '顯示問題' : '顯示答案'} aria-pressed={flipped} onClick={() => setFlipped(f => !f)}>
           <span className="fc-face fc-front">
@@ -178,8 +175,8 @@ function FlashReview({ itemId, cards }: { itemId: string; cards: KeyedCard[] }) 
       </div>
       {flipped ? (
         <div className="fc-grades">
-          <Button variant="secondary" onClick={() => grade('again')}>還不熟<small>{hint('again')}</small></Button>
-          <Button variant="secondary" onClick={() => grade('good')}>記得了<small>{hint('good')}</small></Button>
+          <Button variant="outline" onClick={() => grade('again')}>還不熟<small>{hint('again')}</small></Button>
+          <Button variant="outline" onClick={() => grade('good')}>記得了<small>{hint('good')}</small></Button>
           <Button onClick={() => grade('easy')}>很熟<small>{hint('easy')}</small></Button>
         </div>
       ) : (
@@ -261,7 +258,7 @@ export function Flashcards({ item, review }: { item: Item; review?: boolean }) {
   return (
     <div className="fc">
       <div className="fc-top">
-        <SegmentedControl
+        <Segmented
           label="模式"
           value={view}
           onValueChange={v => setView(v as 'study' | 'review' | 'list')}
@@ -272,7 +269,7 @@ export function Flashcards({ item, review }: { item: Item; review?: boolean }) {
           ]}
         />
         {deck.tags.map(t => (
-          <Badge key={t} tone="info" size="sm">{t.replace(/^#/, '')}</Badge>
+          <Badge key={t} variant="info" size="sm">{t.replace(/^#/, '')}</Badge>
         ))}
       </div>
 
@@ -280,9 +277,9 @@ export function Flashcards({ item, review }: { item: Item; review?: boolean }) {
         <FlashReview itemId={item.id} cards={keyed} />
       ) : view === 'study' ? (
         <>
-          <Progress value={knownCount} max={keyed.length} label={`已記得 ${knownCount} / ${keyed.length}`} />
+          <Prog value={knownCount} max={keyed.length} label={`已記得 ${knownCount} / ${keyed.length}`} />
           <div className="fc-opts">
-            <SegmentedControl
+            <Segmented
               label="範圍"
               value={only}
               onValueChange={v => {
@@ -296,7 +293,7 @@ export function Flashcards({ item, review }: { item: Item; review?: boolean }) {
               ]}
             />
             <Button
-              variant="secondary"
+              variant="outline"
               size="sm"
               aria-pressed={shuffle}
               onClick={() => {
@@ -316,7 +313,7 @@ export function Flashcards({ item, review }: { item: Item; review?: boolean }) {
               description="不熟的卡片已經清空。可以回到全部卡片再複習一次。"
               action={
                 <Button
-                  variant="secondary"
+                  variant="outline"
                   onClick={() => {
                     setOnly('all')
                     setI(0)
@@ -347,7 +344,7 @@ export function Flashcards({ item, review }: { item: Item; review?: boolean }) {
                   <span className="fc-face fc-back">
                     <span className="fc-side">答案</span>
                     <span className="fc-text" dangerouslySetInnerHTML={{ __html: renderInline(cur.a) }} />
-                    {known.has(cur.k) && <Badge tone="success" size="sm" icon={<Check size={12} />}>已記得</Badge>}
+                    {known.has(cur.k) && <Badge variant="success" size="sm"><Check aria-hidden="true" />已記得</Badge>}
                   </span>
                 </button>
               </div>
@@ -357,7 +354,7 @@ export function Flashcards({ item, review }: { item: Item; review?: boolean }) {
                 <Button variant="ghost" aria-label="下一張" onClick={() => move(1)}><ChevronRight size={18} strokeWidth={1.75} aria-hidden="true" /></Button>
               </div>
               <div className="fc-judge">
-                <Button variant="secondary" onClick={() => mark(false)}>還不熟</Button>
+                <Button variant="outline" onClick={() => mark(false)}>還不熟</Button>
                 <Button onClick={() => mark(true)}>記得了</Button>
               </div>
               <p className="muted fc-keys">快捷鍵：空白鍵翻面，左右鍵切換，1 還不熟，2 記得了</p>
@@ -366,7 +363,7 @@ export function Flashcards({ item, review }: { item: Item; review?: boolean }) {
         </>
       ) : (
         <>
-          <Input label="搜尋卡片" value={q} onChange={e => setQ(e.target.value)} placeholder="輸入關鍵字" />
+          <TextField label="搜尋卡片" value={q} onChange={e => setQ(e.target.value)} placeholder="輸入關鍵字" />
           <ul className="fc-list">
             {list.map((c: Card & { k: string }) => (
               <li key={c.k} className="fc-item">
@@ -393,7 +390,7 @@ export function ItemView({ courseId, itemId, review }: { courseId: string; itemI
   if (!item || item.deleted || !course || course.deleted) {
     return (
       <section className="page">
-        <EmptyState title="找不到這個檔案" description="它可能已被刪除。" action={<Button variant="secondary" onClick={() => go(`/c/${courseId}`)}>回到課程</Button>} />
+        <EmptyState title="找不到這個檔案" description="它可能已被刪除。" action={<Button variant="outline" onClick={() => go(`/c/${courseId}`)}>回到課程</Button>} />
       </section>
     )
   }
@@ -410,7 +407,7 @@ export function ItemView({ courseId, itemId, review }: { courseId: string; itemI
           <p className="muted">更新 {formatTime(item.updatedAt)}</p>
         </div>
         <div className="head-actions">
-          <Button variant="secondary" onClick={() => go(`${back}/${item.id}/edit`)}>編輯</Button>
+          <Button variant="outline" onClick={() => go(`${back}/${item.id}/edit`)}>編輯</Button>
           <ItemMenu item={item} onEdit={() => go(`${back}/${item.id}/edit`)} onDeleted={() => go(back)} />
         </div>
       </header>

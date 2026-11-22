@@ -6,7 +6,7 @@ const transformer = new Transformer([])
 
 function palette(): string[] {
   const cs = getComputedStyle(document.documentElement)
-  const vars = ['--series-1', '--series-2', '--series-3', '--series-4', '--accent']
+  const vars = ['--mm-1', '--mm-2', '--mm-3', '--mm-4', '--mm-5', '--mm-6']
   return vars.map(v => cs.getPropertyValue(v).trim()).filter(Boolean)
 }
 
@@ -43,11 +43,11 @@ export default function MindmapCanvas({ md, level, onReady }: { md: string; leve
         void mm.current.setData(root)
         void mm.current.fit()
       }
-      theme.current = document.documentElement.dataset.theme ?? ''
+      theme.current = document.documentElement.classList.contains('dark') ? 'dark' : 'light'
     }
     render()
     const onTheme = () => {
-      if (theme.current !== (document.documentElement.dataset.theme ?? '')) render()
+      if (theme.current !== (document.documentElement.classList.contains('dark') ? 'dark' : 'light')) render()
     }
     window.addEventListener('jn-theme', onTheme)
     return () => window.removeEventListener('jn-theme', onTheme)

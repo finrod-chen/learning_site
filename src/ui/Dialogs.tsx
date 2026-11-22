@@ -1,7 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Dialog, DialogContent } from '@/components/arc/dialog/dialog'
-import { Button } from '@/components/arc/button/button'
-import { Input } from '@/components/arc/input/input'
+import { AlertDialog, AlertDialogClose, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogPopup, AlertDialogTitle } from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { DialogClose } from '@/components/ui/dialog'
+import { AppDialog } from './AppDialog'
+import { TextField } from './kit'
 
 interface PromptProps {
   open: boolean
@@ -27,17 +29,21 @@ export function PromptDialog({ open, title, description, label, initial = '', co
     onClose()
   }
   return (
-    <Dialog open={open} onOpenChange={o => !o && onClose()}>
-      <DialogContent title={title} description={description}>
-        <form className="dialog-form" onSubmit={submit}>
-          <Input label={label} value={value} onChange={e => setValue(e.target.value)} autoFocus maxLength={120} {...(secret ? { type: 'password', autoComplete: 'current-password' } : {})} />
-          <div className="dialog-actions">
-            <Button type="button" variant="ghost" onClick={onClose}>取消</Button>
-            <Button type="submit" disabled={!value.trim()}>{confirmLabel}</Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <AppDialog
+      open={open}
+      onOpenChange={o => !o && onClose()}
+      title={title}
+      description={description}
+      onSubmit={submit}
+      footer={
+        <>
+          <DialogClose render={<Button variant="ghost" />}>取消</DialogClose>
+          <Button type="submit" disabled={!value.trim()}>{confirmLabel}</Button>
+        </>
+      }
+    >
+      <TextField label={label} value={value} onChange={e => setValue(e.target.value)} autoFocus maxLength={120} {...(secret ? { type: 'password', autoComplete: 'current-password' } : {})} />
+    </AppDialog>
   )
 }
 
@@ -53,22 +59,20 @@ interface ConfirmProps {
 
 export function ConfirmDialog({ open, title, description, confirmLabel, danger = true, onConfirm, onClose }: ConfirmProps) {
   return (
-    <Dialog open={open} onOpenChange={o => !o && onClose()}>
-      <DialogContent title={title} description={description}>
-        <div className="dialog-actions">
-          <Button variant="ghost" onClick={onClose}>取消</Button>
-          <Button
-            variant={danger ? 'danger' : 'primary'}
-            onClick={() => {
-              onConfirm()
-              onClose()
-            }}
-          >
+    <AlertDialog open={open} onOpenChange={o => !o && onClose()}>
+      <AlertDialogPopup>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogClose render={<Button variant="ghost" />}>取消</AlertDialogClose>
+          <AlertDialogClose render={<Button variant={danger ? 'destructive' : 'default'} />} onClick={onConfirm}>
             {confirmLabel}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+          </AlertDialogClose>
+        </AlertDialogFooter>
+      </AlertDialogPopup>
+    </AlertDialog>
   )
 }
 

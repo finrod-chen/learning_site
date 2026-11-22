@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Bookmark, BookmarkCheck, Check, ChevronLeft, ChevronRight, Clock, Layers, RotateCcw, X } from 'lucide-react'
-import { Button } from '@/components/arc/button/button'
-import { Badge } from '@/components/arc/badge/badge'
-import { Progress } from '@/components/arc/progress/progress'
-import SegmentedControl from '@/components/arc/segmented-control/segmented-control'
-import Switch from '@/components/arc/switch/switch'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/ui/Dialogs'
 import { EmptyState } from '@/ui/EmptyState'
 import { toast } from '@/ui/toaster'
@@ -14,6 +11,7 @@ import { createItem, emptyProgress, getProgress, updateProgress, useDB } from '@
 import { GRADUATE_DAYS, schedule, today } from '@/lib/srs'
 import { go } from '@/lib/router'
 import { TYPE_ROUTE, type DB, type Item, type QuizProgress } from '@/lib/types'
+import { LabeledSwitch, Prog, Segmented } from '@/ui/kit'
 
 type Mode = 'practice' | 'exam'
 /** A question together with the quiz item it came from (progress is kept per quiz). */
@@ -80,7 +78,7 @@ function Explain({ q }: { q: QuizQuestion }) {
   if (!q.explain) return null
   return (
     <div className="explain">
-      {q.ai && <Badge tone="info" size="sm">AI 草稿</Badge>}
+      {q.ai && <Badge variant="info" size="sm">AI 草稿</Badge>}
       <p dangerouslySetInnerHTML={{ __html: renderInline(q.explain).replace(/\n/g, '<br>') }} />
     </div>
   )
@@ -197,7 +195,7 @@ function Runner({ ctx, session, onFinish, onExit }: { ctx: QuizCtx; session: Ses
           {isMarked ? <BookmarkCheck size={16} strokeWidth={1.75} aria-hidden="true" /> : <Bookmark size={16} strokeWidth={1.75} aria-hidden="true" />} 標記
         </Button>
       </div>
-      <Progress value={idx + (revealed ? 1 : 0)} max={questions.length} label={mode === 'exam' ? `已作答 ${answered} / ${questions.length}` : '進度'} />
+      <Prog value={idx + (revealed ? 1 : 0)} max={questions.length} label={mode === 'exam' ? `已作答 ${answered} / ${questions.length}` : '進度'} />
 
       <Stem q={q} />
       <div className="qopts" role="group" aria-label="選項">
@@ -227,10 +225,10 @@ function Runner({ ctx, session, onFinish, onExit }: { ctx: QuizCtx; session: Ses
       )}
 
       <div className="quiz-nav">
-        <Button variant="secondary" disabled={idx === 0} onClick={() => setIdx(i => i - 1)}>
+        <Button variant="outline" disabled={idx === 0} onClick={() => setIdx(i => i - 1)}>
           <ChevronLeft size={16} strokeWidth={1.75} aria-hidden="true" /> 上一題
         </Button>
-        {mode === 'exam' && <Button variant="secondary" onClick={() => setConfirm('submit')}>交卷</Button>}
+        {mode === 'exam' && <Button variant="outline" onClick={() => setConfirm('submit')}>交卷</Button>}
         <Button disabled={mode === 'practice' && !revealed} onClick={next}>
           {last ? (mode === 'practice' ? '查看結果' : '交卷') : '下一題'} {!last && <ChevronRight size={16} strokeWidth={1.75} aria-hidden="true" />}
         </Button>
@@ -277,8 +275,8 @@ function Result({ ctx, outcome, onRetry, onHome }: { ctx: QuizCtx; outcome: Outc
       </div>
       <div className="quiz-actions">
         {wrong.length > 0 && <Button onClick={() => onRetry(wrong)}><RotateCcw size={16} strokeWidth={1.75} aria-hidden="true" /> 重練錯題 {wrong.length}</Button>}
-        {wrong.length > 0 && <Button variant="secondary" onClick={toCards}><Layers size={16} strokeWidth={1.75} aria-hidden="true" /> 錯題轉快閃卡</Button>}
-        <Button variant="secondary" onClick={onHome}>返回</Button>
+        {wrong.length > 0 && <Button variant="outline" onClick={toCards}><Layers size={16} strokeWidth={1.75} aria-hidden="true" /> 錯題轉快閃卡</Button>}
+        <Button variant="outline" onClick={onHome}>返回</Button>
       </div>
       {wrong.length === 0 ? (
         <EmptyState title="全部答對" description="這一輪沒有錯題，繼續保持。" />
@@ -373,7 +371,7 @@ export function Launcher({ pool, mixed, onStart }: { pool: SQ[]; mixed?: boolean
       <section className="quiz-card" aria-labelledby="practice-h">
         <h2 id="practice-h" className="quiz-h">練習模式</h2>
         <p className="muted">一題一題作答，選完立刻看對錯與解析。</p>
-        <SegmentedControl
+        <Segmented
           label="練習範圍"
           value={scope}
           onValueChange={v => setScope(v as Scope)}
@@ -386,8 +384,8 @@ export function Launcher({ pool, mixed, onStart }: { pool: SQ[]; mixed?: boolean
           ]}
         />
         <div className="quiz-switches">
-          <Switch label="隨機題目順序" checked={shuffleQ} onCheckedChange={setShuffleQ} />
-          <Switch label="隨機選項順序" checked={shuffleO} onCheckedChange={setShuffleO} />
+          <LabeledSwitch label="隨機題目順序" checked={shuffleQ} onCheckedChange={setShuffleQ} />
+          <LabeledSwitch label="隨機選項順序" checked={shuffleO} onCheckedChange={setShuffleO} />
         </div>
         <div className="quiz-actions">
           <Button disabled={list.length === 0} onClick={() => onStart({ mode: 'practice', questions: shuffledOr(list), shuffleOpts: shuffleO, limitSec: 0 })}>
@@ -401,12 +399,12 @@ export function Launcher({ pool, mixed, onStart }: { pool: SQ[]; mixed?: boolean
         <h2 id="exam-h" className="quiz-h">模擬考</h2>
         <p className="muted">作答中不顯示答案，交卷後計分並列出錯題。{mixed ? '題目會從已選的題庫中隨機抽取。' : ''}</p>
         <div className="quiz-row">
-          <SegmentedControl label="題數" value={count} onValueChange={setCount} options={counts.map(c => ({ value: String(c), label: c === N ? `全部 ${c} 題` : `${c} 題` }))} />
-          <SegmentedControl label="時間" value={limit} onValueChange={setLimit} options={[{ value: '0', label: '不限時' }, { value: '1800', label: '30 分' }, { value: '3600', label: '60 分' }]} />
+          <Segmented label="題數" value={count} onValueChange={setCount} options={counts.map(c => ({ value: String(c), label: c === N ? `全部 ${c} 題` : `${c} 題` }))} />
+          <Segmented label="時間" value={limit} onValueChange={setLimit} options={[{ value: '0', label: '不限時' }, { value: '1800', label: '30 分' }, { value: '3600', label: '60 分' }]} />
         </div>
         <div className="quiz-actions">
           <Button
-            variant="secondary"
+            variant="outline"
             disabled={N === 0}
             onClick={() => {
               const c = Number(count)

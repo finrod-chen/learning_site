@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { Theme } from '@/components/arc/theme-switch/theme-switch'
 
+export type Theme = 'light' | 'dark'
 const KEY = 'jn:theme'
 
 function initial(): Theme {
@@ -16,8 +16,8 @@ function initial(): Theme {
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(initial)
   useEffect(() => {
-    document.documentElement.dataset.theme = theme
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#111111' : '#ffffff')
+    document.documentElement.classList.toggle('dark', theme === 'dark')
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#0d0d0d' : '#ffffff')
     window.dispatchEvent(new Event('jn-theme'))
   }, [theme])
   const set = useCallback((t: Theme) => {
