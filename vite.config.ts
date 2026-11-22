@@ -10,6 +10,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      useCredentials: true, // send cookies when fetching the manifest so it works behind Cloudflare Access
       includeAssets: ['logo.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'JustNote Learning',
