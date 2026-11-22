@@ -13,6 +13,7 @@ import { useDB } from '@/lib/store'
 import { go, href } from '@/lib/router'
 import { TYPE_LABEL, TYPE_ROUTE, type Item } from '@/lib/types'
 import type { MindmapHandle } from './MindmapCanvas'
+import { QuizView } from './Quiz'
 
 export const MindmapCanvas = lazy(() => import('./MindmapCanvas'))
 
@@ -321,6 +322,7 @@ export function ItemView({ courseId, itemId }: { courseId: string; itemId: strin
       {item.type === 'note' && <Note md={item.content} />}
       {item.type === 'mindmap' && <Mindmap md={item.content} />}
       {item.type === 'flashcards' && <Flashcards item={item} />}
+      {item.type === 'quiz' && <QuizView item={item} />}
     </section>
   )
 }
