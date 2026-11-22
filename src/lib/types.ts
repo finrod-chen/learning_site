@@ -34,16 +34,43 @@ export interface QuizAttempt {
   correct: number
   secs: number
 }
+/** Spaced-repetition state of one card or question ("due" is a local day number). */
+export interface SrsCard {
+  due: number
+  ivl: number
+  ease: number
+  reps: number
+  lapses: number
+}
 export interface QuizProgress {
   stats: Record<string, QuizStat>
   marks: string[]
   history: QuizAttempt[]
+  /** wrong questions waiting for review */
+  srs?: Record<string, SrsCard>
 }
-/** Study progress for one quiz item; synced across devices (last write wins). */
-export interface Progress {
+/** Flashcard deck schedule, stored in the doc "srs:<itemId>". */
+export interface SrsData {
+  cards: Record<string, SrsCard>
+  /** how many new cards were introduced on a given day (caps the daily new cards) */
+  newToday?: { day: number; count: number }
+}
+/** A countdown to a named date, stored in the doc "cd:<id>". */
+export interface Countdown {
+  courseId: string
+  name: string
+  /** YYYY-MM-DD, local */
+  date: string
+  deleted?: boolean
+}
+/**
+ * A small synced document (quiz progress, SRS schedule, countdown), last write wins.
+ * Ids: "<quizItemId>", "srs:<itemId>", "cd:<id>", "mix:<courseId>".
+ */
+export interface Progress<T = unknown> {
   id: string
   updatedAt: number
-  data: QuizProgress
+  data: T
 }
 
 export interface DB {

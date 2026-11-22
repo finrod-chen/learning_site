@@ -9,9 +9,11 @@ import { Skeleton } from '@/components/arc/skeleton/skeleton'
 import { ItemMenu } from '@/ui/Menus'
 import { EmptyState } from '@/ui/EmptyState'
 import { cardKey, formatTime, parseFlashcards, renderInline, renderMarkdown, type Card } from '@/lib/md'
-import { useDB } from '@/lib/store'
+import { getDoc, putDoc, useDB } from '@/lib/store'
+import { describeDue, schedule, today, type Grade } from '@/lib/srs'
+import { reviewSets, type KeyedCard } from '@/lib/review'
 import { go, href } from '@/lib/router'
-import { TYPE_LABEL, TYPE_ROUTE, type Item } from '@/lib/types'
+import { TYPE_LABEL, TYPE_ROUTE, type Item, type SrsData } from '@/lib/types'
 import type { MindmapHandle } from './MindmapCanvas'
 import { QuizView } from './Quiz'
 
@@ -100,10 +102,98 @@ function shuffled<T>(arr: T[]): T[] {
   return a
 }
 
-export function Flashcards({ item }: { item: Item }) {
+/* ---------------- spaced-repetition review ---------------- */
+function FlashReview({ itemId, cards }: { itemId: string; cards: KeyedCard[] }) {
+  const db = useDB()
+  const doc = getDoc<SrsData>(db, 'srs:' + itemId)
+  const day = today()
+  const [queue, setQueue] = useState<string[]>(() => {
+    const { due, fresh } = reviewSets(cards, doc, day)
+    return [...due, ...fresh].map(c => c.k)
+  })
+  const [flipped, setFlipped] = useState(false)
+  const [done, setDone] = useState(0)
+  const byKey = useMemo(() => new Map(cards.map(c => [c.k, c])), [cards])
+  const k = queue[0]
+  const cur = k ? byKey.get(k) : undefined
+
+  const grade = useCallback(
+    (g: Grade) => {
+      if (!k) return
+      putDoc<SrsData>('srs:' + itemId, prev => {
+        const d: SrsData = prev ?? { cards: {} }
+        const had = d.cards[k]
+        const intro = d.newToday?.day === day ? d.newToday.count : 0
+        return { ...d, cards: { ...d.cards, [k]: schedule(had, g, day) }, newToday: had ? d.newToday : { day, count: intro + 1 } }
+      })
+      setQueue(q => (g === 'again' ? [...q.slice(1), k] : q.slice(1)))
+      if (g !== 'again') setDone(n => n + 1)
+      setFlipped(false)
+    },
+    [k, itemId, day],
+  )
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLElement && /INPUT|TEXTAREA/.test(e.target.tagName)) return
+      if (e.key === ' ' || e.key === 'Enter') {
+        if (e.target instanceof HTMLElement && e.target.closest('button,a')) return
+        e.preventDefault()
+        setFlipped(f => !f)
+      } else if (flipped && e.key === '1') grade('again')
+      else if (flipped && e.key === '2') grade('good')
+      else if (flipped && e.key === '3') grade('easy')
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [flipped, grade])
+
+  if (!cur) {
+    const later = Object.values(doc?.cards ?? {}).filter(c => c.due > day)
+    const tomorrow = later.filter(c => c.due === day + 1).length
+    return (
+      <EmptyState
+        title={done > 0 ? `今天的複習完成，共 ${done} 張` : '今天沒有需要複習的卡片'}
+        description={later.length ? `明天到期 ${tomorrow} 張，之後還有 ${later.length - tomorrow} 張排在後面。` : '先在「學習」模式看過卡片，再回來複習，系統會依記憶狀況安排下次出現的時間。'}
+      />
+    )
+  }
+  const srs = doc?.cards[cur.k]
+  const hint = (g: Grade) => describeDue(schedule(srs, g, day))
+  return (
+    <>
+      <Progress value={done} max={done + queue.length} label={`剩餘 ${queue.length} 張，已完成 ${done}`} />
+      <div className="fc-stage">
+        <button type="button" className="fc-card" data-flipped={flipped} aria-label={flipped ? '顯示問題' : '顯示答案'} aria-pressed={flipped} onClick={() => setFlipped(f => !f)}>
+          <span className="fc-face fc-front">
+            <span className="fc-side">問題{srs ? '' : '（新卡片）'}</span>
+            <span className="fc-text" dangerouslySetInnerHTML={{ __html: renderInline(cur.q) }} />
+            <span className="fc-tip">想一想，再點一下翻面</span>
+          </span>
+          <span className="fc-face fc-back">
+            <span className="fc-side">答案</span>
+            <span className="fc-text" dangerouslySetInnerHTML={{ __html: renderInline(cur.a) }} />
+          </span>
+        </button>
+      </div>
+      {flipped ? (
+        <div className="fc-grades">
+          <Button variant="secondary" onClick={() => grade('again')}>還不熟<small>{hint('again')}</small></Button>
+          <Button variant="secondary" onClick={() => grade('good')}>記得了<small>{hint('good')}</small></Button>
+          <Button onClick={() => grade('easy')}>很熟<small>{hint('easy')}</small></Button>
+        </div>
+      ) : (
+        <p className="muted fc-keys">先回想答案，再翻面對照，然後誠實評分。快捷鍵：空白鍵翻面，1 還不熟，2 記得了，3 很熟</p>
+      )}
+    </>
+  )
+}
+
+export function Flashcards({ item, review }: { item: Item; review?: boolean }) {
+  const db = useDB()
   const deck = useMemo(() => parseFlashcards(item.content), [item.content])
   const [known, update] = useKnown(item.id)
-  const [view, setView] = useState<'study' | 'list'>('study')
+  const [view, setView] = useState<'study' | 'review' | 'list'>(review ? 'review' : 'study')
   const [only, setOnly] = useState<'all' | 'unknown'>('all')
   const [shuffle, setShuffle] = useState(false)
   const [seed, setSeed] = useState(0)
@@ -123,6 +213,8 @@ export function Flashcards({ item }: { item: Item }) {
 
   const cur = queue[Math.min(i, queue.length - 1)]
   const knownCount = keyed.filter(c => known.has(c.k)).length
+  const rs = reviewSets(keyed, getDoc<SrsData>(db, 'srs:' + item.id))
+  const reviewN = rs.due.length + rs.fresh.length
 
   const move = useCallback(
     (d: number) => {
@@ -172,9 +264,10 @@ export function Flashcards({ item }: { item: Item }) {
         <SegmentedControl
           label="模式"
           value={view}
-          onValueChange={v => setView(v as 'study' | 'list')}
+          onValueChange={v => setView(v as 'study' | 'review' | 'list')}
           options={[
             { value: 'study', label: '學習' },
+            { value: 'review', label: `複習 ${reviewN}` },
             { value: 'list', label: `全部 ${keyed.length}` },
           ]}
         />
@@ -183,7 +276,9 @@ export function Flashcards({ item }: { item: Item }) {
         ))}
       </div>
 
-      {view === 'study' ? (
+      {view === 'review' ? (
+        <FlashReview itemId={item.id} cards={keyed} />
+      ) : view === 'study' ? (
         <>
           <Progress value={knownCount} max={keyed.length} label={`已記得 ${knownCount} / ${keyed.length}`} />
           <div className="fc-opts">
@@ -291,7 +386,7 @@ export function Flashcards({ item }: { item: Item }) {
 }
 
 /* ---------------- item page ---------------- */
-export function ItemView({ courseId, itemId }: { courseId: string; itemId: string }) {
+export function ItemView({ courseId, itemId, review }: { courseId: string; itemId: string; review?: boolean }) {
   const db = useDB()
   const item = db.items[itemId]
   const course = db.courses[courseId]
@@ -321,8 +416,8 @@ export function ItemView({ courseId, itemId }: { courseId: string; itemId: strin
       </header>
       {item.type === 'note' && <Note md={item.content} />}
       {item.type === 'mindmap' && <Mindmap md={item.content} />}
-      {item.type === 'flashcards' && <Flashcards item={item} />}
-      {item.type === 'quiz' && <QuizView item={item} />}
+      {item.type === 'flashcards' && <Flashcards item={item} review={review} />}
+      {item.type === 'quiz' && <QuizView item={item} review={review} />}
     </section>
   )
 }

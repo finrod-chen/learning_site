@@ -1,3 +1,5 @@
+import { topicOfKey } from './topics'
+
 export interface QuizOption {
   k: string
   text: string
@@ -10,6 +12,8 @@ export interface QuizQuestion {
   answer: string
   explain: string
   ai: boolean
+  /** study topic: a "主題:" line, else the built-in map, else 未分類 */
+  topic: string
   /** options that refer to each other ("以上皆是") must keep their order */
   fixedOrder: boolean
 }
@@ -28,6 +32,7 @@ const hash = (s: string) => {
 const Q_START = /^(\d+)(?:\.\s+|[、．]\s*)(.*)$/
 const OPT = /^[（(]([A-Ha-h])[)）]\s*(.*)$/
 const ANS = /^(?:答案|Answer)\s*[:：]\s*([A-Ha-h])\s*$/
+const TOPIC = /^(?:主題|章節|Topic)\s*[:：]\s*(.+)$/i
 const EXP = /^解析\s*([(（]AI[)）])?\s*[:：]\s*(.*)$/
 const REFERS = /(以上|上述|前述|皆是|皆非|皆可|均可|皆對|皆錯|皆正確|[（(][A-H][)）])/
 
@@ -39,7 +44,7 @@ export function parseQuiz(md: string): ParsedQuiz {
   const tags: string[] = []
   const questions: QuizQuestion[] = []
   let skipped = 0
-  type Draft = { n: number; stem: string; options: QuizOption[]; answer: string; explain: string; ai: boolean; state: 'stem' | 'opt' | 'explain' }
+  type Draft = { n: number; stem: string; options: QuizOption[]; answer: string; explain: string; ai: boolean; topic: string; state: 'stem' | 'opt' | 'explain' }
   let cur: Draft | null = null
 
   const finish = () => {
@@ -55,6 +60,7 @@ export function parseQuiz(md: string): ParsedQuiz {
         answer: cur.answer,
         explain: cur.explain.trim(),
         ai: cur.ai,
+        topic: cur.topic || topicOfKey(hash(stem)),
         fixedOrder: cur.options.some(o => REFERS.test(o.text)),
       })
     } else skipped++
@@ -71,7 +77,7 @@ export function parseQuiz(md: string): ParsedQuiz {
     const q = Q_START.exec(t)
     if (q) {
       finish()
-      cur = { n: Number(q[1]), stem: q[2], options: [], answer: '', explain: '', ai: false, state: 'stem' }
+      cur = { n: Number(q[1]), stem: q[2], options: [], answer: '', explain: '', ai: false, topic: '', state: 'stem' }
       continue
     }
     if (!cur) continue
@@ -84,6 +90,11 @@ export function parseQuiz(md: string): ParsedQuiz {
     const a = ANS.exec(t)
     if (a) {
       cur.answer = a[1].toUpperCase()
+      continue
+    }
+    const tp = TOPIC.exec(t)
+    if (tp) {
+      cur.topic = tp[1].trim()
       continue
     }
     const e = EXP.exec(t)

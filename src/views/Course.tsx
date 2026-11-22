@@ -10,6 +10,7 @@ import { parseQuiz } from '@/lib/quiz'
 import { go, href } from '@/lib/router'
 import { ALL_TYPES, ROUTE_TYPE, TYPE_LABEL, TYPE_ROUTE, type Item, type ItemType } from '@/lib/types'
 import { AudioList, UploadDialog } from './Audio'
+import { CountdownStrip } from '@/ui/Countdowns'
 
 const ICON = { note: FileText, mindmap: Network, flashcards: Layers, quiz: ListChecks, audio: Headphones }
 const HINT: Record<ItemType, string> = {
@@ -47,6 +48,13 @@ function FileList({ courseId, type, onUpload }: { courseId: string; type: ItemTy
     )
   }
   return (
+    <>
+    {type === 'quiz' && (
+      <div className="quiz-tools">
+        <Button variant="secondary" onClick={() => go(`/c/${courseId}/${TYPE_ROUTE.quiz}/mixed`)}>混合測驗</Button>
+        <Button variant="secondary" onClick={() => go(`/c/${courseId}/${TYPE_ROUTE.quiz}/insights`)}>弱點分析</Button>
+      </div>
+    )}
     <ul className="file-list">
       {items.map(it => (
         <li key={it.id} className="file-row">
@@ -63,6 +71,7 @@ function FileList({ courseId, type, onUpload }: { courseId: string; type: ItemTy
         </li>
       ))}
     </ul>
+    </>
   )
 }
 
@@ -90,6 +99,8 @@ export function Course({ courseId, section }: { courseId: string; section: strin
           <CourseMenu course={course} onDeleted={() => go('/')} />
         </div>
       </header>
+
+      <CountdownStrip courseId={courseId} />
 
       <Tabs value={TYPE_ROUTE[type]} onValueChange={v => go(`/c/${courseId}/${v}`)}>
         <div className="tabs-bar">

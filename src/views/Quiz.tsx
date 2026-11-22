@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Bookmark, BookmarkCheck, Check, ChevronLeft, ChevronRight, Clock, Layers, RotateCcw, X } from 'lucide-react'
 import { Button } from '@/components/arc/button/button'
 import { Badge } from '@/components/arc/badge/badge'
@@ -11,22 +11,61 @@ import { toast } from '@/ui/toaster'
 import { formatClock, parseQuiz, quizToFlashcards, seededShuffle, type QuizQuestion } from '@/lib/quiz'
 import { renderInline, renderMarkdown } from '@/lib/md'
 import { createItem, emptyProgress, getProgress, updateProgress, useDB } from '@/lib/store'
+import { GRADUATE_DAYS, schedule, today } from '@/lib/srs'
 import { go } from '@/lib/router'
-import { TYPE_ROUTE, type Item, type QuizProgress } from '@/lib/types'
+import { TYPE_ROUTE, type DB, type Item, type QuizProgress } from '@/lib/types'
 
 type Mode = 'practice' | 'exam'
-interface Session {
+/** A question together with the quiz item it came from (progress is kept per quiz). */
+export type SQ = QuizQuestion & { src: string }
+export interface Session {
   id: number
   mode: Mode
-  questions: QuizQuestion[]
+  questions: SQ[]
   shuffleOpts: boolean
   limitSec: number
 }
 interface Outcome {
   mode: Mode
-  questions: QuizQuestion[]
+  questions: SQ[]
   picked: Record<string, string>
   secs: number
+}
+/** Where results are recorded and where wrong answers turn into flashcards. */
+export interface QuizCtx {
+  historyId: string
+  courseId: string
+  title: string
+}
+export type Scope = 'all' | 'wrong' | 'due' | 'marked' | 'fresh'
+
+/** Records one answer: stats, and the wrong-answer review schedule. */
+export function applyAnswer(prev: QuizProgress, key: string, ok: boolean, day = today()): QuizProgress {
+  const s = prev.stats[key] ?? { r: 0, w: 0, last: 'r' as const, t: 0 }
+  const stats = { ...prev.stats, [key]: { r: s.r + (ok ? 1 : 0), w: s.w + (ok ? 0 : 1), last: ok ? ('r' as const) : ('w' as const), t: Date.now() } }
+  const srs = { ...(prev.srs ?? {}) }
+  const cur = srs[key]
+  if (!ok) srs[key] = schedule(cur, 'again', day, 1)
+  else if (cur && cur.due <= day) {
+    const n = schedule(cur, 'good', day)
+    if (n.ivl >= GRADUATE_DAYS) delete srs[key]
+    else srs[key] = n
+  }
+  return { ...prev, stats, srs }
+}
+
+export const isDue = (p: QuizProgress, key: string, day = today()) => !!p.srs?.[key] && p.srs[key].due <= day
+
+/** Filters questions by study scope, reading each question's own quiz progress. */
+export function inScope(qs: SQ[], db: DB, scope: Scope): SQ[] {
+  return qs.filter(q => {
+    const p = getProgress(db, q.src)
+    if (scope === 'all') return true
+    if (scope === 'wrong') return p.stats[q.key]?.last === 'w'
+    if (scope === 'due') return isDue(p, q.key)
+    if (scope === 'marked') return p.marks.includes(q.key)
+    return !p.stats[q.key]
+  })
 }
 
 const LETTERS = 'ABCDEFGH'
@@ -48,9 +87,8 @@ function Explain({ q }: { q: QuizQuestion }) {
 }
 
 /* ------------------------------ runner ------------------------------ */
-function Runner({ item, session, onFinish, onExit }: { item: Item; session: Session; onFinish: (o: Outcome) => void; onExit: () => void }) {
+function Runner({ ctx, session, onFinish, onExit }: { ctx: QuizCtx; session: Session; onFinish: (o: Outcome) => void; onExit: () => void }) {
   const db = useDB()
-  const progress = getProgress(db, item.id)
   const { questions, mode } = session
   const [idx, setIdx] = useState(0)
   const [picked, setPicked] = useState<Record<string, string>>({})
@@ -65,7 +103,8 @@ function Runner({ item, session, onFinish, onExit }: { item: Item; session: Sess
     [questions, session],
   )
   const opts = shown[idx]
-  const isMarked = progress.marks.includes(q.key)
+  const markedIn = (x: SQ) => getProgress(db, x.src).marks.includes(x.key)
+  const isMarked = markedIn(q)
   const revealed = mode === 'practice' && picked[q.key] !== undefined
   const answered = questions.filter(x => picked[x.key] !== undefined).length
   const elapsed = Math.floor((now - startedAt.current) / 1000)
@@ -77,22 +116,15 @@ function Runner({ item, session, onFinish, onExit }: { item: Item; session: Sess
       done.current = true
       const secs = Math.floor((Date.now() - startedAt.current) / 1000)
       const correct = questions.filter(x => p[x.key] === x.answer).length
-      updateProgress(item.id, prev => {
-        const stats = { ...prev.stats }
-        if (mode === 'exam') {
-          for (const x of questions) {
-            if (p[x.key] === undefined) continue
-            const s = stats[x.key] ?? { r: 0, w: 0, last: 'r' as const, t: 0 }
-            const ok = p[x.key] === x.answer
-            stats[x.key] = { r: s.r + (ok ? 1 : 0), w: s.w + (ok ? 0 : 1), last: ok ? 'r' : 'w', t: Date.now() }
-          }
-        }
-        const history = [...prev.history, { t: Date.now(), mode, total: questions.length, correct, secs }].slice(-30)
-        return { ...prev, stats, history }
-      })
+      if (mode === 'exam') {
+        const bySrc = new Map<string, SQ[]>()
+        for (const x of questions) if (p[x.key] !== undefined) bySrc.set(x.src, [...(bySrc.get(x.src) ?? []), x])
+        for (const [src, xs] of bySrc) updateProgress(src, prev => xs.reduce((acc, x) => applyAnswer(acc, x.key, p[x.key] === x.answer), prev))
+      }
+      updateProgress(ctx.historyId, prev => ({ ...prev, history: [...prev.history, { t: Date.now(), mode, total: questions.length, correct, secs }].slice(-30) }))
       onFinish({ mode, questions, picked: p, secs })
     },
-    [item.id, mode, onFinish, questions],
+    [ctx.historyId, mode, onFinish, questions],
   )
 
   useEffect(() => {
@@ -109,18 +141,13 @@ function Runner({ item, session, onFinish, onExit }: { item: Item; session: Sess
       if (revealed) return
       const ok = k === q.answer
       setPicked(p => ({ ...p, [q.key]: k }))
-      if (mode === 'practice') {
-        updateProgress(item.id, prev => {
-          const s = prev.stats[q.key] ?? { r: 0, w: 0, last: 'r' as const, t: 0 }
-          return { ...prev, stats: { ...prev.stats, [q.key]: { r: s.r + (ok ? 1 : 0), w: s.w + (ok ? 0 : 1), last: ok ? 'r' : 'w', t: Date.now() } } }
-        })
-      }
+      if (mode === 'practice') updateProgress(q.src, prev => applyAnswer(prev, q.key, ok))
     },
-    [revealed, q, mode, item.id],
+    [revealed, q, mode],
   )
   const toggleMark = useCallback(
-    () => updateProgress(item.id, prev => ({ ...prev, marks: prev.marks.includes(q.key) ? prev.marks.filter(m => m !== q.key) : [...prev.marks, q.key] })),
-    [item.id, q.key],
+    () => updateProgress(q.src, prev => ({ ...prev, marks: prev.marks.includes(q.key) ? prev.marks.filter(m => m !== q.key) : [...prev.marks, q.key] })),
+    [q.src, q.key],
   )
   const last = idx === questions.length - 1
   const next = useCallback(() => {
@@ -192,7 +219,7 @@ function Runner({ item, session, onFinish, onExit }: { item: Item; session: Sess
       {mode === 'exam' && (
         <div className="qgrid" role="group" aria-label="題號">
           {questions.map((x, i) => (
-            <button key={x.key} type="button" className="qnum" data-current={i === idx || undefined} data-done={picked[x.key] !== undefined || undefined} data-marked={progress.marks.includes(x.key) || undefined} aria-label={`第 ${i + 1} 題${picked[x.key] !== undefined ? '，已作答' : ''}${progress.marks.includes(x.key) ? '，已標記' : ''}`} onClick={() => setIdx(i)}>
+            <button key={x.key} type="button" className="qnum" data-current={i === idx || undefined} data-done={picked[x.key] !== undefined || undefined} data-marked={markedIn(x) || undefined} aria-label={`第 ${i + 1} 題${picked[x.key] !== undefined ? '，已作答' : ''}${markedIn(x) ? '，已標記' : ''}`} onClick={() => setIdx(i)}>
               {i + 1}
             </button>
           ))}
@@ -231,16 +258,16 @@ function Runner({ item, session, onFinish, onExit }: { item: Item; session: Sess
 }
 
 /* ------------------------------ result ------------------------------ */
-function Result({ item, outcome, onRetry, onHome }: { item: Item; outcome: Outcome; onRetry: (qs: QuizQuestion[]) => void; onHome: () => void }) {
+function Result({ ctx, outcome, onRetry, onHome }: { ctx: QuizCtx; outcome: Outcome; onRetry: (qs: SQ[]) => void; onHome: () => void }) {
   const { questions, picked, secs, mode } = outcome
   const correct = questions.filter(q => picked[q.key] === q.answer).length
   const wrong = questions.filter(q => picked[q.key] !== q.answer)
   const score = pct(correct, questions.length)
   const toCards = () => {
     const tag = '題庫錯題'
-    const card = createItem({ courseId: item.courseId, type: 'flashcards', title: `${item.title}・錯題`, content: quizToFlashcards(wrong, tag) })
+    const card = createItem({ courseId: ctx.courseId, type: 'flashcards', title: `${ctx.title}・錯題`, content: quizToFlashcards(wrong, tag) })
     toast('已轉成快閃卡', `${wrong.length} 張`)
-    go(`/c/${item.courseId}/${TYPE_ROUTE.flashcards}/${card.id}`)
+    go(`/c/${ctx.courseId}/${TYPE_ROUTE.flashcards}/${card.id}`)
   }
   return (
     <div className="quiz-result">
@@ -251,7 +278,7 @@ function Result({ item, outcome, onRetry, onHome }: { item: Item; outcome: Outco
       <div className="quiz-actions">
         {wrong.length > 0 && <Button onClick={() => onRetry(wrong)}><RotateCcw size={16} strokeWidth={1.75} aria-hidden="true" /> 重練錯題 {wrong.length}</Button>}
         {wrong.length > 0 && <Button variant="secondary" onClick={toCards}><Layers size={16} strokeWidth={1.75} aria-hidden="true" /> 錯題轉快閃卡</Button>}
-        <Button variant="secondary" onClick={onHome}>回到題庫</Button>
+        <Button variant="secondary" onClick={onHome}>返回</Button>
       </div>
       {wrong.length === 0 ? (
         <EmptyState title="全部答對" description="這一輪沒有錯題，繼續保持。" />
@@ -278,25 +305,135 @@ function Result({ item, outcome, onRetry, onHome }: { item: Item; outcome: Outco
   )
 }
 
-/* ------------------------------ home ------------------------------ */
-function Home({ item, questions, progress, onStart }: { item: Item; questions: QuizQuestion[]; progress: QuizProgress; onStart: (s: Omit<Session, 'id'>) => void }) {
-  const N = questions.length
-  const [scope, setScope] = useState<'all' | 'wrong' | 'marked' | 'fresh'>('all')
-  const [shuffleQ, setShuffleQ] = useState(false)
+
+/* ------------------------------ shared flow ------------------------------ */
+/** Runs the practice / exam / result flow; `children` renders the start screen. */
+export function QuizSession({ ctx, children }: { ctx: QuizCtx; children: (start: (s: Omit<Session, 'id'>) => void) => ReactNode }) {
+  const [session, setSession] = useState<Session | null>(null)
+  const [outcome, setOutcome] = useState<Outcome | null>(null)
+  const start = (s: Omit<Session, 'id'>) => {
+    setOutcome(null)
+    setSession({ ...s, id: Date.now() })
+  }
+  if (session) return <Runner key={session.id} ctx={ctx} session={session} onExit={() => setSession(null)} onFinish={o => (setOutcome(o), setSession(null))} />
+  if (outcome) return <Result ctx={ctx} outcome={outcome} onHome={() => setOutcome(null)} onRetry={qs => start({ mode: 'practice', questions: qs, shuffleOpts: false, limitSec: 0 })} />
+  return <>{children(start)}</>
+}
+
+export function HistoryTable({ history }: { history: QuizProgress['history'] }) {
+  if (history.length === 0) return null
+  return (
+    <section className="quiz-card" aria-labelledby="hist-h">
+      <h2 id="hist-h" className="quiz-h">最近成績</h2>
+      <div className="hist-scroll">
+        <table className="hist">
+          <thead><tr><th scope="col">日期</th><th scope="col">模式</th><th scope="col">答對</th><th scope="col">成績</th><th scope="col">用時</th></tr></thead>
+          <tbody>
+            {[...history].reverse().slice(0, 8).map(h => (
+              <tr key={h.t}>
+                <td>{new Date(h.t).toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}</td>
+                <td>{h.mode === 'exam' ? '模擬考' : '練習'}</td>
+                <td>{h.correct} / {h.total}</td>
+                <td>{pct(h.correct, h.total)} 分</td>
+                <td>{formatClock(h.secs)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
+}
+
+/** Practice / mock-exam launcher over a pool of questions (one quiz, or several mixed together). */
+export function Launcher({ pool, mixed, onStart }: { pool: SQ[]; mixed?: boolean; onStart: (s: Omit<Session, 'id'>) => void }) {
+  const db = useDB()
+  const N = pool.length
+  const [scope, setScope] = useState<Scope>('all')
+  const [shuffleQ, setShuffleQ] = useState(!!mixed)
   const [shuffleO, setShuffleO] = useState(false)
-  const [count, setCount] = useState(String(N))
+  const [count, setCount] = useState(String(Math.min(N, 50)))
   const [limit, setLimit] = useState('0')
+  const by = {
+    all: pool,
+    wrong: inScope(pool, db, 'wrong'),
+    due: inScope(pool, db, 'due'),
+    marked: inScope(pool, db, 'marked'),
+    fresh: inScope(pool, db, 'fresh'),
+  }
+  const list = by[scope]
+  const counts = [...new Set([Math.min(10, N), Math.min(25, N), Math.min(50, N), N])].filter(c => c > 0)
+  const shuffledOr = (qs: SQ[]) => (shuffleQ ? seededShuffle(qs, Date.now()) : qs)
+  useEffect(() => {
+    if (!counts.includes(Number(count))) setCount(String(counts[counts.length - 1] ?? N))
+  }, [N]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <>
+      <section className="quiz-card" aria-labelledby="practice-h">
+        <h2 id="practice-h" className="quiz-h">練習模式</h2>
+        <p className="muted">一題一題作答，選完立刻看對錯與解析。</p>
+        <SegmentedControl
+          label="練習範圍"
+          value={scope}
+          onValueChange={v => setScope(v as Scope)}
+          options={[
+            { value: 'all', label: `全部 ${N}` },
+            { value: 'wrong', label: `錯題 ${by.wrong.length}` },
+            { value: 'due', label: `到期 ${by.due.length}` },
+            { value: 'marked', label: `標記 ${by.marked.length}` },
+            { value: 'fresh', label: `未答 ${by.fresh.length}` },
+          ]}
+        />
+        <div className="quiz-switches">
+          <Switch label="隨機題目順序" checked={shuffleQ} onCheckedChange={setShuffleQ} />
+          <Switch label="隨機選項順序" checked={shuffleO} onCheckedChange={setShuffleO} />
+        </div>
+        <div className="quiz-actions">
+          <Button disabled={list.length === 0} onClick={() => onStart({ mode: 'practice', questions: shuffledOr(list), shuffleOpts: shuffleO, limitSec: 0 })}>
+            開始練習 {list.length}
+          </Button>
+          {list.length === 0 && <span className="muted">這個範圍目前沒有題目。</span>}
+        </div>
+      </section>
+
+      <section className="quiz-card" aria-labelledby="exam-h">
+        <h2 id="exam-h" className="quiz-h">模擬考</h2>
+        <p className="muted">作答中不顯示答案，交卷後計分並列出錯題。{mixed ? '題目會從已選的題庫中隨機抽取。' : ''}</p>
+        <div className="quiz-row">
+          <SegmentedControl label="題數" value={count} onValueChange={setCount} options={counts.map(c => ({ value: String(c), label: c === N ? `全部 ${c} 題` : `${c} 題` }))} />
+          <SegmentedControl label="時間" value={limit} onValueChange={setLimit} options={[{ value: '0', label: '不限時' }, { value: '1800', label: '30 分' }, { value: '3600', label: '60 分' }]} />
+        </div>
+        <div className="quiz-actions">
+          <Button
+            variant="secondary"
+            disabled={N === 0}
+            onClick={() => {
+              const c = Number(count)
+              const qs = c < N ? seededShuffle(pool, Date.now()).slice(0, c) : shuffledOr(pool)
+              onStart({ mode: 'exam', questions: qs, shuffleOpts: shuffleO, limitSec: Number(limit) })
+            }}
+          >
+            開始模擬考
+          </Button>
+        </div>
+      </section>
+    </>
+  )
+}
+
+/* ------------------------------ home ------------------------------ */
+function Home({ item, questions, progress, onStart, initialDue }: { item: Item; questions: SQ[]; progress: QuizProgress; onStart: (s: Omit<Session, 'id'>) => void; initialDue?: boolean }) {
+  const db = useDB()
+  const N = questions.length
   const [reset, setReset] = useState(false)
   const stats = progress.stats
   const wrong = questions.filter(q => stats[q.key]?.last === 'w')
   const marked = questions.filter(q => progress.marks.includes(q.key))
-  const fresh = questions.filter(q => !stats[q.key])
-  const answered = N - fresh.length
+  const due = inScope(questions, db, 'due')
+  const answered = questions.filter(q => stats[q.key]).length
   const right = questions.reduce((a, q) => a + (stats[q.key]?.r ?? 0), 0)
   const total = questions.reduce((a, q) => a + (stats[q.key]?.r ?? 0) + (stats[q.key]?.w ?? 0), 0)
-  const pool = { all: questions, wrong, marked, fresh }[scope]
-  const counts = [...new Set([Math.min(10, N), Math.min(25, N), N])].filter(c => c > 0)
-  const shuffledOr = (qs: QuizQuestion[]) => (shuffleQ ? seededShuffle(qs, Date.now()) : qs)
 
   return (
     <div className="quiz-home">
@@ -307,72 +444,18 @@ function Home({ item, questions, progress, onStart }: { item: Item; questions: Q
         <div><dt>錯題</dt><dd>{wrong.length}</dd></div>
       </dl>
 
-      <section className="quiz-card" aria-labelledby="practice-h">
-        <h2 id="practice-h" className="quiz-h">練習模式</h2>
-        <p className="muted">一題一題作答，選完立刻看對錯與解析。</p>
-        <SegmentedControl
-          label="練習範圍"
-          value={scope}
-          onValueChange={v => setScope(v as typeof scope)}
-          options={[
-            { value: 'all', label: `全部 ${N}` },
-            { value: 'wrong', label: `錯題 ${wrong.length}` },
-            { value: 'marked', label: `已標記 ${marked.length}` },
-            { value: 'fresh', label: `未作答 ${fresh.length}` },
-          ]}
-        />
-        <div className="quiz-switches">
-          <Switch label="隨機題目順序" checked={shuffleQ} onCheckedChange={setShuffleQ} />
-          <Switch label="隨機選項順序" checked={shuffleO} onCheckedChange={setShuffleO} />
-        </div>
-        <div className="quiz-actions">
-          <Button disabled={pool.length === 0} onClick={() => onStart({ mode: 'practice', questions: shuffledOr(pool), shuffleOpts: shuffleO, limitSec: 0 })}>
-            開始練習 {pool.length}
-          </Button>
-          {pool.length === 0 && <span className="muted">這個範圍目前沒有題目。</span>}
-        </div>
-      </section>
-
-      <section className="quiz-card" aria-labelledby="exam-h">
-        <h2 id="exam-h" className="quiz-h">模擬考</h2>
-        <p className="muted">作答中不顯示答案，交卷後計分並列出錯題。</p>
-        <div className="quiz-row">
-          <SegmentedControl label="題數" value={count} onValueChange={setCount} options={counts.map(c => ({ value: String(c), label: c === N ? `全部 ${c} 題` : `${c} 題` }))} />
-          <SegmentedControl label="時間" value={limit} onValueChange={setLimit} options={[{ value: '0', label: '不限時' }, { value: '1800', label: '30 分' }, { value: '3600', label: '60 分' }]} />
-        </div>
-        <div className="quiz-actions">
-          <Button
-            variant="secondary"
-            onClick={() => {
-              const c = Number(count)
-              const qs = c < N ? seededShuffle(questions, Date.now()).slice(0, c) : shuffledOr(questions)
-              onStart({ mode: 'exam', questions: qs, shuffleOpts: shuffleO, limitSec: Number(limit) })
-            }}
-          >
-            開始模擬考
-          </Button>
-        </div>
-      </section>
-
-      {progress.history.length > 0 && (
-        <section className="quiz-card" aria-labelledby="hist-h">
-          <h2 id="hist-h" className="quiz-h">最近成績</h2>
-          <table className="hist">
-            <thead><tr><th scope="col">日期</th><th scope="col">模式</th><th scope="col">答對</th><th scope="col">成績</th><th scope="col">用時</th></tr></thead>
-            <tbody>
-              {[...progress.history].reverse().slice(0, 8).map(h => (
-                <tr key={h.t}>
-                  <td>{new Date(h.t).toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}</td>
-                  <td>{h.mode === 'exam' ? '模擬考' : '練習'}</td>
-                  <td>{h.correct} / {h.total}</td>
-                  <td>{pct(h.correct, h.total)} 分</td>
-                  <td>{formatClock(h.secs)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {due.length > 0 && (
+        <section className="quiz-card due-card" aria-labelledby="due-h" data-focus={initialDue || undefined}>
+          <h2 id="due-h" className="quiz-h">今天該複習 {due.length} 題</h2>
+          <p className="muted">這些是之前答錯、依間隔重複排程今天到期的題目。答對後下次間隔會拉長，連續記得就會畢業。</p>
+          <div className="quiz-actions">
+            <Button onClick={() => onStart({ mode: 'practice', questions: due, shuffleOpts: false, limitSec: 0 })}>複習到期題 {due.length}</Button>
+          </div>
         </section>
       )}
+
+      <Launcher pool={questions} onStart={onStart} />
+      <HistoryTable history={progress.history} />
 
       {(answered > 0 || progress.history.length > 0 || marked.length > 0) && (
         <div><Button variant="ghost" size="sm" onClick={() => setReset(true)}>清除作答紀錄</Button></div>
@@ -380,7 +463,7 @@ function Home({ item, questions, progress, onStart }: { item: Item; questions: Q
       <ConfirmDialog
         open={reset}
         title="清除這份題庫的作答紀錄？"
-        description="錯題本、標記與歷次成績都會被清除，題目本身不受影響。"
+        description="錯題本、到期排程、標記與歷次成績都會被清除，題目本身不受影響。"
         confirmLabel="清除紀錄"
         onConfirm={() => {
           updateProgress(item.id, () => emptyProgress())
@@ -393,30 +476,23 @@ function Home({ item, questions, progress, onStart }: { item: Item; questions: Q
 }
 
 /* ------------------------------ entry ------------------------------ */
-export function QuizView({ item }: { item: Item }) {
+export function QuizView({ item, review }: { item: Item; review?: boolean }) {
   const db = useDB()
   const parsed = useMemo(() => parseQuiz(item.content), [item.content])
+  const questions = useMemo<SQ[]>(() => parsed.questions.map(q => ({ ...q, src: item.id })), [parsed, item.id])
   const progress = getProgress(db, item.id)
-  const [session, setSession] = useState<Session | null>(null)
-  const [outcome, setOutcome] = useState<Outcome | null>(null)
-
-  const start = (s: Omit<Session, 'id'>) => {
-    setOutcome(null)
-    setSession({ ...s, id: Date.now() })
-  }
-  if (parsed.questions.length === 0) {
+  const ctx: QuizCtx = { historyId: item.id, courseId: item.courseId, title: item.title }
+  if (questions.length === 0) {
     return <EmptyState title="這份題庫沒有可用的題目" description={'格式：\n1. 題目\n(A)選項\n(B)選項\n答案: A\n解析: （可留空）\n按「編輯」補上內容。'} />
   }
-  if (session) {
-    return <Runner key={session.id} item={item} session={session} onExit={() => setSession(null)} onFinish={o => (setOutcome(o), setSession(null))} />
-  }
-  if (outcome) {
-    return <Result item={item} outcome={outcome} onHome={() => setOutcome(null)} onRetry={qs => start({ mode: 'practice', questions: qs, shuffleOpts: false, limitSec: 0 })} />
-  }
   return (
-    <>
-      {parsed.skipped > 0 && <p className="form-error" role="alert">有 {parsed.skipped} 題格式不完整，已略過。</p>}
-      <Home item={item} questions={parsed.questions} progress={progress} onStart={start} />
-    </>
+    <QuizSession ctx={ctx}>
+      {start => (
+        <>
+          {parsed.skipped > 0 && <p className="form-error" role="alert">有 {parsed.skipped} 題格式不完整，已略過。</p>}
+          <Home item={item} questions={questions} progress={progress} onStart={start} initialDue={review} />
+        </>
+      )}
+    </QuizSession>
   )
 }

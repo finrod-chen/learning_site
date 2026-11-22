@@ -15,6 +15,7 @@ import { Home } from '@/views/Home'
 import { Course } from '@/views/Course'
 import { ItemView } from '@/views/Viewers'
 import { Editor } from '@/views/Editor'
+import { InsightsPage, MixedQuizPage } from '@/views/QuizHub'
 
 function SyncBadge({ onAuth }: { onAuth: () => void }) {
   const s = useSync()
@@ -42,9 +43,11 @@ function Router({ path }: { path: string }) {
     const section = seg[2] ?? 'notes'
     const type = ROUTE_TYPE[section] ?? 'note'
     if (type === 'audio') return <Course courseId={cid} section={section} />
+    if (type === 'quiz' && seg[3] === 'mixed') return <MixedQuizPage courseId={cid} />
+    if (type === 'quiz' && seg[3] === 'insights') return <InsightsPage courseId={cid} />
     if (seg[3] === 'new') return <Editor key={`new-${cid}-${section}`} courseId={cid} type={type} />
     if (seg[3] && seg[4] === 'edit') return <Editor key={seg[3]} courseId={cid} type={type} itemId={seg[3]} />
-    if (seg[3]) return <ItemView key={seg[3]} courseId={cid} itemId={seg[3]} />
+    if (seg[3]) return <ItemView key={seg[3]} courseId={cid} itemId={seg[3]} review={seg[4] === 'review'} />
     return <Course courseId={cid} section={section} />
   }
   return <Home />

@@ -5,13 +5,17 @@ import { PromptDialog } from '@/ui/Dialogs'
 import { CourseMenu } from '@/ui/Menus'
 import { EmptyState } from '@/ui/EmptyState'
 import { createCourse, listCourses, listItems, useDB } from '@/lib/store'
+import { todaySummary } from '@/lib/review'
 import { formatTime } from '@/lib/md'
 import { go, href } from '@/lib/router'
+import { describeDays, listCountdowns } from '@/lib/countdown'
 import { toast } from '@/ui/toaster'
 
 export function Home() {
   const db = useDB()
   const courses = listCourses(db)
+  const review = todaySummary(db)
+  const reviewTotal = review.reduce((a, r) => a + r.due + r.fresh, 0)
   const [creating, setCreating] = useState(false)
   return (
     <section className="page">
@@ -25,6 +29,25 @@ export function Home() {
         </Button>
       </header>
 
+      {review.length > 0 && (
+        <section className="review-card" aria-labelledby="review-h">
+          <h2 id="review-h" className="quiz-h">今日複習　<span className="muted">共 {reviewTotal} 項</span></h2>
+          <ul className="review-list">
+            {review.map(r => (
+              <li key={r.itemId} className="review-row">
+                <span className="review-text">
+                  <span className="file-title">{r.title}</span>
+                  <span className="file-meta">
+                    {r.courseName} · {r.kind === 'flashcards' ? `${r.due} 張到期${r.fresh ? `、${r.fresh} 張新卡` : ''}` : `${r.due} 題錯題到期`}
+                  </span>
+                </span>
+                <Button variant="secondary" size="sm" onClick={() => go(r.path)}>開始複習</Button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {courses.length === 0 ? (
         <EmptyState
           title="還沒有課程"
@@ -37,6 +60,7 @@ export function Home() {
             const items = listItems(db, c.id)
             const n = (t: string) => items.filter(i => i.type === t).length
             const last = items[0]?.updatedAt ?? c.updatedAt
+            const next = listCountdowns(db, c.id).find(x => x.days >= 0)
             return (
               <li key={c.id} className="course-card">
                 <a className="course-link" href={href(`/c/${c.id}/notes`)}>
@@ -46,6 +70,7 @@ export function Home() {
                 <p className="course-meta">
                   筆記 <b>{n('note')}</b> · 心智圖 <b>{n('mindmap')}</b> · 快閃卡 <b>{n('flashcards')}</b> · 題庫 <b>{n('quiz')}</b> · 有聲書 <b>{n('audio')}</b>
                 </p>
+                {next && <p className="course-next">{next.name} · {describeDays(next.days).text}</p>}
                 <div className="course-foot">
                   <span className="muted">更新 {formatTime(last)}</span>
                   <CourseMenu course={c} />
