@@ -154,16 +154,18 @@ export function deleteItem(id: string) {
   commit({ ...db, items: { ...db.items, [id]: { ...it, deleted: true, content: '', updatedAt: stamp(it.updatedAt) } } }, ['i:' + id])
 }
 
-/* ---------- quiz progress ---------- */
-export const emptyProgress = (): QuizProgress => ({ stats: {}, marks: [], history: [] })
-export const getProgress = (d: DB, quizId: string): QuizProgress => d.progress[quizId]?.data ?? emptyProgress()
+/* ---------- small synced documents (quiz progress, SRS, countdowns) ---------- */
+export const getDoc = <T>(d: DB, id: string): T | undefined => d.progress[id]?.data as T | undefined
 
-export function updateProgress(quizId: string, fn: (p: QuizProgress) => QuizProgress) {
-  const cur = db.progress[quizId]
-  const data = fn(cur?.data ?? emptyProgress())
-  const rec: Progress = { id: quizId, updatedAt: stamp(cur?.updatedAt), data }
-  commit({ ...db, progress: { ...db.progress, [quizId]: rec } }, ['p:' + quizId])
+export function putDoc<T>(id: string, fn: (prev: T | undefined) => T) {
+  const cur = db.progress[id]
+  const rec: Progress = { id, updatedAt: stamp(cur?.updatedAt), data: fn(cur?.data as T | undefined) }
+  commit({ ...db, progress: { ...db.progress, [id]: rec } }, ['p:' + id])
 }
+
+export const emptyProgress = (): QuizProgress => ({ stats: {}, marks: [], history: [] })
+export const getProgress = (d: DB, quizId: string): QuizProgress => getDoc<QuizProgress>(d, quizId) ?? emptyProgress()
+export const updateProgress = (quizId: string, fn: (p: QuizProgress) => QuizProgress) => putDoc<QuizProgress>(quizId, prev => fn(prev ?? emptyProgress()))
 
 /* ---------- sync with Workers KV ---------- */
 export type SyncState = 'idle' | 'syncing' | 'synced' | 'offline' | 'error' | 'auth'
