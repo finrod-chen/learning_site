@@ -1,25 +1,28 @@
 import { useState } from 'react'
-import { ArrowLeft, FileText, Headphones, Layers, Network, Plus, Upload } from 'lucide-react'
+import { ArrowLeft, FileText, Headphones, Layers, ListChecks, Network, Plus, Upload } from 'lucide-react'
 import { Button } from '@/components/arc/button/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/arc/tabs/tabs'
 import { CourseMenu, ItemMenu } from '@/ui/Menus'
 import { EmptyState } from '@/ui/EmptyState'
 import { listItems, useDB } from '@/lib/store'
 import { countNodes, formatTime, parseFlashcards } from '@/lib/md'
+import { parseQuiz } from '@/lib/quiz'
 import { go, href } from '@/lib/router'
 import { ALL_TYPES, ROUTE_TYPE, TYPE_LABEL, TYPE_ROUTE, type Item, type ItemType } from '@/lib/types'
 import { AudioList, UploadDialog } from './Audio'
 
-const ICON = { note: FileText, mindmap: Network, flashcards: Layers, audio: Headphones }
+const ICON = { note: FileText, mindmap: Network, flashcards: Layers, quiz: ListChecks, audio: Headphones }
 const HINT: Record<ItemType, string> = {
   note: '用 Markdown 寫下重點、整理概念。',
   mindmap: '用標題與清單縮排，自動畫成心智圖。',
   flashcards: '每行一張卡：問題 :: 答案。',
+  quiz: '貼上考古題：每題 1. 題目、(A)～(D) 選項、答案: C。',
   audio: '上傳 mp3 等音檔，直接在這裡播放。',
 }
 
 function meta(it: Item): string {
   if (it.type === 'flashcards') return `${parseFlashcards(it.content).cards.length} 張卡片`
+  if (it.type === 'quiz') return `${parseQuiz(it.content).questions.length} 題`
   if (it.type === 'mindmap') return `${countNodes(it.content)} 個節點`
   return `${it.content.replace(/\s/g, '').length} 字`
 }
@@ -28,6 +31,7 @@ function FileList({ courseId, type, onUpload }: { courseId: string; type: ItemTy
   const db = useDB()
   if (type === 'audio') return <AudioList courseId={courseId} onUpload={onUpload} />
   const items = listItems(db, courseId, type)
+  if (type === 'quiz') items.sort((a, b) => a.title.localeCompare(b.title, 'zh-Hant', { numeric: true }))
   const Icon = ICON[type]
   if (items.length === 0) {
     return (

@@ -1,13 +1,14 @@
 import { useSyncExternalStore } from 'react'
-import type { Course, DB, Item, ItemType } from './types'
-import { seedCourse, seedItems } from './seed'
+import type { Course, DB, Item, ItemType, Progress, QuizProgress } from './types'
+import { seedCourse, seedItems, V1_SEED_IDS } from './seed'
 
 const DB_KEY = 'jn:db:v1'
 const DIRTY_KEY = 'jn:dirty:v1'
-const SEEDED_KEY = 'jn:seeded:v1'
+const SEEDED_V1 = 'jn:seeded:v1'
+const SEEDED_KEY = 'jn:seeded:v2'
 const TOKEN_KEY = 'jn:token'
 
-const empty = (): DB => ({ courses: {}, items: {} })
+const empty = (): DB => ({ courses: {}, items: {}, progress: {} })
 
 function read<T>(key: string, fallback: T): T {
   try {
@@ -25,28 +26,33 @@ function write(key: string, value: unknown) {
   }
 }
 
-let db: DB = read<DB>(DB_KEY, empty())
+let db: DB = { ...empty(), ...read<Partial<DB>>(DB_KEY, {}) }
 let dirty: Set<string> = new Set(read<string[]>(DIRTY_KEY, []))
 const listeners = new Set<() => void>()
 
+/** Adds built-in seed items once per id, so new seeds reach existing users without touching their edits. */
 function seedOnce() {
-  let seeded = false
+  let applied: string[] = read<string[]>(SEEDED_KEY, [])
   try {
-    seeded = localStorage.getItem(SEEDED_KEY) === '1'
+    if (applied.length === 0 && localStorage.getItem(SEEDED_V1) === '1') applied = V1_SEED_IDS
   } catch {
     /* ignore */
   }
-  if (seeded) return
-  const next: DB = { courses: { ...db.courses }, items: { ...db.items } }
-  if (!next.courses[seedCourse.id]) next.courses[seedCourse.id] = seedCourse
-  for (const it of seedItems) if (!next.items[it.id]) next.items[it.id] = it
+  const done = new Set(applied)
+  const next: DB = { courses: { ...db.courses }, items: { ...db.items }, progress: { ...db.progress } }
+  if (!done.has(seedCourse.id)) {
+    if (!next.courses[seedCourse.id]) next.courses[seedCourse.id] = seedCourse
+    done.add(seedCourse.id)
+  }
+  const courseGone = next.courses[seedCourse.id]?.deleted
+  for (const it of seedItems) {
+    if (done.has(it.id)) continue
+    if (!courseGone && !next.items[it.id]) next.items[it.id] = it
+    done.add(it.id)
+  }
   db = next
   write(DB_KEY, db)
-  try {
-    localStorage.setItem(SEEDED_KEY, '1')
-  } catch {
-    /* ignore */
-  }
+  write(SEEDED_KEY, [...done])
 }
 seedOnce()
 
@@ -124,7 +130,7 @@ export function deleteCourse(id: string) {
       keys.push('i:' + it.id)
     }
   }
-  commit({ courses, items }, keys)
+  commit({ ...db, courses, items }, keys)
 }
 
 export function createItem(input: { courseId: string; type: ItemType; title: string; content: string }): Item {
@@ -146,6 +152,17 @@ export function deleteItem(id: string) {
   const it = db.items[id]
   if (!it) return
   commit({ ...db, items: { ...db.items, [id]: { ...it, deleted: true, content: '', updatedAt: stamp(it.updatedAt) } } }, ['i:' + id])
+}
+
+/* ---------- quiz progress ---------- */
+export const emptyProgress = (): QuizProgress => ({ stats: {}, marks: [], history: [] })
+export const getProgress = (d: DB, quizId: string): QuizProgress => d.progress[quizId]?.data ?? emptyProgress()
+
+export function updateProgress(quizId: string, fn: (p: QuizProgress) => QuizProgress) {
+  const cur = db.progress[quizId]
+  const data = fn(cur?.data ?? emptyProgress())
+  const rec: Progress = { id: quizId, updatedAt: stamp(cur?.updatedAt), data }
+  commit({ ...db, progress: { ...db.progress, [quizId]: rec } }, ['p:' + quizId])
 }
 
 /* ---------- sync with Workers KV ---------- */
@@ -198,6 +215,7 @@ function scheduleSync() {
 interface Remote {
   courses: Course[]
   items: Item[]
+  progress?: Progress[]
 }
 
 export async function syncNow(): Promise<void> {
@@ -211,17 +229,19 @@ export async function syncNow(): Promise<void> {
   const sent = new Map<string, number>()
   const courses: Course[] = []
   const items: Item[] = []
+  const progress: Progress[] = []
   for (const k of dirty) {
     const id = k.slice(2)
     if (k[0] === 'c' && db.courses[id]) (courses.push(db.courses[id]), sent.set(k, db.courses[id].updatedAt))
     else if (k[0] === 'i' && db.items[id]) (items.push(db.items[id]), sent.set(k, db.items[id].updatedAt))
+    else if (k[0] === 'p' && db.progress[id]) (progress.push(db.progress[id]), sent.set(k, db.progress[id].updatedAt))
     else dirty.delete(k)
   }
   try {
     const headers: Record<string, string> = { 'content-type': 'application/json' }
     const token = getToken()
     if (token) headers['x-sync-token'] = token
-    const payload = JSON.stringify({ courses, items })
+    const payload = JSON.stringify({ courses, items, progress })
     // keepalive lets a final push survive the tab closing (the browser caps it at 64 KB)
     const res = await fetch('/api/sync', { method: 'POST', headers, body: payload, keepalive: payload.length < 60000 })
     if (res.status === 401) {
@@ -230,7 +250,11 @@ export async function syncNow(): Promise<void> {
     }
     if (!res.ok) throw new Error(String(res.status))
     const remote = (await res.json()) as Remote
-    const next: DB = { courses: { ...db.courses }, items: { ...db.items } }
+    const next: DB = { courses: { ...db.courses }, items: { ...db.items }, progress: { ...db.progress } }
+    for (const r of remote.progress ?? []) {
+      const cur = next.progress[r.id]
+      if (!cur || r.updatedAt > cur.updatedAt) next.progress[r.id] = r
+    }
     for (const r of remote.courses) {
       const cur = next.courses[r.id]
       if (!cur || r.updatedAt > cur.updatedAt) next.courses[r.id] = r
@@ -240,7 +264,7 @@ export async function syncNow(): Promise<void> {
       if (!cur || r.updatedAt > cur.updatedAt) next.items[r.id] = r
     }
     for (const [k, ts] of sent) {
-      const cur = k[0] === 'c' ? next.courses[k.slice(2)] : next.items[k.slice(2)]
+      const cur = k[0] === 'c' ? next.courses[k.slice(2)] : k[0] === 'p' ? next.progress[k.slice(2)] : next.items[k.slice(2)]
       if (cur && cur.updatedAt === ts) dirty.delete(k)
     }
     db = next

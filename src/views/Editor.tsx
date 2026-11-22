@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/ui/Dialogs'
 import { EmptyState } from '@/ui/EmptyState'
 import { toast } from '@/ui/toaster'
 import { countNodes, parseFlashcards, renderInline } from '@/lib/md'
+import { parseQuiz } from '@/lib/quiz'
 import { createItem, updateItem, useDB } from '@/lib/store'
 import { go } from '@/lib/router'
 import { TYPE_LABEL, TYPE_ROUTE, type TextType as ItemType } from '@/lib/types'
@@ -19,10 +20,14 @@ const PLACEHOLDER: Record<ItemType, string> = {
   note: '# 標題\n\n用 Markdown 寫筆記。\n\n- 重點一\n- 重點二',
   mindmap: '# 主題\n## 分支一\n- 重點 A\n  - 細節\n## 分支二\n- 重點 B',
   flashcards: '#flashcards/標籤\n問題一 :: 答案一\n問題二 :: 答案二',
+  quiz: '#quiz/標籤\n1. 題目內容\n(A)選項一\n(B)選項二\n(C)選項三\n(D)選項四\n答案: C\n解析: 這裡寫解析（可留空）',
 }
+
+const TEXT_TYPES: ItemType[] = ['note', 'mindmap', 'flashcards', 'quiz']
 
 function Preview({ as, md }: { as: ItemType; md: string }) {
   const deck = useMemo(() => (as === 'flashcards' ? parseFlashcards(md) : null), [as, md])
+  const quiz = useMemo(() => (as === 'quiz' ? parseQuiz(md) : null), [as, md])
   if (!md.trim()) {
     return <EmptyState title="預覽會顯示在這裡" description={`${TYPE_LABEL[as]}格式範例：\n${PLACEHOLDER[as]}`} />
   }
@@ -33,6 +38,25 @@ function Preview({ as, md }: { as: ItemType; md: string }) {
         <Suspense fallback={<Skeleton label="載入心智圖" lines={5} />}>
           <MindmapCanvas md={md} level={0} />
         </Suspense>
+      </div>
+    )
+  if (as === 'quiz' && quiz)
+    return (
+      <div className="fc-preview">
+        <div className="fc-top">
+          {quiz.tags.map(t => (
+            <Badge key={t} tone="info" size="sm">{t.replace(/^#/, '')}</Badge>
+          ))}
+          <span className="muted">{quiz.questions.length} 題{quiz.skipped ? `，${quiz.skipped} 題格式不完整已略過` : ''}</span>
+        </div>
+        <ul className="fc-list">
+          {quiz.questions.slice(0, 100).map(q => (
+            <li key={q.key} className="fc-item">
+              <div className="fc-q">{q.n}. {q.stem.split('\n')[0]}</div>
+              <div className="fc-a">答案：({q.answer}) {q.options.find(o => o.k === q.answer)?.text}</div>
+            </li>
+          ))}
+        </ul>
       </div>
     )
   return (
@@ -83,6 +107,7 @@ export function Editor({ courseId, type, itemId }: { courseId: string; type: Ite
   function save(target: ItemType) {
     if (!title.trim()) return setError('請先替這份內容取個名稱。')
     if (target === 'flashcards' && parseFlashcards(content).cards.length === 0) return setError('快閃卡至少需要一行「問題 :: 答案」。')
+    if (target === 'quiz' && parseQuiz(content).questions.length === 0) return setError('題庫至少需要一題：1. 題目、(A)(B) 選項與「答案: X」。')
     if (target === 'mindmap' && countNodes(content) === 0) return setError('心智圖至少需要一個標題（#）或清單項目（-）。')
     setError('')
     saved.current = true
@@ -117,7 +142,7 @@ export function Editor({ courseId, type, itemId }: { courseId: string; type: Ite
   }
 
   const backPath = existing ? `/c/${courseId}/${TYPE_ROUTE[existing.type]}/${existing.id}` : `/c/${courseId}/${TYPE_ROUTE[type]}`
-  const others = (['note', 'mindmap', 'flashcards'] as ItemType[]).filter(t => t !== home)
+  const others = TEXT_TYPES.filter(t => t !== home)
 
   return (
     <section className="page editor">
@@ -144,7 +169,7 @@ export function Editor({ courseId, type, itemId }: { courseId: string; type: Ite
           label="預覽方式"
           value={previewAs}
           onValueChange={v => setPreviewAs(v as ItemType)}
-          options={(['note', 'mindmap', 'flashcards'] as ItemType[]).map(t => ({ value: t, label: TYPE_LABEL[t] }))}
+          options={TEXT_TYPES.map(t => ({ value: t, label: TYPE_LABEL[t] }))}
         />
       </div>
 
