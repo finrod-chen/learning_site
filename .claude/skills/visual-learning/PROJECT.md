@@ -5,7 +5,8 @@
 
 ## 交付格式
 - **單一、自給自足的 HTML 檔**（不需要 build）。大小請控制在 **500 KB 以內**（App 與 KV 的內容上限是 600 KB）。
-- 檔案放在 `visuals/<主題>-walkthrough.html` 或 `visuals/<主題>-explorer.html`；有導覽動畫與探索頁時，兩者以相對連結互相指向。
+- 一個主題一個檔案：`visuals/<主題>.html`。導覽動畫與動手試（explorer）放在同一檔，用頁首的模式切換按鈕切換。App 以 iframe `srcDoc` 載入，相對連結無法使用，所以不要拆成兩個檔案。
+- 版面要在 375px 寬度可讀：窄螢幕時加大 SVG 文字，或改用較窄的 viewBox。
 - 在 App 內是用 `<iframe sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox">` 顯示：
   - 沒有 `allow-same-origin`，頁面不能讀取 App 的資料或 cookie，也不能呼叫 App 的 API。
   - 不要依賴 `localStorage`、`document.cookie`、`fetch` 到本站、`window.top`、表單送出。
