@@ -415,7 +415,15 @@ window.addEventListener('resize', () => mode === 'ex' && renderEx());
 const TTS = 'speechSynthesis' in window ? window.speechSynthesis : null;
 let narrOn = false, spokenBeat = -1, autoNext = false;
 const SAY = s => s.replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂e/g, '二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/≥/g, '至少').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/[（(][A-Za-z0-9 .,\/'’\-]*[）)]/g, '');
-function voice() { const v = TTS.getVoices(); return v.find(x => /zh[-_]TW/i.test(x.lang)) || v.find(x => /^zh/i.test(x.lang)) || null; }
+// 優先順序：曉臻（Microsoft Edge 的自然語音）→ 美佳增強／高品質版 → 美佳 → 其他台灣中文 → 其他中文
+function voice() {
+  const v = TTS.getVoices(), tw = v.filter(x => /zh[-_]TW/i.test(x.lang)), mj = tw.filter(x => /Meijia|美佳/i.test(x.name));
+  return v.find(x => /HsiaoChen|曉臻|晓臻/i.test(x.name)) || mj.find(x => /enhanced|premium|增強|高品質|優化/i.test(x.name)) || mj[0] || tw[0] || v.find(x => /^zh/i.test(x.lang)) || null;
+}
+const ZH_NAME = { HsiaoChen: '曉臻', HsiaoYu: '曉雨', YunJhe: '雲哲', Yating: '雅婷', Hanhan: '涵涵', Zhiwei: '志瑋', Meijia: '美佳', Tingting: '婷婷', 'Sin-ji': '善怡' };
+const voiceName = () => { const v = TTS && voice(); if (!v) return ''; const k = Object.keys(ZH_NAME).find(n => v.name.includes(n)); return k ? ZH_NAME[k] + (/enhanced|premium|增強|高品質/i.test(v.name) ? '・高品質' : '') : v.name.replace(/^Microsoft\s+/i, '').replace(/\s*\(.*$|\s+-\s+.*$/, ''); };
+function narrLabel() { $('narr').textContent = narrOn ? `🔊 旁白：開${voiceName() ? '（' + voiceName() + '）' : ''}` : '🔈 旁白：關'; }
+if (TTS && 'onvoiceschanged' in TTS) TTS.onvoiceschanged = () => narrOn && narrLabel();
 let curU = null, speechErr = '';
 // iOS／Safari：第一次朗讀必須在點擊當下呼叫；保留 utterance 參照，避免被回收而中斷。
 function speak(i) {
@@ -430,7 +438,7 @@ function speak(i) {
 if (!TTS) $('narr').hidden = true;
 $('narr').onclick = () => {
   narrOn = !narrOn; $('narr').classList.toggle('on', narrOn); $('narr').setAttribute('aria-pressed', narrOn);
-  $('narr').textContent = narrOn ? '🔊 旁白：開' : '🔈 旁白：關';
+  narrLabel();
   if (!narrOn) { TTS.cancel(); autoNext = false; speechErr = ''; capKey = ''; } else { speak(beatAt(t)); if (!playing) setPlaying(true); }
 };
 function narrTick() {
