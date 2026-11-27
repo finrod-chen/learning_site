@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>產品碳足跡與生命週期</title>
+<!-- 單一檔案：導覽動畫（walkthrough）+ 動手試（explorer）。依 visual-learning skill 製作。 -->
+<style>
+  :root { --bg:oklch(.97 0 0); --surface:oklch(.994 0 0); --sunk:oklch(0 0 0 / .04);
+          --text:oklch(.097 0 0); --text2:oklch(.097 0 0 / .7); --muted:oklch(.097 0 0 / .45);
+          --border:oklch(0 0 0 / .07); --border-strong:oklch(0 0 0 / .13); --border-emph:oklch(0 0 0 / .3);
+          --accent:oklch(.097 0 0); --on-accent:oklch(.994 0 0); --track:oklch(0 0 0 / .08);
+          --gray-fill:#F5F5F5; --gray-stroke:#737373; --purple-fill:#EEEDFE; --purple-stroke:#534AB7; --purple-text:#3C3489;
+          --coral-fill:#FAECE7; --coral-stroke:#C0472B; --coral-text:#7A2A16; --teal-fill:#E1F5EE; --teal-stroke:#0F8F6B; --teal-text:#085041;
+          --shadow-m:0 4px 6px -2px oklch(0 0 0 / .025), 0 2px 2px -2px oklch(0 0 0 / .05);
+          --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .08), 0 16px 32px -6px oklch(0 0 0 / .12); color-scheme:light; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:oklch(.145 0 0); --surface:oklch(.205 0 0); --sunk:oklch(.994 0 0 / .05);
+    --text:oklch(.985 0 0); --text2:oklch(.985 0 0 / .72); --muted:oklch(.985 0 0 / .45);
+    --border:oklch(.994 0 0 / .07); --border-strong:oklch(.994 0 0 / .13); --border-emph:oklch(.994 0 0 / .4);
+    --accent:oklch(.994 0 0); --on-accent:oklch(.097 0 0); --track:oklch(.994 0 0 / .1);
+    --gray-fill:#262626; --gray-stroke:#A1A1A1; --purple-fill:#3C3489; --purple-stroke:#AFA9EC; --purple-text:#CECBF6;
+    --coral-fill:#5A2414; --coral-stroke:#F0997B; --coral-text:#F7C9BA; --teal-fill:#06403A; --teal-stroke:#5DCAA5; --teal-text:#9FE1CB;
+    --shadow-m:0 4px 6px -2px oklch(0 0 0 / .08); --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .2); color-scheme:dark; } }
+  :root[data-theme="dark"] { --bg:oklch(.145 0 0); --surface:oklch(.205 0 0); --sunk:oklch(.994 0 0 / .05);
+    --text:oklch(.985 0 0); --text2:oklch(.985 0 0 / .72); --muted:oklch(.985 0 0 / .45);
+    --border:oklch(.994 0 0 / .07); --border-strong:oklch(.994 0 0 / .13); --border-emph:oklch(.994 0 0 / .4);
+    --accent:oklch(.994 0 0); --on-accent:oklch(.097 0 0); --track:oklch(.994 0 0 / .1);
+    --gray-fill:#262626; --gray-stroke:#A1A1A1; --purple-fill:#3C3489; --purple-stroke:#AFA9EC; --purple-text:#CECBF6;
+    --coral-fill:#5A2414; --coral-stroke:#F0997B; --coral-text:#F7C9BA; --teal-fill:#06403A; --teal-stroke:#5DCAA5; --teal-text:#9FE1CB;
+    --shadow-m:0 4px 6px -2px oklch(0 0 0 / .08); --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .2); color-scheme:dark; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:500 16px/1.55 system-ui,-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; }
+  main { position:relative; max-width:760px; margin:0 auto; padding:20px 14px 32px; }
+  h1 { font-size:22px; font-weight:700; line-height:1.2; margin:0 0 4px; }
+  .sub { color:var(--text2); font-size:14px; margin:0 0 14px; }
+  #modes { display:inline-flex; gap:4px; padding:4px; background:var(--sunk); border-radius:12px; margin-bottom:14px; }
+  #modes button { border-color:transparent; background:transparent; box-shadow:none; color:var(--text2); }
+  #modes button.on { background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:var(--shadow-m); }
+  svg { display:block; width:100%; height:auto; background:var(--surface); border:1px solid var(--border); border-radius:16px; }
+  #wsvg { border-bottom:none; border-radius:16px 16px 0 0; }
+  svg text { font-family:inherit; }
+  .tm { font-size:13px; font-weight:500; fill:var(--text); } .th { font-size:14px; font-weight:700; fill:var(--text); } .ts { font-size:12px; font-weight:500; fill:var(--text2); }
+  .frame { fill:none; stroke:var(--border-emph); } .arr { stroke:var(--muted); stroke-width:1.2; fill:none; }
+  .hl { fill:none; stroke:#EF9F27; stroke-width:2.2; }
+  .c-gray>rect { fill:var(--gray-fill); stroke:var(--gray-stroke); } .c-gray>.tm { }
+  .c-purple>rect { fill:var(--purple-fill); stroke:var(--purple-stroke); } .c-purple>.tm { fill:var(--purple-text); }
+  .c-coral>rect { fill:var(--coral-fill); stroke:var(--coral-stroke); } .c-coral>.tm { fill:var(--coral-text); }
+  .c-teal>rect { fill:var(--teal-fill); stroke:var(--teal-stroke); } .c-teal>.tm { fill:var(--teal-text); }
+  #cap { background:var(--surface); border:1px solid var(--border); border-radius:0 0 16px 16px; padding:14px 18px 14px; min-height:118px; }
+  #capch { display:inline-block; font-size:12px; font-weight:600; color:var(--text2); background:var(--sunk); border-radius:999px; padding:2px 10px; }
+  #captext { font-size:16px; margin:8px 0 2px; } #caphint { font-size:13px; color:var(--text2); min-height:18px; }
+  .prow { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  button, select { font:inherit; font-size:14px; font-weight:500; line-height:20px; color:var(--text); background:var(--surface); border:1px solid var(--border-strong); border-radius:10px; padding:6px 14px; cursor:pointer; box-shadow:var(--shadow-m); }
+  button:hover, select:hover { background:var(--sunk); box-shadow:none; }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline:2px solid #EF9F27; outline-offset:2px; }
+  #play { background:var(--accent); color:var(--on-accent); border-color:transparent; min-width:96px; } #play:hover { opacity:.8; }
+  #time { font-size:13px; color:var(--text2); margin-left:auto; font-variant-numeric:tabular-nums; }
+  #scrub { position:relative; height:28px; margin:12px 0 8px; cursor:pointer; touch-action:none; }
+  #scrub .track, #scrub .fill { position:absolute; top:11px; height:6px; border-radius:999px; left:0; }
+  #scrub .track { right:0; background:var(--track); } #scrub .fill { background:var(--accent); }
+  #scrub .tick { position:absolute; top:8px; width:2px; height:12px; margin-left:-1px; border-radius:1px; background:var(--muted); }
+  #scrub .knob { position:absolute; top:5px; width:18px; height:18px; margin-left:-9px; border-radius:50%; background:var(--surface); border:1px solid var(--border-emph); box-shadow:var(--shadow-m); }
+  #chips { display:inline-flex; flex-wrap:wrap; gap:4px; margin-top:10px; padding:4px; background:var(--sunk); border-radius:12px; }
+  #chips button { border-color:transparent; background:transparent; box-shadow:none; color:var(--text2); padding:5px 10px; }
+  #chips button.on { background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:var(--shadow-m); }
+  .panel { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px 18px; margin-top:14px; }
+  .ctl { display:grid; grid-template-columns:1fr; gap:10px; }
+  .ctl label { display:grid; grid-template-columns:150px 1fr 120px; gap:10px; align-items:center; font-size:14px; }
+  .ctl output { font-variant-numeric:tabular-nums; text-align:right; font-size:14px; }
+  input[type=range] { width:100%; accent-color:var(--purple-stroke); }
+  .grp { font-size:12px; font-weight:600; color:var(--text2); margin:6px 0 0; }
+  #ex-note { font-size:14px; color:var(--text2); margin:10px 0 0; }
+  .res { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-top:12px; }
+  .res div { background:var(--sunk); border-radius:12px; padding:8px 12px; }
+  .res b { display:block; font-size:20px; font-variant-numeric:tabular-nums; } .res span { font-size:12px; color:var(--text2); }
+  .sources { font-size:14px; color:var(--text2); background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:4px 18px; margin-top:18px; }
+  .sources b { color:var(--text); font-weight:600; } .sources ol, .sources ul { padding-left:20px; }
+  .sources a { color:var(--text); text-decoration:underline; text-decoration-color:var(--border-emph); text-underline-offset:3px; }
+  #tip { position:absolute; display:none; max-width:270px; padding:8px 12px; font-size:13px; line-height:1.45; background:var(--surface); border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow-xl); pointer-events:none; z-index:5; }
+  [hidden] { display:none !important; }
+  @media (max-width:560px) { #wsvg .tm { font-size:18px; } #wsvg .ts { font-size:16px; } #wsvg .th { font-size:19px; } .res { grid-template-columns:1fr 1fr; } .tm { font-size:15px; } .ts { font-size:14px; } .th { font-size:16px; } .ctl label { grid-template-columns:1fr 120px; } .ctl label input { grid-column:1 / -1; grid-row:2; } .ctl label span:first-child { grid-row:1; } .ctl output { grid-row:1; grid-column:2; } }
+
+  #narr.on { background:var(--purple-fill); color:var(--purple-text); border-color:var(--purple-stroke); }
+  .seg { display:inline-flex; gap:4px; padding:4px; background:var(--sunk); border-radius:12px; flex-wrap:wrap; }
+  .seg button { border-color:transparent; background:transparent; box-shadow:none; color:var(--text2); padding:5px 12px; }
+  .seg button.on { background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:var(--shadow-m); }
+  .ops { display:grid; gap:10px; margin-top:12px; }
+  .op { display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; gap:8px; align-items:center; font-size:14px; background:var(--sunk); border-radius:12px; padding:8px 12px; }
+  .op b { font-weight:600; } .op small { display:block; color:var(--text2); font-size:12px; }
+  .op label { display:grid; gap:2px; font-size:12px; color:var(--text2); }
+  .op select { font-size:13px; padding:4px 8px; }
+  h2 { font-size:17px; font-weight:700; margin:0 0 8px; }
+  .quiz-card { font-size:17px; font-weight:600; margin:10px 0; }
+  #qfb { font-size:14px; min-height:44px; color:var(--text2); }
+  #qfb .ok { color:var(--teal-stroke); font-weight:600; } #qfb .no { color:var(--coral-stroke); font-weight:600; }
+  .ops { display:grid; gap:10px; margin-top:12px; }
+  .op { display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; gap:8px; align-items:center; font-size:14px; background:var(--sunk); border-radius:12px; padding:8px 12px; }
+  .op b { font-weight:600; } .op small { display:block; color:var(--text2); font-size:12px; }
+  .op label { display:grid; gap:2px; font-size:12px; color:var(--text2); }
+  .op select { font-size:13px; padding:4px 8px; }
+  h2 { font-size:17px; font-weight:700; margin:0 0 8px; }
+  .op select { width:100%; }
+  label.seg { align-items:center; gap:6px; padding:6px 12px; font-size:14px; cursor:pointer; }
+  #d-note { font-size:14px; color:var(--text2); }
+  @media (max-width:560px) { .op { grid-template-columns:1fr 1fr; } .op > div:first-child { grid-column:1 / -1; } }
+</style>
+</head>
+<body>
+<main id="app">
+  <h1>產品碳足跡與生命週期</h1>
+  <p class="sub">一個產品從原料到廢棄，總共排放多少？生命週期階段、功能單位、系統邊界、截斷與分配，以及碳足跡標籤的規定。</p>
+  <div id="modes" role="tablist"><button id="m-walk" class="on" role="tab">導覽動畫</button><button id="m-ex" role="tab">動手試</button></div>
+
+  <section id="walk">
+    <svg id="wsvg" viewBox="0 0 680 360" role="img" aria-label="產品碳足跡導覽動畫"><defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" style="stroke:var(--muted)" stroke-width="1.5"/></marker></defs><g id="dyn"></g></svg>
+    <div id="cap" aria-live="polite"><div id="capch"></div><p id="captext"></p><div id="caphint"></div></div>
+    <div id="scrub" data-tip="拖曳可在動畫中移動。刻度是各章的起點。"><div class="track"></div><div class="fill"></div><div id="ticks"></div><div class="knob"></div></div>
+    <div class="prow"><button id="play">▶ 播放</button><button id="replay">↺ 重播此步</button><button id="next">下一步 ▸</button>
+      <select id="speed" aria-label="播放速度"><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option></select>
+      <button id="narr" aria-pressed="false" data-tip="用裝置內建語音朗讀字幕。開啟後，每步唸完會自動前進。">🔈 旁白：關</button><span id="time"></span></div>
+    <div id="chips"></div>
+  </section>
+
+  <section id="ex" hidden>
+    <div class="panel" style="margin-top:0">
+      <h2>1. 生命週期與系統邊界</h2>
+      <p class="ts" style="font-size:13px;color:var(--text2);margin:0 0 8px">各階段排放都是虛構的練習數字，單位是「每個功能單位」的公斤 CO₂e。</p>
+      <div class="seg" id="prod"></div>
+      <div class="seg" id="bound" style="margin-top:8px"></div>
+      <svg id="lsvg" viewBox="0 0 680 250" role="img" aria-label="生命週期各階段排放" style="margin-top:12px"></svg>
+      <div class="res" id="lres"></div>
+      <p id="l-note"></p>
+    </div>
+    <div class="panel">
+      <h2>2. 分配：一條製程做出兩種產品</h2>
+      <p class="ts" style="font-size:13px;color:var(--text2);margin:0 0 8px">ISO 14067 的分配優先順序：先避免分配，再用物理關係（例如質量），最後才用經濟價值。數字是虛構的。</p>
+      <svg id="asvg" viewBox="0 0 680 170" role="img" aria-label="分配結果"></svg>
+      <div class="ctl" id="actl" style="margin-top:12px"></div>
+      <div class="res" id="ares"></div>
+      <p id="a-note"></p>
+    </div>
+  </section>
+
+  <section class="sources">
+    <p><b>簡化說明：</b>「搖籃到大門」（只算到出廠為止）是一般說明，本頁沒有在可讀取的來源中查證到它的正式定義。LCA 四個階段的名稱，依 iPAS 公告試題中出現的用語整理。動手試的產品與數字都是虛構的，不是任何產品類別規則 (PCR) 的值。</p>
+    <p><b>資料來源</b></p>
+    <ol id="srclist"></ol>
+  </section>
+  <div id="tip"></div>
+</main>
+<script>
+
+
+
+
+
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+const clamp = u => Math.max(0, Math.min(1, u));
+const E = u => { u = clamp(u); return u < .5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2; };
+const seg = (u, a, b) => clamp((u - a) / (b - a));
+
+/* ---------- 場景動作（純函式：只依進度 u） ---------- */
+function add(S, u, id, it) { S[id] = { ...it, op: (it.op ?? 1) * E(u) }; }
+function del(S, u, id) { if (!S[id]) return; if (u >= 1) delete S[id]; else S[id].op *= 1 - E(u); }
+function delAll(S, u, ids) { ids.forEach(id => del(S, u, id)); }
+function mv(S, u, id, to) { const it = S[id]; if (!it) return; for (const [p, v] of Object.entries(to)) { if (typeof v === 'number' && typeof it[p] === 'number') it[p] += (v - it[p]) * E(u); else if (u >= .5) it[p] = v; } }
+function hl(S, u, ...ids) { if (u > 0) ids.forEach(id => S[id] && (S[id].hl = true)); }
+function fly(S, u, id, a, b, fill = '#7F77DD') { if (u <= 0 || u >= 1) { delete S[id]; return; } S[id] = { type: 'dot', x: a[0] + (b[0] - a[0]) * E(u), y: a[1] + (b[1] - a[1]) * E(u), fill, op: 1 }; }
+const box = (x, y, w, h, c, l1, tip, more = {}) => ({ type: 'box', x, y, w, h, c, l1, tip, ...more });
+const text = (x, y, s, c = 'ts', tip) => ({ type: 'text', x, y, s, c, tip });
+const line = (x1, y1, x2, y2, tip) => ({ type: 'arrow', x1, y1, x2, y2, c1x: x1 + (x2 - x1) / 3, c1y: y1 + (y2 - y1) / 3, c2x: x1 + 2 * (x2 - x1) / 3, c2y: y1 + 2 * (y2 - y1) / 3, tip });
+
+/* ---------- 腳本 ---------- */
+const CH = [], BEATS = [];
+const chapter = name => CH.push({ name, beat: BEATS.length });
+const step = (dur, cap, fn, pause = true) => BEATS.push({ dur, cap, fn, pause, ch: CH.length - 1 });
+const ST = ['原料取得', '製造', '配送銷售', '使用', '廢棄處理'];
+
+chapter('1 · 什麼是碳足跡');
+step(10, '產品碳足跡是一個商品或服務，在生命週期各階段產生的溫室氣體排放量，換算成二氧化碳當量 (CO₂e) 後的總和。', (S, u) => {
+  add(S, seg(u, .1, .4), 'p0', box(190, 40, 300, 54, 'purple', '產品碳足跡 = 各階段排放總和', '自願性產品碳足跡核定標示及管理辦法第 2 條。'));
+});
+step(11, '商品的生命週期分成五個階段：原料取得、製造、配送銷售、使用、廢棄處理。服務則是三個階段：原料取得、服務、廢棄處理。', (S, u) => {
+  ST.forEach((n, i) => {
+    add(S, seg(u, .1 + i * .12, .3 + i * .12), 'g' + i, box(20 + i * 132, 140, 116, 54, i === 3 ? 'coral' : 'teal', n, `商品的第 ${i + 1} 個生命週期階段。`));
+    if (i) add(S, seg(u, .1 + i * .12, .3 + i * .12), 'ga' + i, line(i * 132 + 4, 167, i * 132 + 18, 167, '下一階段。'));
+  });
+  add(S, seg(u, .75, 1), 'sv', text(340, 230, '服務：原料取得 → 服務 → 廢棄處理', 'tm', '同條第 2 款第 2 目。'));
+});
+step(10, '哪個階段排放最多，要看產品。像電冰箱、大型空調這類耗電產品，「使用階段」的排放通常占比最高。', (S, u) => {
+  hl(S, u, 'g3');
+  add(S, seg(u, .3, .7), 'us', text(340, 290, '耗電產品：使用階段往往最大', 'th', '115 年第 2 次公告試題第二科第 34 題。'));
+});
+
+chapter('2 · 功能單位與邊界');
+step(11, '要比較兩個產品，得先有共同的基準，這就是「功能單位」：產品生命週期的量化基準。例如「每 1 公升飲料」或「每使用 1 年的冰箱」。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['p0','sv','us']);
+  add(S, seg(u, .3, .6), 'fu', box(140, 40, 400, 54, 'purple', '功能單位：量化與比較的基準', '公告試題：功能單位是產品生命週期的量化基準。'));
+});
+step(12, '系統邊界決定哪些流程算進來。產品研發通常不算；「搖籃到墳墓」也不包括消費者往返賣場購物的交通。另外，原料運到工廠屬於原料取得，不屬於製造階段。', (S, u) => {
+  add(S, seg(u, 0, .3), 'bx', box(14, 124, 652, 82, 'frame', null, '系統邊界：搖籃到墳墓涵蓋五個階段。', { dash: true }));
+  add(S, seg(u, .3, .6), 'x1', text(130, 240, '✕ 產品研發', 'tm', '公告試題：研發通常不納入。'));
+  add(S, seg(u, .4, .7), 'x2', text(400, 240, '✕ 消費者往返賣場的交通', 'tm', '公告試題：搖籃到墳墓通常不納入。'));
+});
+step(11, '只算部分階段的叫「部分碳足跡」(partial CFP)，常見的是算到產品出廠為止，俗稱「搖籃到大門」，多用在企業之間交易的中間產品。', (S, u) => {
+  add(S, seg(u, 0, .4), 'gate', box(14, 120, 270, 90, 'frame', null, '搖籃到大門：只到出廠。', { dash: true }));
+  hl(S, seg(u, .3, 1), 'g0', 'g1');
+  add(S, seg(u, .5, .9), 'gt', text(150, 275, '部分碳足跡（搖籃到大門）', 'th', '一般說明，見簡化說明。'));
+});
+
+chapter('3 · 計算規則');
+step(11, '計算碳足跡要依 ISO 14067，並依環境部公開的「碳足跡產品類別規則」(PCR)。產品已經有適用的 PCR 時，原則上就要照它做，讓同類產品可以比較。', (S, u) => {
+  delAll(S, seg(u, 0, .3), [...ST.map((_, i) => 'g' + i), ...ST.map((_, i) => 'ga' + i), 'fu', 'bx', 'x1', 'x2', 'gate', 'gt']);
+  add(S, seg(u, .3, .55), 'r1', box(60, 60, 260, 54, 'purple', 'ISO 14067', '辦法第 4 條：最新版 ISO 14067。'));
+  add(S, seg(u, .4, .65), 'r2', box(360, 60, 260, 54, 'teal', '碳足跡產品類別規則 (PCR)', '同一類產品用相同的盤查範疇與計算依據。'));
+});
+step(12, '活動資料要在申請核定前兩年內。排放係數可用環境部公開的碳足跡排放係數、國內外生命週期資料庫或自廠係數。GWP 採 100 年的時間範圍。', (S, u) => {
+  [['c1', '活動資料：2 年內'], ['c2', '係數：公開或資料庫'], ['c3', 'GWP：100 年']].forEach(([id, n], i) => add(S, seg(u, .15 + i * .2, .4 + i * .2), id, box(40 + i * 205, 160, 190, 50, 'gray', n, i === 2 ? '公告試題：採 100 年 GWP。' : '辦法第 4 條。')));
+});
+step(12, '排放極小的項目（例如低於 1% 的輔助材料）可依「截斷規則」排除。一條製程同時產出多種產品時，要分配排放：先避免分配，其次物理分配，最後才是經濟分配。', (S, u) => {
+  delAll(S, seg(u, 0, .25), ['c1','c2','c3']);
+  add(S, seg(u, .25, .5), 'cut', box(40, 160, 270, 50, 'coral', '截斷規則：極小項目可排除', '公告試題：低於 1% 的輔助材料可依截斷規則排除。'));
+  add(S, seg(u, .4, .7), 'al', box(330, 160, 310, 50, 'coral', '避免分配 → 物理分配 → 經濟分配', 'ISO 14067 的分配優先順序（公告試題）。'));
+});
+step(11, '電力要特別注意：組織盤查用的電力排碳係數只算發電過程，碳足跡要用涵蓋生命週期的電力係數，所以不能直接拿來用。', (S, u) => {
+  add(S, seg(u, 0, .4), 'el', box(90, 250, 500, 50, 'teal', '碳足跡不直接用組織盤查的電力係數', '公告試題：GHG 係數僅計算發電時的排碳。'));
+});
+
+chapter('4 · 碳足跡標籤');
+step(12, '想用台灣的碳足跡標籤，要上傳盤查清冊、報告書與查驗機構的查驗聲明書，向環境部申請核定。標籤心型圖示裡標示碳足跡數值，四捨五入到整數。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['r1','r2','cut','al','el']);
+  add(S, seg(u, .3, .55), 'l1', box(40, 60, 290, 54, 'purple', '申請：報告書＋查驗聲明書', '辦法第 3、5 條。'));
+  add(S, seg(u, .45, .7), 'l2', box(350, 60, 290, 54, 'teal', '心型標籤內標示數值（取整數）', '辦法第 4、10 條。'));
+});
+step(12, '核定有效期間 2 年，到期前 3 個月起的 1 個月內要申請展延。使用者每年 1 月 31 日、7 月 31 日前申報前半年標籤使用量，相關資料保存 3 年。', (S, u) => {
+  [['l3', '有效期間 2 年', '辦法第 12 條。'], ['l4', '1/31、7/31 申報使用量', '辦法第 14 條。'], ['l5', '資料保存 3 年', '辦法第 16 條。']].forEach(([id, n, tp], i) => add(S, seg(u, .15 + i * .2, .4 + i * .2), id, box(40 + i * 205, 170, 190, 50, 'gray', n, tp)));
+  add(S, seg(u, .8, 1), 'lx', text(340, 260, '產品碳足跡（產品）≠ 組織盤查 ISO 14064-1（組織）', 'tm'));
+});
+
+/* ---------- 時間與繪製 ---------- */
+const SETTLE = .5, EPS = .001;
+let acc = 0; BEATS.forEach(b => { b.t0 = acc; b.t1 = acc + b.dur + SETTLE; acc = b.t1; });
+const TOTAL = acc; CH.forEach(c => c.t0 = BEATS[c.beat].t0);
+function stateAt(t) {
+  const S = {}; let i = 0;
+  for (; i < BEATS.length && t >= BEATS[i].t1; i++) BEATS[i].fn(S, 1);
+  Object.values(S).forEach(it => it.hl = false);
+  if (i >= BEATS.length) i = BEATS.length - 1; else BEATS[i].fn(S, clamp((t - BEATS[i].t0) / BEATS[i].dur));
+  return { S, i };
+}
+const T = (x, y, s, c, a = 'middle') => `<text class="${c}" x="${x}" y="${y}" text-anchor="${a}" dominant-baseline="central">${esc(s)}</text>`;
+function draw(it, now) {
+  const op = clamp(it.op ?? 1); if (op < .01) return '';
+  const tp = it.tip ? ` data-tip="${esc(it.tip)}"` : '', o = ` opacity="${op.toFixed(3)}"`;
+  if (it.type === 'text') return `<g${o}${tp}>${T(it.x, it.y, it.s, it.c)}</g>`;
+  if (it.type === 'dot') return `<circle cx="${it.x}" cy="${it.y}" r="5" fill="${it.fill}"${o}/>`;
+  if (it.type === 'arrow') return `<path class="arr" d="M${it.x1} ${it.y1}C${it.c1x} ${it.c1y} ${it.c2x} ${it.c2y} ${it.x2} ${it.y2}" marker-end="url(#ah)"${o}${tp}/>`;
+  if (it.h < 1 && !it.l1) return '';
+  const fr = it.c === 'frame';
+  let s = `<g class="${fr ? '' : 'c-' + it.c}"${o}${tp}><rect class="${fr ? 'frame' : ''}" x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" rx="${fr ? 10 : 6}" stroke-width="0.8"/>`;
+  if (it.l1) s += T(it.x + it.w / 2, it.y + it.h / 2, it.l1, 'tm');
+  s += '</g>';
+  if (it.hl) s += `<rect class="hl" x="${it.x - 2.5}" y="${it.y - 2.5}" width="${it.w + 5}" height="${it.h + 5}" rx="8" opacity="${(op * (.55 + .45 * Math.sin(now / 260))).toFixed(3)}"/>`;
+  return s;
+}
+
+/* ---------- 播放器 ---------- */
+let t = 0, playing = false, speed = 1, last = null, skipPause = -1, capKey = '', mode = 'walk';
+const beatAt = tt => { let i = 0; while (i < BEATS.length - 1 && tt >= BEATS[i].t1) i++; return i; };
+function setPlaying(p) {
+  playing = p;
+  if (p) { if (t >= TOTAL - 2 * EPS) t = 0; const i = beatAt(t); if (t >= BEATS[i].t1 - 2 * EPS) skipPause = i; }
+  $('play').textContent = p ? '❚❚ 暫停' : '▶ 播放';
+}
+function seek(tt, play) { t = Math.max(0, Math.min(TOTAL - EPS, tt)); skipPause = -1; spokenBeat = -1; autoNext = false; if (TTS && !play) TTS.cancel(); setPlaying(!!play); if (play && narrOn) speak(beatAt(t)); }
+function tick(now) {
+  const dt = last == null ? 0 : Math.min(.1, (now - last) / 1000); last = now;
+  if (mode === 'walk') {
+    if (playing) {
+      const i = beatAt(t), b = BEATS[i]; let nt = t + dt * speed;
+      if (i !== skipPause && b.pause && nt >= b.t1 - EPS) { nt = b.t1 - EPS; setPlaying(false); autoNext = narrOn; }
+      if (nt >= TOTAL - EPS) { nt = TOTAL - EPS; setPlaying(false); }
+      if (beatAt(nt) !== i) skipPause = -1;
+      t = nt;
+    }
+    const { S, i } = stateAt(t);
+    $('dyn').innerHTML = Object.values(S).map(it => draw(it, now)).join('');
+    const b = BEATS[i], atEnd = t >= b.t1 - .03, key = i + '|' + playing + '|' + atEnd + '|' + narrOn + '|' + speechErr;
+    if (key !== capKey) {
+      capKey = key;
+      $('capch').textContent = `${CH[b.ch].name} ・ 第 ${i + 1} / ${BEATS.length} 步`;
+      $('captext').textContent = b.cap;
+      $('caphint').textContent = speechErr ? `旁白無法播放（${speechErr}）。請確認裝置沒有靜音，並已安裝中文語音。` : playing ? '' : atEnd ? (narrOn ? '旁白唸完會自動繼續。' : '已暫停。按「播放」或空白鍵繼續。') : '已暫停。';
+      [...$('chips').children].forEach((c, k) => c.classList.toggle('on', k === b.ch));
+    }
+    const pct = t / TOTAL * 100 + '%';
+    document.querySelector('#scrub .fill').style.width = pct; document.querySelector('#scrub .knob').style.left = pct;
+    const f = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+    $('time').textContent = `${f(t)} / ${f(TOTAL)}`;
+  }
+  narrTick();
+  requestAnimationFrame(tick);
+}
+$('ticks').innerHTML = CH.map(c => `<div class="tick" style="left:${c.t0 / TOTAL * 100}%"></div>`).join('');
+$('chips').innerHTML = CH.map((c, k) => `<button data-ch="${k}">${esc(c.name)}</button>`).join('');
+$('chips').onclick = e => { const b = e.target.closest('[data-ch]'); if (b) seek(CH[+b.dataset.ch].t0, true); };
+$('play').onclick = () => { autoNext = false; if (playing && TTS) TTS.cancel(); if (!playing) { const i = beatAt(t), j = t >= BEATS[i].t1 - .03 && i < BEATS.length - 1 ? i + 1 : i; if (narrOn) speak(j); else spokenBeat = t >= BEATS[i].t1 - .03 ? i : -1; } setPlaying(!playing); };
+$('replay').onclick = () => seek(BEATS[beatAt(t)].t0, true);
+$('next').onclick = () => { const i = beatAt(t); if (i < BEATS.length - 1) seek(BEATS[i + 1].t0, true); };
+$('speed').onchange = e => speed = +e.target.value;
+const sc = $('scrub'), posT = x => { const r = sc.getBoundingClientRect(); return clamp((x - r.left) / r.width) * TOTAL; };
+let drag = false;
+sc.onpointerdown = e => { drag = true; sc.setPointerCapture(e.pointerId); seek(posT(e.clientX), false); };
+sc.onpointermove = e => { if (drag) seek(posT(e.clientX), false); };
+sc.onpointerup = () => drag = false;
+document.addEventListener('keydown', e => {
+  if (mode !== 'walk' || e.target.closest('button, select, input')) return;
+  if (e.key === ' ') { e.preventDefault(); $('play').click(); }
+  else if (e.key === 'ArrowRight') $('next').click(); else if (e.key === 'ArrowLeft') $('replay').click();
+});
+const tipEl = $('tip'), app = $('app');
+function showTip(e) {
+  const el = !drag && e.target.closest && e.target.closest('[data-tip]');
+  if (!el) return tipEl.style.display = 'none';
+  tipEl.textContent = el.dataset.tip; tipEl.style.display = 'block';
+  const a = app.getBoundingClientRect();
+  tipEl.style.left = Math.max(0, Math.min(e.clientX - a.left + 14, a.width - tipEl.offsetWidth - 8)) + 'px';
+  tipEl.style.top = e.clientY - a.top + 18 + 'px';
+}
+document.addEventListener('mousemove', showTip);
+window.addEventListener('resize', () => mode === 'ex' && renderEx());
+document.addEventListener('click', e => { if (!e.target.closest('[data-tip]')) tipEl.style.display = 'none'; else showTip(e); });
+
+/* ---------- 動手試 1：生命週期與系統邊界 ---------- */
+const PRODUCTS = {
+  fridge: { n: '電冰箱', fu: '每台使用 10 年', v: [180, 60, 15, 900, 20] },
+  water: { n: '瓶裝水', fu: '每瓶 600 mL', v: [0.09, 0.05, 0.03, 0, 0.02] },
+  cake: { n: '蛋糕', fu: '每個 500 g', v: [1.6, 0.4, 0.15, 0.05, 0.08] },
+};
+const BOUNDS = [['grave', '搖籃到墳墓（5 階段）'], ['gate', '搖籃到大門（部分碳足跡）']];
+let prod = 'fridge', bound = 'grave';
+$('prod').innerHTML = Object.entries(PRODUCTS).map(([k, p]) => `<button data-p="${k}">${p.n}</button>`).join('');
+$('bound').innerHTML = BOUNDS.map(([k, n]) => `<button data-b="${k}">${n}</button>`).join('');
+$('prod').onclick = e => { const b = e.target.closest('[data-p]'); if (b) { prod = b.dataset.p; renderEx(); } };
+$('bound').onclick = e => { const b = e.target.closest('[data-b]'); if (b) { bound = b.dataset.b; renderEx(); } };
+const f2 = n => n >= 10 ? n.toLocaleString('zh-Hant', { maximumFractionDigits: 0 }) : n.toLocaleString('zh-Hant', { maximumFractionDigits: 3 });
+function renderL() {
+  [...$('prod').children].forEach(b => b.classList.toggle('on', b.dataset.p === prod));
+  [...$('bound').children].forEach(b => b.classList.toggle('on', b.dataset.b === bound));
+  const p = PRODUCTS[prod], inc = i => bound === 'grave' || i < 2, total = p.v.reduce((s, v, i) => s + (inc(i) ? v : 0), 0), all = p.v.reduce((a, b) => a + b, 0);
+  const narrow = innerWidth < 560, W = narrow ? 420 : 680, lx = narrow ? 8 : 20, bx = narrow ? 110 : 140, bw = W - bx - 90, mx = Math.max(...p.v) || 1, sx = v => bw * v / mx;
+  $('lsvg').setAttribute('viewBox', `0 0 ${W} 250`);
+  let s = '';
+  ST.forEach((n, i) => {
+    const y = 12 + i * 46, on = inc(i), pct = all ? p.v[i] / all * 100 : 0;
+    s += T(lx, y + 15, n, 'tm', 'start');
+    s += `<g class="${on ? (i === 3 ? 'c-coral' : 'c-teal') : 'c-gray'}" data-tip="${esc(`${n}：${f2(p.v[i])} kg CO₂e（占全生命週期 ${pct.toFixed(1)}%）${on ? '' : '，不在目前的系統邊界內'}。${pct > 0 && pct < 1 ? '低於 1%，可能可依截斷規則排除。' : ''}`)}" opacity="${on ? 1 : .4}"><rect x="${bx}" y="${y}" width="${Math.max(1, sx(p.v[i]))}" height="30" rx="5" stroke-width=".8"/></g>`;
+    s += T(bx + sx(p.v[i]) + 8, y + 15, f2(p.v[i]) + (on ? '' : '（不計）'), 'ts', 'start');
+  });
+  $('lsvg').innerHTML = s;
+  const big = p.v.indexOf(Math.max(...p.v));
+  $('lres').innerHTML = [['功能單位', p.fu], ['碳足跡（kg CO₂e）', f2(total)], ['最大階段', ST[big]]].map(([k, v]) => `<div><b style="font-size:17px">${esc(v)}</b><span>${esc(k)}</span></div>`).join('');
+  const small = p.v.map((v, i) => [v, i]).filter(([v]) => v > 0 && v / all < .01).map(([, i]) => ST[i]);
+  $('l-note').textContent = (bound === 'gate' ? `搖籃到大門只算到出廠，少了 ${f2(all - total)} kg CO₂e。` : '搖籃到墳墓涵蓋五個階段。') + (prod === 'fridge' ? ' 電冰箱的使用階段最大，所以只算到出廠會大幅低估。' : '') + (small.length ? ` 「${small.join('、')}」占比低於 1%。` : '') + ' 試試看：比較三種產品哪個階段最大。';
+}
+
+/* ---------- 動手試 2：分配 ---------- */
+const A = { e: 1000, ma: 800, mb: 200, pa: 10, pb: 100 };
+const AC = [
+  { k: 'e', label: '製程總排放', min: 100, max: 5000, step: 50, unit: ' kg CO₂e', tip: '這條製程一年的總排放（虛構）。' },
+  { k: 'ma', label: '主產品 A 產量', min: 0, max: 1000, step: 10, unit: ' 噸', tip: '主產品的質量。' },
+  { k: 'mb', label: '副產品 B 產量', min: 0, max: 1000, step: 10, unit: ' 噸', tip: '副產品的質量。' },
+  { k: 'pa', label: 'A 的單價', min: 1, max: 200, step: 1, unit: ' 元/kg', tip: '經濟分配用的價格。' },
+  { k: 'pb', label: 'B 的單價', min: 1, max: 200, step: 1, unit: ' 元/kg', tip: '經濟分配用的價格。' },
+];
+$('actl').innerHTML = AC.map(c => `<label data-tip="${esc(c.tip)}"><span>${esc(c.label)}</span><input type="range" id="r_${c.k}" min="${c.min}" max="${c.max}" step="${c.step}"><output id="o_${c.k}"></output></label>`).join('');
+AC.forEach(c => $('r_' + c.k).oninput = e => { A[c.k] = +e.target.value; renderEx(); });
+function renderA() {
+  AC.forEach(c => { $('r_' + c.k).value = A[c.k]; $('o_' + c.k).textContent = A[c.k].toLocaleString() + c.unit; });
+  const m = A.ma + A.mb, v = A.ma * A.pa + A.mb * A.pb;
+  const phys = m ? A.e * A.ma / m : 0, econ = v ? A.e * A.ma * A.pa / v : 0;
+  const narrow = innerWidth < 560, W = narrow ? 420 : 680, lx = narrow ? 8 : 20, bx = narrow ? 120 : 160, bw = W - bx - 20;
+  $('asvg').setAttribute('viewBox', `0 0 ${W} 170`);
+  let s = '';
+  [['物理分配（質量）', phys], ['經濟分配（價值）', econ]].forEach(([n, a], i) => {
+    const y = 20 + i * 70, wa = A.e ? bw * a / A.e : 0;
+    s += T(lx, y + 18, n, 'tm', 'start');
+    s += `<g class="c-teal" data-tip="${esc(`A 分到 ${Math.round(a)} kg CO₂e。`)}"><rect x="${bx}" y="${y}" width="${Math.max(1, wa)}" height="36" rx="5" stroke-width=".8"/></g>`;
+    s += `<g class="c-purple" data-tip="${esc(`B 分到 ${Math.round(A.e - a)} kg CO₂e。`)}"><rect x="${bx + wa}" y="${y}" width="${Math.max(1, bw - wa)}" height="36" rx="5" stroke-width=".8"/></g>`;
+    if (wa > 50) s += T(bx + wa / 2, y + 18, 'A ' + Math.round(a), 'tm');
+    if (bw - wa > 50) s += T(bx + wa + (bw - wa) / 2, y + 18, 'B ' + Math.round(A.e - a), 'tm');
+  });
+  $('asvg').innerHTML = s;
+  $('ares').innerHTML = [['物理分配：A／B', `${Math.round(phys)}／${Math.round(A.e - phys)}`], ['經濟分配：A／B', `${Math.round(econ)}／${Math.round(A.e - econ)}`]].map(([k, v]) => `<div><b>${esc(v)}</b><span>${esc(k)}（kg CO₂e）</span></div>`).join('');
+  $('a-note').textContent = '同一份排放，用質量或價值分配，結果可能差很多，所以 ISO 14067 先要求「避免分配」（例如把製程拆細），其次才用物理關係，最後才用經濟價值。試試看：把 B 的單價調高。';
+}
+function renderEx() { renderL(); renderA(); }
+
+/* ---------- 旁白（瀏覽器內建語音，Web Speech API） ---------- */
+const TTS = 'speechSynthesis' in window ? window.speechSynthesis : null;
+let narrOn = false, spokenBeat = -1, autoNext = false;
+const SAY = s => s.replace(/[（(][A-Za-z0-9₀-₉⁻ .,\/'’\-]*[）)]/g, '').replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂e/g, '二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/CH₄/g, '甲烷').replace(/N₂O/g, '氧化亞氮').replace(/10⁻⁹/g, '十的負九次方').replace(/kcal\/L/g, '大卡每公升').replace(/kcal\/m³/g, '大卡每立方公尺').replace(/kcal/g, '大卡').replace(/\bTJ\b/g, '兆焦耳').replace(/44\/12/g, '十二分之四十四').replace(/kgCO₂e/g, '公斤二氧化碳當量').replace(/≥/g, '至少').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/(甲烷|氧化亞氮|二氧化碳)\s*\1/g, '$1');
+// 優先順序：曉臻（Microsoft Edge 的自然語音）→ 美佳增強／高品質版 → Google 國語（臺灣，Chrome）→ 美佳 → 其他台灣中文 → 其他中文
+function voice() {
+  const v = TTS.getVoices(), tw = v.filter(x => /zh[-_]TW/i.test(x.lang)), mj = tw.filter(x => /Meijia|美佳/i.test(x.name));
+  return v.find(x => /HsiaoChen|曉臻|晓臻/i.test(x.name)) || mj.find(x => /enhanced|premium|增強|高品質|優化/i.test(x.name)) || tw.find(x => /^Google/i.test(x.name)) || mj[0] || tw[0] || v.find(x => /^zh/i.test(x.lang)) || null;
+}
+const ZH_NAME = { HsiaoChen: '曉臻', HsiaoYu: '曉雨', YunJhe: '雲哲', Yating: '雅婷', Hanhan: '涵涵', Zhiwei: '志瑋', Meijia: '美佳', Tingting: '婷婷', 'Sin-ji': '善怡' };
+const voiceName = () => { const v = TTS && voice(); if (!v) return ''; if (/^Google/i.test(v.name)) return 'Google 國語'; const k = Object.keys(ZH_NAME).find(n => v.name.includes(n)); return k ? ZH_NAME[k] + (/enhanced|premium|增強|高品質/i.test(v.name) ? '・高品質' : '') : v.name.replace(/^Microsoft\s+/i, '').replace(/\s*\(.*$|\s+-\s+.*$/, ''); };
+function narrLabel() { $('narr').textContent = narrOn ? `🔊 旁白：開${voiceName() ? '（' + voiceName() + '）' : ''}` : '🔈 旁白：關'; }
+if (TTS && 'onvoiceschanged' in TTS) TTS.onvoiceschanged = () => narrOn && narrLabel();
+let curU = null, speechErr = '';
+// iOS／Safari：第一次朗讀必須在點擊當下呼叫；保留 utterance 參照，避免被回收而中斷。
+function speak(i) {
+  if (!TTS || !narrOn) return;
+  if (TTS.speaking || TTS.pending) TTS.cancel();
+  spokenBeat = i;
+  const u = new SpeechSynthesisUtterance(SAY(BEATS[i].cap)); u.lang = 'zh-TW'; u.rate = speed; const v = voice(); if (v) u.voice = v;
+  u.onstart = () => { if (speechErr) { speechErr = ''; capKey = ''; } };
+  u.onerror = e => { if (e.error && e.error !== 'interrupted' && e.error !== 'canceled') { speechErr = e.error; capKey = ''; } };
+  // 逐句排入佇列：Chrome 的 Google 語音遇到長句會中途停止
+  const parts = SAY(BEATS[i].cap).split(/(?<=[。；！？])/).map(x => x.trim()).filter(Boolean);
+  curU = parts.map((txt, k) => { const w = k ? new SpeechSynthesisUtterance(txt) : u; if (k) { w.lang = u.lang; w.rate = u.rate; if (u.voice) w.voice = u.voice; w.onerror = u.onerror; } else w.text = txt; return w; });
+  curU.forEach(w => TTS.speak(w)); if (TTS.paused) TTS.resume();
+}
+if (!TTS) $('narr').hidden = true;
+$('narr').onclick = () => {
+  narrOn = !narrOn; $('narr').classList.toggle('on', narrOn); $('narr').setAttribute('aria-pressed', narrOn);
+  narrLabel();
+  if (!narrOn) { TTS.cancel(); autoNext = false; speechErr = ''; capKey = ''; } else { speak(beatAt(t)); if (!playing) setPlaying(true); }
+};
+function narrTick() {
+  if (!TTS || !narrOn || mode !== 'walk') return;
+  const i = beatAt(t);
+  if (playing && spokenBeat !== i) speak(i);
+  // 這一步的動畫播完而自動暫停時，等旁白唸完再前進
+  if (!playing && autoNext && !TTS.speaking && !TTS.pending) { autoNext = false; if (i < BEATS.length - 1) seek(BEATS[i + 1].t0, true); }
+}
+function setMode(m) {
+  mode = m; $('walk').hidden = m !== 'walk'; $('ex').hidden = m !== 'ex';
+  $('m-walk').classList.toggle('on', m === 'walk'); $('m-ex').classList.toggle('on', m === 'ex');
+  if (m === 'ex') { setPlaying(false); autoNext = false; if (TTS) TTS.cancel(); renderEx(); }
+}
+$('m-walk').onclick = () => setMode('walk'); $('m-ex').onclick = () => setMode('ex');
+
+$('srclist').innerHTML = [
+  ['全國法規資料庫：自願性產品碳足跡核定標示及管理辦法（114 年 3 月 19 日發布）', 'https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=O0020142'],
+  ['全國法規資料庫：氣候變遷因應法第 37 條', 'https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=O0020098'],
+  ['iPAS 淨零碳規劃管理師初級：115 年第 1、2 次公告試題，第二科（本站題庫內建）', ''],
+].map(([n, u]) => u ? `<li><a href="${u}" target="_blank" rel="noopener">${esc(n)}</a></li>` : `<li>${esc(n)}</li>`).join('');
+seek(0, false); renderEx(); requestAnimationFrame(tick);
+</script>
+</body>
+</html>

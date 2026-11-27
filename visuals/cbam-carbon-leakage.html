@@ -400,7 +400,7 @@ function renderEx() {
 /* ---------- 旁白（瀏覽器內建語音，Web Speech API） ---------- */
 const TTS = 'speechSynthesis' in window ? window.speechSynthesis : null;
 let narrOn = false, spokenBeat = -1, autoNext = false;
-const SAY = s => s.replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂e/g, '二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/≥/g, '至少').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/[（(][A-Za-z0-9 .,\/'’\-]*[）)]/g, '');
+const SAY = s => s.replace(/[（(][A-Za-z0-9₀-₉⁻ .,\/'’\-]*[）)]/g, '').replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂e/g, '二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/CH₄/g, '甲烷').replace(/N₂O/g, '氧化亞氮').replace(/10⁻⁹/g, '十的負九次方').replace(/kcal\/L/g, '大卡每公升').replace(/kcal\/m³/g, '大卡每立方公尺').replace(/kcal/g, '大卡').replace(/\bTJ\b/g, '兆焦耳').replace(/44\/12/g, '十二分之四十四').replace(/kgCO₂e/g, '公斤二氧化碳當量').replace(/≥/g, '至少').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/(甲烷|氧化亞氮|二氧化碳)\s*\1/g, '$1');
 // 優先順序：曉臻（Microsoft Edge 的自然語音）→ 美佳增強／高品質版 → Google 國語（臺灣，Chrome）→ 美佳 → 其他台灣中文 → 其他中文
 function voice() {
   const v = TTS.getVoices(), tw = v.filter(x => /zh[-_]TW/i.test(x.lang)), mj = tw.filter(x => /Meijia|美佳/i.test(x.name));

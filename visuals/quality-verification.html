@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>數據品質、報告書與查證</title>
+<!-- 單一檔案：導覽動畫（walkthrough）+ 動手試（explorer）。依 visual-learning skill 製作。 -->
+<style>
+  :root { --bg:oklch(.97 0 0); --surface:oklch(.994 0 0); --sunk:oklch(0 0 0 / .04);
+          --text:oklch(.097 0 0); --text2:oklch(.097 0 0 / .7); --muted:oklch(.097 0 0 / .45);
+          --border:oklch(0 0 0 / .07); --border-strong:oklch(0 0 0 / .13); --border-emph:oklch(0 0 0 / .3);
+          --accent:oklch(.097 0 0); --on-accent:oklch(.994 0 0); --track:oklch(0 0 0 / .08);
+          --gray-fill:#F5F5F5; --gray-stroke:#737373; --purple-fill:#EEEDFE; --purple-stroke:#534AB7; --purple-text:#3C3489;
+          --coral-fill:#FAECE7; --coral-stroke:#C0472B; --coral-text:#7A2A16; --teal-fill:#E1F5EE; --teal-stroke:#0F8F6B; --teal-text:#085041;
+          --shadow-m:0 4px 6px -2px oklch(0 0 0 / .025), 0 2px 2px -2px oklch(0 0 0 / .05);
+          --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .08), 0 16px 32px -6px oklch(0 0 0 / .12); color-scheme:light; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:oklch(.145 0 0); --surface:oklch(.205 0 0); --sunk:oklch(.994 0 0 / .05);
+    --text:oklch(.985 0 0); --text2:oklch(.985 0 0 / .72); --muted:oklch(.985 0 0 / .45);
+    --border:oklch(.994 0 0 / .07); --border-strong:oklch(.994 0 0 / .13); --border-emph:oklch(.994 0 0 / .4);
+    --accent:oklch(.994 0 0); --on-accent:oklch(.097 0 0); --track:oklch(.994 0 0 / .1);
+    --gray-fill:#262626; --gray-stroke:#A1A1A1; --purple-fill:#3C3489; --purple-stroke:#AFA9EC; --purple-text:#CECBF6;
+    --coral-fill:#5A2414; --coral-stroke:#F0997B; --coral-text:#F7C9BA; --teal-fill:#06403A; --teal-stroke:#5DCAA5; --teal-text:#9FE1CB;
+    --shadow-m:0 4px 6px -2px oklch(0 0 0 / .08); --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .2); color-scheme:dark; } }
+  :root[data-theme="dark"] { --bg:oklch(.145 0 0); --surface:oklch(.205 0 0); --sunk:oklch(.994 0 0 / .05);
+    --text:oklch(.985 0 0); --text2:oklch(.985 0 0 / .72); --muted:oklch(.985 0 0 / .45);
+    --border:oklch(.994 0 0 / .07); --border-strong:oklch(.994 0 0 / .13); --border-emph:oklch(.994 0 0 / .4);
+    --accent:oklch(.994 0 0); --on-accent:oklch(.097 0 0); --track:oklch(.994 0 0 / .1);
+    --gray-fill:#262626; --gray-stroke:#A1A1A1; --purple-fill:#3C3489; --purple-stroke:#AFA9EC; --purple-text:#CECBF6;
+    --coral-fill:#5A2414; --coral-stroke:#F0997B; --coral-text:#F7C9BA; --teal-fill:#06403A; --teal-stroke:#5DCAA5; --teal-text:#9FE1CB;
+    --shadow-m:0 4px 6px -2px oklch(0 0 0 / .08); --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .2); color-scheme:dark; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:500 16px/1.55 system-ui,-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; }
+  main { position:relative; max-width:760px; margin:0 auto; padding:20px 14px 32px; }
+  h1 { font-size:22px; font-weight:700; line-height:1.2; margin:0 0 4px; }
+  .sub { color:var(--text2); font-size:14px; margin:0 0 14px; }
+  #modes { display:inline-flex; gap:4px; padding:4px; background:var(--sunk); border-radius:12px; margin-bottom:14px; }
+  #modes button { border-color:transparent; background:transparent; box-shadow:none; color:var(--text2); }
+  #modes button.on { background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:var(--shadow-m); }
+  svg { display:block; width:100%; height:auto; background:var(--surface); border:1px solid var(--border); border-radius:16px; }
+  #wsvg { border-bottom:none; border-radius:16px 16px 0 0; }
+  svg text { font-family:inherit; }
+  .tm { font-size:13px; font-weight:500; fill:var(--text); } .th { font-size:14px; font-weight:700; fill:var(--text); } .ts { font-size:12px; font-weight:500; fill:var(--text2); }
+  .frame { fill:none; stroke:var(--border-emph); } .arr { stroke:var(--muted); stroke-width:1.2; fill:none; }
+  .hl { fill:none; stroke:#EF9F27; stroke-width:2.2; }
+  .c-gray>rect { fill:var(--gray-fill); stroke:var(--gray-stroke); } .c-gray>.tm { }
+  .c-purple>rect { fill:var(--purple-fill); stroke:var(--purple-stroke); } .c-purple>.tm { fill:var(--purple-text); }
+  .c-coral>rect { fill:var(--coral-fill); stroke:var(--coral-stroke); } .c-coral>.tm { fill:var(--coral-text); }
+  .c-teal>rect { fill:var(--teal-fill); stroke:var(--teal-stroke); } .c-teal>.tm { fill:var(--teal-text); }
+  #cap { background:var(--surface); border:1px solid var(--border); border-radius:0 0 16px 16px; padding:14px 18px 14px; min-height:118px; }
+  #capch { display:inline-block; font-size:12px; font-weight:600; color:var(--text2); background:var(--sunk); border-radius:999px; padding:2px 10px; }
+  #captext { font-size:16px; margin:8px 0 2px; } #caphint { font-size:13px; color:var(--text2); min-height:18px; }
+  .prow { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  button, select { font:inherit; font-size:14px; font-weight:500; line-height:20px; color:var(--text); background:var(--surface); border:1px solid var(--border-strong); border-radius:10px; padding:6px 14px; cursor:pointer; box-shadow:var(--shadow-m); }
+  button:hover, select:hover { background:var(--sunk); box-shadow:none; }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline:2px solid #EF9F27; outline-offset:2px; }
+  #play { background:var(--accent); color:var(--on-accent); border-color:transparent; min-width:96px; } #play:hover { opacity:.8; }
+  #time { font-size:13px; color:var(--text2); margin-left:auto; font-variant-numeric:tabular-nums; }
+  #scrub { position:relative; height:28px; margin:12px 0 8px; cursor:pointer; touch-action:none; }
+  #scrub .track, #scrub .fill { position:absolute; top:11px; height:6px; border-radius:999px; left:0; }
+  #scrub .track { right:0; background:var(--track); } #scrub .fill { background:var(--accent); }
+  #scrub .tick { position:absolute; top:8px; width:2px; height:12px; margin-left:-1px; border-radius:1px; background:var(--muted); }
+  #scrub .knob { position:absolute; top:5px; width:18px; height:18px; margin-left:-9px; border-radius:50%; background:var(--surface); border:1px solid var(--border-emph); box-shadow:var(--shadow-m); }
+  #chips { display:inline-flex; flex-wrap:wrap; gap:4px; margin-top:10px; padding:4px; background:var(--sunk); border-radius:12px; }
+  #chips button { border-color:transparent; background:transparent; box-shadow:none; color:var(--text2); padding:5px 10px; }
+  #chips button.on { background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:var(--shadow-m); }
+  .panel { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px 18px; margin-top:14px; }
+  .ctl { display:grid; grid-template-columns:1fr; gap:10px; }
+  .ctl label { display:grid; grid-template-columns:150px 1fr 120px; gap:10px; align-items:center; font-size:14px; }
+  .ctl output { font-variant-numeric:tabular-nums; text-align:right; font-size:14px; }
+  input[type=range] { width:100%; accent-color:var(--purple-stroke); }
+  .grp { font-size:12px; font-weight:600; color:var(--text2); margin:6px 0 0; }
+  #ex-note { font-size:14px; color:var(--text2); margin:10px 0 0; }
+  .res { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-top:12px; }
+  .res div { background:var(--sunk); border-radius:12px; padding:8px 12px; }
+  .res b { display:block; font-size:20px; font-variant-numeric:tabular-nums; } .res span { font-size:12px; color:var(--text2); }
+  .sources { font-size:14px; color:var(--text2); background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:4px 18px; margin-top:18px; }
+  .sources b { color:var(--text); font-weight:600; } .sources ol, .sources ul { padding-left:20px; }
+  .sources a { color:var(--text); text-decoration:underline; text-decoration-color:var(--border-emph); text-underline-offset:3px; }
+  #tip { position:absolute; display:none; max-width:270px; padding:8px 12px; font-size:13px; line-height:1.45; background:var(--surface); border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow-xl); pointer-events:none; z-index:5; }
+  [hidden] { display:none !important; }
+  @media (max-width:560px) { #wsvg .tm { font-size:18px; } #wsvg .ts { font-size:16px; } #wsvg .th { font-size:19px; } .res { grid-template-columns:1fr 1fr; } .tm { font-size:15px; } .ts { font-size:14px; } .th { font-size:16px; } .ctl label { grid-template-columns:1fr 120px; } .ctl label input { grid-column:1 / -1; grid-row:2; } .ctl label span:first-child { grid-row:1; } .ctl output { grid-row:1; grid-column:2; } }
+
+  #narr.on { background:var(--purple-fill); color:var(--purple-text); border-color:var(--purple-stroke); }
+  .seg { display:inline-flex; gap:4px; padding:4px; background:var(--sunk); border-radius:12px; flex-wrap:wrap; }
+  .seg button { border-color:transparent; background:transparent; box-shadow:none; color:var(--text2); padding:5px 12px; }
+  .seg button.on { background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:var(--shadow-m); }
+  .ops { display:grid; gap:10px; margin-top:12px; }
+  .op { display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; gap:8px; align-items:center; font-size:14px; background:var(--sunk); border-radius:12px; padding:8px 12px; }
+  .op b { font-weight:600; } .op small { display:block; color:var(--text2); font-size:12px; }
+  .op label { display:grid; gap:2px; font-size:12px; color:var(--text2); }
+  .op select { font-size:13px; padding:4px 8px; }
+  h2 { font-size:17px; font-weight:700; margin:0 0 8px; }
+  .quiz-card { font-size:17px; font-weight:600; margin:10px 0; }
+  #qfb { font-size:14px; min-height:44px; color:var(--text2); }
+  #qfb .ok { color:var(--teal-stroke); font-weight:600; } #qfb .no { color:var(--coral-stroke); font-weight:600; }
+  .ops { display:grid; gap:10px; margin-top:12px; }
+  .op { display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; gap:8px; align-items:center; font-size:14px; background:var(--sunk); border-radius:12px; padding:8px 12px; }
+  .op b { font-weight:600; } .op small { display:block; color:var(--text2); font-size:12px; }
+  .op label { display:grid; gap:2px; font-size:12px; color:var(--text2); }
+  .op select { font-size:13px; padding:4px 8px; }
+  h2 { font-size:17px; font-weight:700; margin:0 0 8px; }
+  .op select { width:100%; }
+  label.seg { align-items:center; gap:6px; padding:6px 12px; font-size:14px; cursor:pointer; }
+  #d-note { font-size:14px; color:var(--text2); }
+  @media (max-width:560px) { .op { grid-template-columns:1fr 1fr; } .op > div:first-child { grid-column:1 / -1; } }
+</style>
+</head>
+<body>
+<main id="app">
+  <h1>數據品質、報告書與查證</h1>
+  <p class="sub">盤查的六大步驟、數據品質怎麼評分、什麼時候登錄與上傳，以及查驗機構怎麼查證。</p>
+  <div id="modes" role="tablist"><button id="m-walk" class="on" role="tab">導覽動畫</button><button id="m-ex" role="tab">動手試</button></div>
+
+  <section id="walk">
+    <svg id="wsvg" viewBox="0 0 680 360" role="img" aria-label="數據品質與查證導覽動畫"><defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" style="stroke:var(--muted)" stroke-width="1.5"/></marker></defs><g id="dyn"></g></svg>
+    <div id="cap" aria-live="polite"><div id="capch"></div><p id="captext"></p><div id="caphint"></div></div>
+    <div id="scrub" data-tip="拖曳可在動畫中移動。刻度是各章的起點。"><div class="track"></div><div class="fill"></div><div id="ticks"></div><div class="knob"></div></div>
+    <div class="prow"><button id="play">▶ 播放</button><button id="replay">↺ 重播此步</button><button id="next">下一步 ▸</button>
+      <select id="speed" aria-label="播放速度"><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option></select>
+      <button id="narr" aria-pressed="false" data-tip="用裝置內建語音朗讀字幕。開啟後，每步唸完會自動前進。">🔈 旁白：關</button><span id="time"></span></div>
+    <div id="chips"></div>
+  </section>
+
+  <section id="ex" hidden>
+    <div class="panel" style="margin-top:0">
+      <h2>1. 數據品質評分：算出排放量清冊等級</h2>
+      <p class="ts" style="font-size:13px;color:var(--text2);margin:0 0 8px">依環境部盤查指引表 2-3 到 2-5。排放源與占比是虛構的練習數字。</p>
+      <svg id="qsvg" viewBox="0 0 680 230" role="img" aria-label="各排放源的數據誤差等級"></svg>
+      <div class="ops" id="srcs-in"></div>
+      <div class="res" id="qres"></div>
+      <p id="q-note"></p>
+    </div>
+    <div class="panel">
+      <h2>2. 實質性門檻：差異有沒有超過 5%？</h2>
+      <p class="ts" style="font-size:13px;color:var(--text2);margin:0 0 8px">查驗機構以盤查報告書總排放量的 5% 作為定量實質性門檻。下面用虛構的錯誤，看差異累積到多少。</p>
+      <svg id="msvg" viewBox="0 0 680 150" role="img" aria-label="查證差異與實質性門檻"></svg>
+      <div class="ctl" id="mctl" style="margin-top:12px"></div>
+      <div class="res" id="mres"></div>
+      <p id="m-note"></p>
+    </div>
+  </section>
+
+  <section class="sources">
+    <p><b>簡化說明：</b>實際查證時，查驗機構除了量化門檻，也會看錯誤、遺漏的性質，本頁只示範定量部分。誤差是正是負會互相抵銷或累加，本頁把錯誤都當成「同方向」相加。不確定性量化有更完整的公式，本頁沒有示範。</p>
+    <p><b>資料來源</b></p>
+    <ol id="srclist"></ol>
+  </section>
+  <div id="tip"></div>
+</main>
+<script>
+
+
+
+
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+const clamp = u => Math.max(0, Math.min(1, u));
+const E = u => { u = clamp(u); return u < .5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2; };
+const seg = (u, a, b) => clamp((u - a) / (b - a));
+
+/* ---------- 場景動作（純函式：只依進度 u） ---------- */
+function add(S, u, id, it) { S[id] = { ...it, op: (it.op ?? 1) * E(u) }; }
+function del(S, u, id) { if (!S[id]) return; if (u >= 1) delete S[id]; else S[id].op *= 1 - E(u); }
+function delAll(S, u, ids) { ids.forEach(id => del(S, u, id)); }
+function mv(S, u, id, to) { const it = S[id]; if (!it) return; for (const [p, v] of Object.entries(to)) { if (typeof v === 'number' && typeof it[p] === 'number') it[p] += (v - it[p]) * E(u); else if (u >= .5) it[p] = v; } }
+function hl(S, u, ...ids) { if (u > 0) ids.forEach(id => S[id] && (S[id].hl = true)); }
+function fly(S, u, id, a, b, fill = '#7F77DD') { if (u <= 0 || u >= 1) { delete S[id]; return; } S[id] = { type: 'dot', x: a[0] + (b[0] - a[0]) * E(u), y: a[1] + (b[1] - a[1]) * E(u), fill, op: 1 }; }
+const box = (x, y, w, h, c, l1, tip, more = {}) => ({ type: 'box', x, y, w, h, c, l1, tip, ...more });
+const text = (x, y, s, c = 'ts', tip) => ({ type: 'text', x, y, s, c, tip });
+const line = (x1, y1, x2, y2, tip) => ({ type: 'arrow', x1, y1, x2, y2, c1x: x1 + (x2 - x1) / 3, c1y: y1 + (y2 - y1) / 3, c2x: x1 + 2 * (x2 - x1) / 3, c2y: y1 + 2 * (y2 - y1) / 3, tip });
+
+/* ---------- 腳本 ---------- */
+const CH = [], BEATS = [];
+const chapter = name => CH.push({ name, beat: BEATS.length });
+const step = (dur, cap, fn, pause = true) => BEATS.push({ dur, cap, fn, pause, ch: CH.length - 1 });
+const STEPS6 = ['邊界設定', '排放源鑑別', '排放量計算', '數據品質管理', '盤查資料保存', '清冊及報告書'];
+
+chapter('1 · 六大步驟');
+step(10, '環境部指引把盤查分成六大步驟：邊界設定、排放源鑑別、排放量計算、數據品質管理、盤查資料保存，最後撰寫排放量清冊和盤查報告書。', (S, u) => {
+  STEPS6.forEach((n, i) => {
+    add(S, seg(u, .1 + i * .12, .3 + i * .12), 's' + i, box(20 + (i % 3) * 220, 60 + Math.floor(i / 3) * 110, 200, 54, i === 3 ? 'purple' : 'gray', `${i + 1}. ${n}`, `第 ${i + 1} 步：${n}。`));
+    if (i % 3) add(S, seg(u, .1 + i * .12, .3 + i * .12), 'sa' + i, line(i % 3 * 220 + 2, 87 + Math.floor(i / 3) * 110, i % 3 * 220 + 18, 87 + Math.floor(i / 3) * 110, '下一步。'));
+  });
+  add(S, seg(u, .45, .6), 'sd', line(560, 116, 120, 168, '接第 4 步。'));
+});
+step(9, '完成清冊和報告書之後，要登錄到事業溫室氣體排放量資訊平台；屬於指定應查驗的事業，還要委託查驗機構查驗。這一頁的重點在第 4 步和查驗。', (S, u) => {
+  hl(S, u, 's3', 's5');
+  add(S, seg(u, .4, .8), 'pf', box(160, 290, 360, 46, 'teal', '登錄資訊平台 → 委託查驗', '指引第貳篇開頭。'));
+});
+
+chapter('2 · 數據品質');
+step(10, '數據品質管理的目的是找出錯誤、降低不確定性。定性面看三件事：邊界和盤查目的相關、排放源完整鑑別、排除的項目透明說明。定量面看活動數據引用正確、係數和數據單位一致。', (S, u) => {
+  delAll(S, seg(u, 0, .3), [...STEPS6.map((_, i) => 's' + i), ...STEPS6.map((_, i) => 'sa' + i), 'sd', 'pf']);
+  add(S, seg(u, .3, .55), 'ql', box(40, 50, 290, 150, 'frame', null, '定性項目。'));
+  add(S, seg(u, .3, .55), 'qlt', text(185, 70, '定性', 'th'));
+  ['邊界與目的相關', '排放源完整鑑別', '排除項目透明陳述'].forEach((n, i) => add(S, seg(u, .35 + i * .08, .55 + i * .08), 'qa' + i, box(55, 90 + i * 36, 260, 30, 'gray', n, '指引四、數據品質管理。')));
+  add(S, seg(u, .5, .75), 'qr', box(350, 50, 290, 150, 'frame', null, '定量項目。'));
+  add(S, seg(u, .5, .75), 'qrt', text(495, 70, '定量', 'th'));
+  ['活動數據引用正確', '係數與數據單位一致'].forEach((n, i) => add(S, seg(u, .6 + i * .1, .8 + i * .1), 'qb' + i, box(365, 90 + i * 36, 260, 30, 'gray', n, '並保存計算公式與佐證文件。')));
+});
+step(11, '每個排放源可以算「數據誤差等級」A = A1 × A2 × A3。A1 看活動數據怎麼來，A2 看儀器校正，A3 看排放計算參數。每項 1 到 3 分，分數越低品質越好。', (S, u) => {
+  [['A1', '活動數據：連續監測 1・定期採樣 2・自行估算 3'], ['A2', '儀器校正：每年外校 ≥1 次 1・不到 1 次 2・非量測 3'], ['A3', '參數：自廠 1・製造商或區域 2・國家或國際公告 3']]
+    .forEach(([k, t], i) => add(S, seg(u, .2 + i * .15, .45 + i * .15), 'e' + i, box(40, 220 + i * 40, 600, 34, i === 0 ? 'purple' : i === 1 ? 'teal' : 'coral', `${k}｜${t}`, '指引表 2-3。')));
+});
+step(11, 'A 的範圍是 1 到 27：1～9 屬評分區間 1，10～18 屬 2，19～27 屬 3。把各排放源的 A 乘上排放量占比再加總，就是清冊等級總平均分數，同樣分成第一、二、三級。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['ql','qlt','qa0','qa1','qa2','qr','qrt','qb0','qb1','e0','e1','e2']);
+  [['i1', '1～9 → 第一級', 'teal'], ['i2', '10～18 → 第二級', 'gray'], ['i3', '19～27 → 第三級', 'coral']].forEach(([id, n, c], i) => add(S, seg(u, .3 + i * .12, .55 + i * .12), id, box(40 + i * 205, 110, 190, 54, c, n, '指引表 2-4、表 2-5。')));
+  add(S, seg(u, .7, 1), 'iw', box(90, 210, 500, 46, 'frame', '清冊總平均 = Σ（A × 排放量占比）', '各排放源加權平均。'));
+});
+
+chapter('3 · 登錄與期限');
+step(11, '期限有兩個：每年 4 月 30 日前，登錄前一年度的排放量清冊和盤查報告書；應查驗的事業，10 月 31 日前上傳查驗總結報告和查驗聲明書。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['i1','i2','i3','iw']);
+  add(S, seg(u, .3, .5), 'tl', line(40, 150, 640, 150, '時間軸。'));
+  add(S, seg(u, .4, .65), 'd1', box(60, 80, 240, 54, 'purple', '4/30 登錄清冊與報告書', '管理辦法第 6 條。'));
+  add(S, seg(u, .55, .8), 'd2', box(380, 80, 260, 54, 'teal', '10/31 上傳查驗結果', '管理辦法第 9 條。'));
+});
+step(11, '如果查驗結果和原本登錄的不一致，上傳時要一併附上修正後的清冊和報告書。盤查、登錄和查驗的相關資料要保存 6 年。', (S, u) => {
+  add(S, seg(u, 0, .35), 'd3', box(60, 190, 260, 50, 'coral', '結果不一致 → 一併上傳修正版', '管理辦法第 9 條第 2 項。'));
+  add(S, seg(u, .3, .65), 'd4', box(380, 190, 260, 50, 'gray', '相關資料保存 6 年', '管理辦法第 14 條。'));
+});
+step(10, '文件被主管機關要求補正時，補正總日數不能超過 30 日。因天災或不可抗力趕不上期限，要在期限前書面申請展延，最長 60 日。', (S, u) => {
+  add(S, seg(u, 0, .4), 'd5', box(60, 270, 260, 46, 'gray', '補正：總計 ≤ 30 日', '管理辦法第 10 條。'));
+  add(S, seg(u, .3, .7), 'd6', box(380, 270, 260, 46, 'gray', '展延：最長 60 日', '管理辦法第 11 條。'));
+});
+
+chapter('4 · 查驗');
+step(11, '「查驗」是用系統化、文件化、獨立的方式做確認。對過去的盤查數據做的叫「查證」；對自願減量專案「未來」的活動結果做的叫「確證」。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['tl','d1','d2','d3','d4','d5','d6']);
+  add(S, seg(u, .3, .55), 'v0', box(190, 40, 300, 50, 'purple', '查驗：系統化・文件化・獨立', '查驗機構管理辦法第 2 條。'));
+  add(S, seg(u, .45, .7), 'v1', box(40, 140, 280, 60, 'teal', '查證：歷史數據是否正確', '盤查、減量專案或碳足跡的結果。'));
+  add(S, seg(u, .55, .8), 'v2', box(360, 140, 280, 60, 'coral', '確證：未來結果的假設是否合理', '對自願減量專案的未來活動結果。'));
+  add(S, seg(u, .5, .75), 'va', line(290, 92, 180, 138, '一種。'));
+  add(S, seg(u, .6, .85), 'vb', line(390, 92, 500, 138, '另一種。'));
+});
+step(11, '列管事業的查驗要達「合理保證等級」。查驗機構以盤查報告書總排放量的 5% 作為「實質性門檻」：錯誤、遺漏累積的差異在門檻內，才符合合理保證。', (S, u) => {
+  add(S, seg(u, 0, .35), 'v3', box(40, 240, 280, 54, 'purple', '合理保證等級', '管理辦法第 8 條。'));
+  add(S, seg(u, .3, .65), 'v4', box(360, 240, 280, 54, 'coral', '實質性門檻 = 總排放量 5%', '查驗機構管理辦法。'));
+  hl(S, seg(u, .6, 1), 'v4');
+});
+step(10, '查證作業不能連續六年由同一位主導查驗員執行；真的很難更換時，要提出證明並經主管機關同意。到「動手試」可以算清冊等級，也能看差異何時超過 5%。', (S, u) => {
+  add(S, seg(u, 0, .4), 'v5', text(340, 325, '同一主導查驗員不得連續 6 年', 'th', '管理辦法第 8 條第 2 項第 2 款。'));
+});
+
+/* ---------- 時間與繪製 ---------- */
+const SETTLE = .5, EPS = .001;
+let acc = 0; BEATS.forEach(b => { b.t0 = acc; b.t1 = acc + b.dur + SETTLE; acc = b.t1; });
+const TOTAL = acc; CH.forEach(c => c.t0 = BEATS[c.beat].t0);
+function stateAt(t) {
+  const S = {}; let i = 0;
+  for (; i < BEATS.length && t >= BEATS[i].t1; i++) BEATS[i].fn(S, 1);
+  Object.values(S).forEach(it => it.hl = false);
+  if (i >= BEATS.length) i = BEATS.length - 1; else BEATS[i].fn(S, clamp((t - BEATS[i].t0) / BEATS[i].dur));
+  return { S, i };
+}
+const T = (x, y, s, c, a = 'middle') => `<text class="${c}" x="${x}" y="${y}" text-anchor="${a}" dominant-baseline="central">${esc(s)}</text>`;
+function draw(it, now) {
+  const op = clamp(it.op ?? 1); if (op < .01) return '';
+  const tp = it.tip ? ` data-tip="${esc(it.tip)}"` : '', o = ` opacity="${op.toFixed(3)}"`;
+  if (it.type === 'text') return `<g${o}${tp}>${T(it.x, it.y, it.s, it.c)}</g>`;
+  if (it.type === 'dot') return `<circle cx="${it.x}" cy="${it.y}" r="5" fill="${it.fill}"${o}/>`;
+  if (it.type === 'arrow') return `<path class="arr" d="M${it.x1} ${it.y1}C${it.c1x} ${it.c1y} ${it.c2x} ${it.c2y} ${it.x2} ${it.y2}" marker-end="url(#ah)"${o}${tp}/>`;
+  if (it.h < 1 && !it.l1) return '';
+  const fr = it.c === 'frame';
+  let s = `<g class="${fr ? '' : 'c-' + it.c}"${o}${tp}><rect class="${fr ? 'frame' : ''}" x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" rx="${fr ? 10 : 6}" stroke-width="0.8"/>`;
+  if (it.l1) s += T(it.x + it.w / 2, it.y + it.h / 2, it.l1, 'tm');
+  s += '</g>';
+  if (it.hl) s += `<rect class="hl" x="${it.x - 2.5}" y="${it.y - 2.5}" width="${it.w + 5}" height="${it.h + 5}" rx="8" opacity="${(op * (.55 + .45 * Math.sin(now / 260))).toFixed(3)}"/>`;
+  return s;
+}
+
+/* ---------- 播放器 ---------- */
+let t = 0, playing = false, speed = 1, last = null, skipPause = -1, capKey = '', mode = 'walk';
+const beatAt = tt => { let i = 0; while (i < BEATS.length - 1 && tt >= BEATS[i].t1) i++; return i; };
+function setPlaying(p) {
+  playing = p;
+  if (p) { if (t >= TOTAL - 2 * EPS) t = 0; const i = beatAt(t); if (t >= BEATS[i].t1 - 2 * EPS) skipPause = i; }
+  $('play').textContent = p ? '❚❚ 暫停' : '▶ 播放';
+}
+function seek(tt, play) { t = Math.max(0, Math.min(TOTAL - EPS, tt)); skipPause = -1; spokenBeat = -1; autoNext = false; if (TTS && !play) TTS.cancel(); setPlaying(!!play); if (play && narrOn) speak(beatAt(t)); }
+function tick(now) {
+  const dt = last == null ? 0 : Math.min(.1, (now - last) / 1000); last = now;
+  if (mode === 'walk') {
+    if (playing) {
+      const i = beatAt(t), b = BEATS[i]; let nt = t + dt * speed;
+      if (i !== skipPause && b.pause && nt >= b.t1 - EPS) { nt = b.t1 - EPS; setPlaying(false); autoNext = narrOn; }
+      if (nt >= TOTAL - EPS) { nt = TOTAL - EPS; setPlaying(false); }
+      if (beatAt(nt) !== i) skipPause = -1;
+      t = nt;
+    }
+    const { S, i } = stateAt(t);
+    $('dyn').innerHTML = Object.values(S).map(it => draw(it, now)).join('');
+    const b = BEATS[i], atEnd = t >= b.t1 - .03, key = i + '|' + playing + '|' + atEnd + '|' + narrOn + '|' + speechErr;
+    if (key !== capKey) {
+      capKey = key;
+      $('capch').textContent = `${CH[b.ch].name} ・ 第 ${i + 1} / ${BEATS.length} 步`;
+      $('captext').textContent = b.cap;
+      $('caphint').textContent = speechErr ? `旁白無法播放（${speechErr}）。請確認裝置沒有靜音，並已安裝中文語音。` : playing ? '' : atEnd ? (narrOn ? '旁白唸完會自動繼續。' : '已暫停。按「播放」或空白鍵繼續。') : '已暫停。';
+      [...$('chips').children].forEach((c, k) => c.classList.toggle('on', k === b.ch));
+    }
+    const pct = t / TOTAL * 100 + '%';
+    document.querySelector('#scrub .fill').style.width = pct; document.querySelector('#scrub .knob').style.left = pct;
+    const f = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+    $('time').textContent = `${f(t)} / ${f(TOTAL)}`;
+  }
+  narrTick();
+  requestAnimationFrame(tick);
+}
+$('ticks').innerHTML = CH.map(c => `<div class="tick" style="left:${c.t0 / TOTAL * 100}%"></div>`).join('');
+$('chips').innerHTML = CH.map((c, k) => `<button data-ch="${k}">${esc(c.name)}</button>`).join('');
+$('chips').onclick = e => { const b = e.target.closest('[data-ch]'); if (b) seek(CH[+b.dataset.ch].t0, true); };
+$('play').onclick = () => { autoNext = false; if (playing && TTS) TTS.cancel(); if (!playing) { const i = beatAt(t), j = t >= BEATS[i].t1 - .03 && i < BEATS.length - 1 ? i + 1 : i; if (narrOn) speak(j); else spokenBeat = t >= BEATS[i].t1 - .03 ? i : -1; } setPlaying(!playing); };
+$('replay').onclick = () => seek(BEATS[beatAt(t)].t0, true);
+$('next').onclick = () => { const i = beatAt(t); if (i < BEATS.length - 1) seek(BEATS[i + 1].t0, true); };
+$('speed').onchange = e => speed = +e.target.value;
+const sc = $('scrub'), posT = x => { const r = sc.getBoundingClientRect(); return clamp((x - r.left) / r.width) * TOTAL; };
+let drag = false;
+sc.onpointerdown = e => { drag = true; sc.setPointerCapture(e.pointerId); seek(posT(e.clientX), false); };
+sc.onpointermove = e => { if (drag) seek(posT(e.clientX), false); };
+sc.onpointerup = () => drag = false;
+document.addEventListener('keydown', e => {
+  if (mode !== 'walk' || e.target.closest('button, select, input')) return;
+  if (e.key === ' ') { e.preventDefault(); $('play').click(); }
+  else if (e.key === 'ArrowRight') $('next').click(); else if (e.key === 'ArrowLeft') $('replay').click();
+});
+const tipEl = $('tip'), app = $('app');
+function showTip(e) {
+  const el = !drag && e.target.closest && e.target.closest('[data-tip]');
+  if (!el) return tipEl.style.display = 'none';
+  tipEl.textContent = el.dataset.tip; tipEl.style.display = 'block';
+  const a = app.getBoundingClientRect();
+  tipEl.style.left = Math.max(0, Math.min(e.clientX - a.left + 14, a.width - tipEl.offsetWidth - 8)) + 'px';
+  tipEl.style.top = e.clientY - a.top + 18 + 'px';
+}
+document.addEventListener('mousemove', showTip);
+window.addEventListener('resize', () => mode === 'ex' && renderEx());
+document.addEventListener('click', e => { if (!e.target.closest('[data-tip]')) tipEl.style.display = 'none'; else showTip(e); });
+
+/* ---------- 動手試 1：數據品質評分 ---------- */
+const OPT = {
+  a1: [['1', '連續監測'], ['2', '定期採樣'], ['3', '自行估算']],
+  a2: [['1', '每年外校 ≥1 次'], ['2', '每年外校 <1 次'], ['3', '非量測估計']],
+  a3: [['1', '自廠／質量平衡／同製程經驗'], ['2', '製造商或區域公告'], ['3', '國家或國際公告']],
+};
+const SRC = [
+  { n: '鍋爐（天然氣）', share: 50, a1: 1, a2: 1, a3: 3 },
+  { n: '外購電力', share: 35, a1: 1, a2: 1, a3: 3 },
+  { n: '公務車（汽油）', share: 10, a1: 2, a2: 3, a3: 3 },
+  { n: '冷媒逸散', share: 5, a1: 3, a2: 3, a3: 2 },
+];
+const sel = (id, list, v) => `<select id="${id}">${list.map(([k, t]) => `<option value="${k}"${+k === v ? ' selected' : ''}>${k} 分｜${t}</option>`).join('')}</select>`;
+$('srcs-in').innerHTML = SRC.map((o, i) => `<div class="op"><div><b>${o.n}</b><small>排放量占比 <output id="sh${i}"></output></small><input type="range" min="0" max="100" step="1" id="share${i}" aria-label="${o.n}占比"></div>
+  <label data-tip="活動數據怎麼取得。">A1 活動數據${sel('a1_' + i, OPT.a1, o.a1)}</label>
+  <label data-tip="量測儀器多久外部校正一次。">A2 儀器校正${sel('a2_' + i, OPT.a2, o.a2)}</label>
+  <label data-tip="熱值、碳含量等排放計算參數的來源。">A3 計算參數${sel('a3_' + i, OPT.a3, o.a3)}</label></div>`).join('');
+SRC.forEach((o, i) => {
+  $('share' + i).oninput = e => { o.share = +e.target.value; renderEx(); };
+  ['a1', 'a2', 'a3'].forEach(k => $(k + '_' + i).onchange = e => { o[k] = +e.target.value; renderEx(); });
+});
+const band = a => a <= 9 ? 1 : a <= 18 ? 2 : 3;
+function renderQ() {
+  const tot = SRC.reduce((s, o) => s + o.share, 0);
+  SRC.forEach((o, i) => { $('share' + i).value = o.share; $('sh' + i).textContent = (tot ? (o.share / tot * 100).toFixed(1) : '0') + '%'; });
+  const narrow = innerWidth < 560, W = narrow ? 420 : 680, lx = narrow ? 8 : 20, bx = narrow ? 140 : 180, bw = W - bx - 70, sx = a => bw * a / 27;
+  $('qsvg').setAttribute('viewBox', `0 0 ${W} 230`);
+  let s = '';
+  [9, 18].forEach(v => s += `<line x1="${bx + sx(v)}" y1="8" x2="${bx + sx(v)}" y2="206" stroke="var(--border-emph)" stroke-dasharray="4 4"/>`);
+  s += T(bx + sx(4.5), 220, '區間 1', 'ts') + T(bx + sx(13.5), 220, '區間 2', 'ts') + T(bx + sx(22.5), 220, '區間 3', 'ts');
+  SRC.forEach((o, i) => {
+    const A = o.a1 * o.a2 * o.a3, y = 14 + i * 48, cl = ['c-teal', 'c-gray', 'c-coral'][band(A) - 1];
+    s += T(lx, y + 15, o.n, 'tm', 'start') + `<g class="${cl}" data-tip="${esc(`A = ${o.a1} × ${o.a2} × ${o.a3} = ${A}，評分區間 ${band(A)}。`)}"><rect x="${bx}" y="${y}" width="${sx(A)}" height="30" rx="5" stroke-width=".8"/></g>` + T(bx + sx(A) + 8, y + 15, 'A = ' + A, 'ts', 'start');
+  });
+  $('qsvg').innerHTML = s;
+  const avg = tot ? SRC.reduce((s, o) => s + o.a1 * o.a2 * o.a3 * o.share / tot, 0) : 0, lv = avg <= 9 ? '第一級' : avg <= 18 ? '第二級' : '第三級';
+  $('qres').innerHTML = [['清冊總平均分數', avg.toFixed(2)], ['排放量清冊等級', tot ? lv : '—'], [tot === 100 ? '占比合計' : '占比合計（不是 100% 時自動換算）', tot + '%']].map(([k, v]) => `<div><b>${esc(v)}</b><span>${esc(k)}</span></div>`).join('');
+  const worst = SRC.slice().sort((a, b) => b.a1 * b.a2 * b.a3 * b.share - a.a1 * a.a2 * a.a3 * a.share)[0];
+  $('q-note').textContent = `總平均 = Σ（A × 占比）。目前影響分數最多的是「${worst.n}」。注意：A3 用國家公告係數就是 3 分，所以只要大排放源用公告係數，A 至少是 3。試試看：把鍋爐的 A3 改成自廠參數。`;
+}
+
+/* ---------- 動手試 2：實質性門檻 ---------- */
+const M = { total: 10000, miss: 0, wrong: 0, unit: 0 };
+const MC = [
+  { k: 'total', label: '報告書總排放量', min: 1000, max: 50000, step: 500, unit: ' 公噸', tip: '盤查報告書所載的總排放量（虛構）。' },
+  { k: 'miss', label: '漏列的排放源', min: 0, max: 1000, step: 10, unit: ' 公噸', tip: '例如漏算一台發電機。' },
+  { k: 'wrong', label: '係數引用錯誤造成的差', min: 0, max: 1000, step: 10, unit: ' 公噸', tip: '例如用錯年度的電力排碳係數。' },
+  { k: 'unit', label: '單位換算錯誤造成的差', min: 0, max: 1000, step: 10, unit: ' 公噸', tip: '例如公升和公秉混用。' },
+];
+$('mctl').innerHTML = MC.map(c => `<label data-tip="${esc(c.tip)}"><span>${esc(c.label)}</span><input type="range" id="r_${c.k}" min="${c.min}" max="${c.max}" step="${c.step}"><output id="o_${c.k}"></output></label>`).join('');
+MC.forEach(c => $('r_' + c.k).oninput = e => { M[c.k] = +e.target.value; renderEx(); });
+function renderM() {
+  MC.forEach(c => { $('r_' + c.k).value = M[c.k]; $('o_' + c.k).textContent = M[c.k].toLocaleString() + c.unit; });
+  const diff = M.miss + M.wrong + M.unit, pct = diff / M.total * 100, th = M.total * .05, over = diff > th;
+  const narrow = innerWidth < 560, W = narrow ? 420 : 680, bx = 20, bw = W - 40, mx = Math.max(th * 2, diff * 1.1), sx = v => bw * v / mx;
+  $('msvg').setAttribute('viewBox', `0 0 ${W} 150`);
+  let s = `<g class="c-gray"><rect x="${bx}" y="50" width="${bw}" height="34" rx="6" stroke-width=".8"/></g>`;
+  s += `<g class="${over ? 'c-coral' : 'c-teal'}" data-tip="累積差異 ${diff.toLocaleString()} 公噸，占總排放量 ${pct.toFixed(2)}%。"><rect x="${bx}" y="50" width="${Math.max(1, sx(diff))}" height="34" rx="6" stroke-width=".8"/></g>`;
+  s += `<g data-tip="實質性門檻：總排放量的 5%。"><line x1="${bx + sx(th)}" y1="36" x2="${bx + sx(th)}" y2="98" stroke="#EF9F27" stroke-width="2.5"/>${T(Math.min(bx + sx(th), W - 70), 24, '5% 門檻 ' + th.toLocaleString() + ' 公噸', 'ts')}</g>`;
+  s += T(bx, 120, '累積差異 ' + diff.toLocaleString() + ' 公噸（' + pct.toFixed(2) + '%）', 'tm', 'start');
+  $('msvg').innerHTML = s;
+  $('mres').innerHTML = [['5% 門檻', th.toLocaleString() + ' 公噸'], ['累積差異', pct.toFixed(2) + '%'], ['結果', over ? '超過門檻' : '在門檻內']].map(([k, v]) => `<div><b>${esc(v)}</b><span>${esc(k)}</span></div>`).join('');
+  $('m-note').textContent = over ? '差異超過 5%：不符合合理保證等級的定量準則。另外，查驗結果與原本登錄的不一致時，10/31 上傳查驗結果要一併附上修正後的清冊和報告書。' : '差異在 5% 內：符合合理保證等級的定量準則。小錯誤累積起來也可能超過，試著把三種錯誤一起拉高。';
+}
+function renderEx() { renderQ(); renderM(); }
+
+/* ---------- 旁白（瀏覽器內建語音，Web Speech API） ---------- */
+const TTS = 'speechSynthesis' in window ? window.speechSynthesis : null;
+let narrOn = false, spokenBeat = -1, autoNext = false;
+const SAY = s => s.replace(/[（(][A-Za-z0-9₀-₉⁻ .,\/'’\-]*[）)]/g, '').replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂e/g, '二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/CH₄/g, '甲烷').replace(/N₂O/g, '氧化亞氮').replace(/10⁻⁹/g, '十的負九次方').replace(/kcal\/L/g, '大卡每公升').replace(/kcal\/m³/g, '大卡每立方公尺').replace(/kcal/g, '大卡').replace(/\bTJ\b/g, '兆焦耳').replace(/44\/12/g, '十二分之四十四').replace(/kgCO₂e/g, '公斤二氧化碳當量').replace(/≥/g, '至少').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/(甲烷|氧化亞氮|二氧化碳)\s*\1/g, '$1');
+// 優先順序：曉臻（Microsoft Edge 的自然語音）→ 美佳增強／高品質版 → Google 國語（臺灣，Chrome）→ 美佳 → 其他台灣中文 → 其他中文
+function voice() {
+  const v = TTS.getVoices(), tw = v.filter(x => /zh[-_]TW/i.test(x.lang)), mj = tw.filter(x => /Meijia|美佳/i.test(x.name));
+  return v.find(x => /HsiaoChen|曉臻|晓臻/i.test(x.name)) || mj.find(x => /enhanced|premium|增強|高品質|優化/i.test(x.name)) || tw.find(x => /^Google/i.test(x.name)) || mj[0] || tw[0] || v.find(x => /^zh/i.test(x.lang)) || null;
+}
+const ZH_NAME = { HsiaoChen: '曉臻', HsiaoYu: '曉雨', YunJhe: '雲哲', Yating: '雅婷', Hanhan: '涵涵', Zhiwei: '志瑋', Meijia: '美佳', Tingting: '婷婷', 'Sin-ji': '善怡' };
+const voiceName = () => { const v = TTS && voice(); if (!v) return ''; if (/^Google/i.test(v.name)) return 'Google 國語'; const k = Object.keys(ZH_NAME).find(n => v.name.includes(n)); return k ? ZH_NAME[k] + (/enhanced|premium|增強|高品質/i.test(v.name) ? '・高品質' : '') : v.name.replace(/^Microsoft\s+/i, '').replace(/\s*\(.*$|\s+-\s+.*$/, ''); };
+function narrLabel() { $('narr').textContent = narrOn ? `🔊 旁白：開${voiceName() ? '（' + voiceName() + '）' : ''}` : '🔈 旁白：關'; }
+if (TTS && 'onvoiceschanged' in TTS) TTS.onvoiceschanged = () => narrOn && narrLabel();
+let curU = null, speechErr = '';
+// iOS／Safari：第一次朗讀必須在點擊當下呼叫；保留 utterance 參照，避免被回收而中斷。
+function speak(i) {
+  if (!TTS || !narrOn) return;
+  if (TTS.speaking || TTS.pending) TTS.cancel();
+  spokenBeat = i;
+  const u = new SpeechSynthesisUtterance(SAY(BEATS[i].cap)); u.lang = 'zh-TW'; u.rate = speed; const v = voice(); if (v) u.voice = v;
+  u.onstart = () => { if (speechErr) { speechErr = ''; capKey = ''; } };
+  u.onerror = e => { if (e.error && e.error !== 'interrupted' && e.error !== 'canceled') { speechErr = e.error; capKey = ''; } };
+  // 逐句排入佇列：Chrome 的 Google 語音遇到長句會中途停止
+  const parts = SAY(BEATS[i].cap).split(/(?<=[。；！？])/).map(x => x.trim()).filter(Boolean);
+  curU = parts.map((txt, k) => { const w = k ? new SpeechSynthesisUtterance(txt) : u; if (k) { w.lang = u.lang; w.rate = u.rate; if (u.voice) w.voice = u.voice; w.onerror = u.onerror; } else w.text = txt; return w; });
+  curU.forEach(w => TTS.speak(w)); if (TTS.paused) TTS.resume();
+}
+if (!TTS) $('narr').hidden = true;
+$('narr').onclick = () => {
+  narrOn = !narrOn; $('narr').classList.toggle('on', narrOn); $('narr').setAttribute('aria-pressed', narrOn);
+  narrLabel();
+  if (!narrOn) { TTS.cancel(); autoNext = false; speechErr = ''; capKey = ''; } else { speak(beatAt(t)); if (!playing) setPlaying(true); }
+};
+function narrTick() {
+  if (!TTS || !narrOn || mode !== 'walk') return;
+  const i = beatAt(t);
+  if (playing && spokenBeat !== i) speak(i);
+  // 這一步的動畫播完而自動暫停時，等旁白唸完再前進
+  if (!playing && autoNext && !TTS.speaking && !TTS.pending) { autoNext = false; if (i < BEATS.length - 1) seek(BEATS[i + 1].t0, true); }
+}
+function setMode(m) {
+  mode = m; $('walk').hidden = m !== 'walk'; $('ex').hidden = m !== 'ex';
+  $('m-walk').classList.toggle('on', m === 'walk'); $('m-ex').classList.toggle('on', m === 'ex');
+  if (m === 'ex') { setPlaying(false); autoNext = false; if (TTS) TTS.cancel(); renderEx(); }
+}
+$('m-walk').onclick = () => setMode('walk'); $('m-ex').onclick = () => setMode('ex');
+
+$('srclist').innerHTML = [
+  ['環境部：溫室氣體排放量盤查作業指引（113 年版），第壹篇、第貳篇四～六', 'https://ghgregistry.moenv.gov.tw/upload/Tools/%E6%BA%AB%E5%AE%A4%E6%B0%A3%E9%AB%94%E6%8E%92%E6%94%BE%E9%87%8F%E7%9B%A4%E6%9F%A5%E4%BD%9C%E6%A5%AD%E6%8C%87%E5%BC%95113%E5%B9%B4%E7%89%88.pdf'],
+  ['全國法規資料庫：溫室氣體排放量盤查登錄及查驗管理辦法（第 6～11、14 條）', 'https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=O0020102'],
+  ['全國法規資料庫：溫室氣體認證機構及查驗機構管理辦法（第 2 條、查驗作業規定）', 'https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=O0020104'],
+].map(([n, u]) => `<li><a href="${u}" target="_blank" rel="noopener">${esc(n)}</a></li>`).join('');
+seek(0, false); renderEx(); requestAnimationFrame(tick);
+</script>
+</body>
+</html>
