@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react'
-import { Maximize2 } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { Maximize2, Minimize2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { Item } from '@/lib/types'
 
@@ -58,21 +58,48 @@ export function VisualFrame({ html, title, className }: { html: string; title: s
   )
 }
 
+type FsEl = HTMLElement & { webkitRequestFullscreen?: () => Promise<void> | void }
+type FsDoc = Document & { webkitFullscreenElement?: Element | null; webkitExitFullscreen?: () => Promise<void> | void }
+
 export function VisualView({ item }: { item: Item }) {
   const frame = useRef<HTMLDivElement>(null)
+  // iPhone 的 Safari 不支援元素全螢幕，改用鋪滿畫面的「網頁內全螢幕」。
+  const [pseudo, setPseudo] = useState(false)
+  useEffect(() => {
+    if (!pseudo) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setPseudo(false)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prev
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [pseudo])
   const full = () => {
-    const el = frame.current?.querySelector('iframe')
+    if (pseudo) return setPseudo(false)
+    const d = document as FsDoc
+    if (d.fullscreenElement || d.webkitFullscreenElement) {
+      void (d.exitFullscreen ? d.exitFullscreen() : d.webkitExitFullscreen?.())
+      return
+    }
+    const el = frame.current as FsEl | null
     if (!el) return
-    if (document.fullscreenElement) void document.exitFullscreen()
-    else void el.requestFullscreen?.().catch(() => undefined)
+    try {
+      if (el.requestFullscreen) return void el.requestFullscreen().catch(() => setPseudo(true))
+      if (el.webkitRequestFullscreen) return void el.webkitRequestFullscreen()
+    } catch {
+      /* fall through */
+    }
+    setPseudo(true)
   }
   if (!item.content.trim()) return <p className="muted">這份視覺學習是空的，按「編輯」貼上或載入 HTML。</p>
   return (
-    <div className="visual-wrap" ref={frame}>
+    <div className={pseudo ? 'visual-wrap visual-pseudo-full' : 'visual-wrap'} ref={frame}>
       <div className="visual-bar">
         <p className="muted">互動式解說：可以暫停、拖曳進度或操作畫面。深色模式會自動跟隨。</p>
         <Button variant="outline" size="sm" onClick={full}>
-          <Maximize2 aria-hidden="true" /> 全螢幕
+          {pseudo ? <Minimize2 aria-hidden="true" /> : <Maximize2 aria-hidden="true" />} {pseudo ? '結束全螢幕' : '全螢幕'}
         </Button>
       </div>
       <VisualFrame html={item.content} title={item.title} />
