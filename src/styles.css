@@ -547,3 +547,11 @@ body:has(.player) .toaster { bottom: 240px; }
 .player-seek { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; }
 .player-seek .player-time { min-width: 40px; }
 .player-seek .player-time:last-child { text-align: end; }
+
+/* install prompt */
+.install-card { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: start; padding: 16px 20px; border: 1px solid var(--border); border-radius: var(--radius-2xl); background: var(--card); }
+.install-icon { margin-top: 4px; color: var(--brand); }
+.install-text { display: grid; gap: 2px; }
+.install-actions { grid-column: 2; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.install-steps { margin: 0; padding-inline-start: 1.4em; display: grid; gap: 10px; }
+.install-steps li svg { display: inline; vertical-align: -3px; margin-inline-end: 4px; }

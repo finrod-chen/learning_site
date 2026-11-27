@@ -6,6 +6,7 @@ import { CourseMenu } from '@/ui/Menus'
 import { EmptyState } from '@/ui/EmptyState'
 import { createCourse, listCourses, listItems, useDB } from '@/lib/store'
 import { todaySummary } from '@/lib/review'
+import { InstallCard } from '@/ui/InstallCard'
 import { formatTime } from '@/lib/md'
 import { go, href } from '@/lib/router'
 import { describeDays, listCountdowns } from '@/lib/countdown'
@@ -28,6 +29,8 @@ export function Home() {
           <Plus size={16} strokeWidth={1.75} aria-hidden="true" /> 新增課程
         </Button>
       </header>
+
+      <InstallCard />
 
       {review.length > 0 && (
         <section className="review-card" aria-labelledby="review-h">

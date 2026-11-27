@@ -19,6 +19,8 @@ export default defineConfig({
         short_name: 'JustNote',
         description: '筆記、心智圖、快閃卡，一站式自我學習。',
         lang: 'zh-Hant',
+        id: '/',
+        categories: ['education'],
         start_url: '/',
         scope: '/',
         display: 'standalone',
@@ -35,7 +37,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,webmanifest}'],
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//],
+        navigateFallbackDenylist: [/^\/api\//, /^\/cdn-cgi\//],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
