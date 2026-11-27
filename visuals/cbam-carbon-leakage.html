@@ -400,7 +400,7 @@ function renderEx() {
 /* ---------- 旁白（瀏覽器內建語音，Web Speech API） ---------- */
 const TTS = 'speechSynthesis' in window ? window.speechSynthesis : null;
 let narrOn = false, spokenBeat = -1, autoNext = false;
-const SAY = s => s.replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂e/g, '二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/≥/g, '至少').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/[（(][A-Za-z][^）)]*[）)]/g, '');
+const SAY = s => s.replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂e/g, '二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/≥/g, '至少').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/[（(][A-Za-z0-9 .,\/'’\-]*[）)]/g, '');
 function voice() { const v = TTS.getVoices(); return v.find(x => /zh[-_]TW/i.test(x.lang)) || v.find(x => /^zh/i.test(x.lang)) || null; }
 function speak(i) {
   if (!TTS || !narrOn) return;
