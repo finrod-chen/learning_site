@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>企業倡議與永續揭露</title>
+<!-- 單一檔案：導覽動畫（walkthrough）+ 動手試（explorer）。依 visual-learning skill 製作。 -->
+<style>
+  :root { --bg:oklch(.97 0 0); --surface:oklch(.994 0 0); --sunk:oklch(0 0 0 / .04);
+          --text:oklch(.097 0 0); --text2:oklch(.097 0 0 / .7); --muted:oklch(.097 0 0 / .45);
+          --border:oklch(0 0 0 / .07); --border-strong:oklch(0 0 0 / .13); --border-emph:oklch(0 0 0 / .3);
+          --accent:oklch(.097 0 0); --on-accent:oklch(.994 0 0); --track:oklch(0 0 0 / .08);
+          --gray-fill:#F5F5F5; --gray-stroke:#737373; --purple-fill:#EEEDFE; --purple-stroke:#534AB7; --purple-text:#3C3489;
+          --coral-fill:#FAECE7; --coral-stroke:#C0472B; --coral-text:#7A2A16; --teal-fill:#E1F5EE; --teal-stroke:#0F8F6B; --teal-text:#085041;
+          --shadow-m:0 4px 6px -2px oklch(0 0 0 / .025), 0 2px 2px -2px oklch(0 0 0 / .05);
+          --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .08), 0 16px 32px -6px oklch(0 0 0 / .12); color-scheme:light; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:oklch(.145 0 0); --surface:oklch(.205 0 0); --sunk:oklch(.994 0 0 / .05);
+    --text:oklch(.985 0 0); --text2:oklch(.985 0 0 / .72); --muted:oklch(.985 0 0 / .45);
+    --border:oklch(.994 0 0 / .07); --border-strong:oklch(.994 0 0 / .13); --border-emph:oklch(.994 0 0 / .4);
+    --accent:oklch(.994 0 0); --on-accent:oklch(.097 0 0); --track:oklch(.994 0 0 / .1);
+    --gray-fill:#262626; --gray-stroke:#A1A1A1; --purple-fill:#3C3489; --purple-stroke:#AFA9EC; --purple-text:#CECBF6;
+    --coral-fill:#5A2414; --coral-stroke:#F0997B; --coral-text:#F7C9BA; --teal-fill:#06403A; --teal-stroke:#5DCAA5; --teal-text:#9FE1CB;
+    --shadow-m:0 4px 6px -2px oklch(0 0 0 / .08); --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .2); color-scheme:dark; } }
+  :root[data-theme="dark"] { --bg:oklch(.145 0 0); --surface:oklch(.205 0 0); --sunk:oklch(.994 0 0 / .05);
+    --text:oklch(.985 0 0); --text2:oklch(.985 0 0 / .72); --muted:oklch(.985 0 0 / .45);
+    --border:oklch(.994 0 0 / .07); --border-strong:oklch(.994 0 0 / .13); --border-emph:oklch(.994 0 0 / .4);
+    --accent:oklch(.994 0 0); --on-accent:oklch(.097 0 0); --track:oklch(.994 0 0 / .1);
+    --gray-fill:#262626; --gray-stroke:#A1A1A1; --purple-fill:#3C3489; --purple-stroke:#AFA9EC; --purple-text:#CECBF6;
+    --coral-fill:#5A2414; --coral-stroke:#F0997B; --coral-text:#F7C9BA; --teal-fill:#06403A; --teal-stroke:#5DCAA5; --teal-text:#9FE1CB;
+    --shadow-m:0 4px 6px -2px oklch(0 0 0 / .08); --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .2); color-scheme:dark; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:500 16px/1.55 system-ui,-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; }
+  main { position:relative; max-width:760px; margin:0 auto; padding:20px 14px 32px; }
+  h1 { font-size:22px; font-weight:700; line-height:1.2; margin:0 0 4px; }
+  .sub { color:var(--text2); font-size:14px; margin:0 0 14px; }
+  #modes { display:inline-flex; gap:4px; padding:4px; background:var(--sunk); border-radius:12px; margin-bottom:14px; }
+  #modes button { border-color:transparent; background:transparent; box-shadow:none; color:var(--text2); }
+  #modes button.on { background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:var(--shadow-m); }
+  svg { display:block; width:100%; height:auto; background:var(--surface); border:1px solid var(--border); border-radius:16px; }
+  #wsvg { border-bottom:none; border-radius:16px 16px 0 0; }
+  svg text { font-family:inherit; }
+  .tm { font-size:13px; font-weight:500; fill:var(--text); } .th { font-size:14px; font-weight:700; fill:var(--text); } .ts { font-size:12px; font-weight:500; fill:var(--text2); }
+  .frame { fill:none; stroke:var(--border-emph); } .arr { stroke:var(--muted); stroke-width:1.2; fill:none; }
+  .hl { fill:none; stroke:#EF9F27; stroke-width:2.2; }
+  .c-gray>rect { fill:var(--gray-fill); stroke:var(--gray-stroke); } .c-gray>.tm { }
+  .c-purple>rect { fill:var(--purple-fill); stroke:var(--purple-stroke); } .c-purple>.tm { fill:var(--purple-text); }
+  .c-coral>rect { fill:var(--coral-fill); stroke:var(--coral-stroke); } .c-coral>.tm { fill:var(--coral-text); }
+  .c-teal>rect { fill:var(--teal-fill); stroke:var(--teal-stroke); } .c-teal>.tm { fill:var(--teal-text); }
+  #cap { background:var(--surface); border:1px solid var(--border); border-radius:0 0 16px 16px; padding:14px 18px 14px; min-height:118px; }
+  #capch { display:inline-block; font-size:12px; font-weight:600; color:var(--text2); background:var(--sunk); border-radius:999px; padding:2px 10px; }
+  #captext { font-size:16px; margin:8px 0 2px; } #caphint { font-size:13px; color:var(--text2); min-height:18px; }
+  .prow { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  button, select { font:inherit; font-size:14px; font-weight:500; line-height:20px; color:var(--text); background:var(--surface); border:1px solid var(--border-strong); border-radius:10px; padding:6px 14px; cursor:pointer; box-shadow:var(--shadow-m); }
+  button:hover, select:hover { background:var(--sunk); box-shadow:none; }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline:2px solid #EF9F27; outline-offset:2px; }
+  #play { background:var(--accent); color:var(--on-accent); border-color:transparent; min-width:96px; } #play:hover { opacity:.8; }
+  #time { font-size:13px; color:var(--text2); margin-left:auto; font-variant-numeric:tabular-nums; }
+  #scrub { position:relative; height:28px; margin:12px 0 8px; cursor:pointer; touch-action:none; }
+  #scrub .track, #scrub .fill { position:absolute; top:11px; height:6px; border-radius:999px; left:0; }
+  #scrub .track { right:0; background:var(--track); } #scrub .fill { background:var(--accent); }
+  #scrub .tick { position:absolute; top:8px; width:2px; height:12px; margin-left:-1px; border-radius:1px; background:var(--muted); }
+  #scrub .knob { position:absolute; top:5px; width:18px; height:18px; margin-left:-9px; border-radius:50%; background:var(--surface); border:1px solid var(--border-emph); box-shadow:var(--shadow-m); }
+  #chips { display:inline-flex; flex-wrap:wrap; gap:4px; margin-top:10px; padding:4px; background:var(--sunk); border-radius:12px; }
+  #chips button { border-color:transparent; background:transparent; box-shadow:none; color:var(--text2); padding:5px 10px; }
+  #chips button.on { background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:var(--shadow-m); }
+  .panel { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px 18px; margin-top:14px; }
+  .ctl { display:grid; grid-template-columns:1fr; gap:10px; }
+  .ctl label { display:grid; grid-template-columns:150px 1fr 120px; gap:10px; align-items:center; font-size:14px; }
+  .ctl output { font-variant-numeric:tabular-nums; text-align:right; font-size:14px; }
+  input[type=range] { width:100%; accent-color:var(--purple-stroke); }
+  .grp { font-size:12px; font-weight:600; color:var(--text2); margin:6px 0 0; }
+  #ex-note { font-size:14px; color:var(--text2); margin:10px 0 0; }
+  .res { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-top:12px; }
+  .res div { background:var(--sunk); border-radius:12px; padding:8px 12px; }
+  .res b { display:block; font-size:20px; font-variant-numeric:tabular-nums; } .res span { font-size:12px; color:var(--text2); }
+  .sources { font-size:14px; color:var(--text2); background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:4px 18px; margin-top:18px; }
+  .sources b { color:var(--text); font-weight:600; } .sources ol, .sources ul { padding-left:20px; }
+  .sources a { color:var(--text); text-decoration:underline; text-decoration-color:var(--border-emph); text-underline-offset:3px; }
+  #tip { position:absolute; display:none; max-width:270px; padding:8px 12px; font-size:13px; line-height:1.45; background:var(--surface); border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow-xl); pointer-events:none; z-index:5; }
+  [hidden] { display:none !important; }
+  @media (max-width:560px) { #wsvg .tm { font-size:18px; } #wsvg .ts { font-size:16px; } #wsvg .th { font-size:19px; } .res { grid-template-columns:1fr 1fr; } .tm { font-size:15px; } .ts { font-size:14px; } .th { font-size:16px; } .ctl label { grid-template-columns:1fr 120px; } .ctl label input { grid-column:1 / -1; grid-row:2; } .ctl label span:first-child { grid-row:1; } .ctl output { grid-row:1; grid-column:2; } }
+
+  #narr.on { background:var(--purple-fill); color:var(--purple-text); border-color:var(--purple-stroke); }
+  .seg { display:inline-flex; gap:4px; padding:4px; background:var(--sunk); border-radius:12px; flex-wrap:wrap; }
+  .seg button { border-color:transparent; background:transparent; box-shadow:none; color:var(--text2); padding:5px 12px; }
+  .seg button.on { background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:var(--shadow-m); }
+  .ops { display:grid; gap:10px; margin-top:12px; }
+  .op { display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; gap:8px; align-items:center; font-size:14px; background:var(--sunk); border-radius:12px; padding:8px 12px; }
+  .op b { font-weight:600; } .op small { display:block; color:var(--text2); font-size:12px; }
+  .op label { display:grid; gap:2px; font-size:12px; color:var(--text2); }
+  .op select { font-size:13px; padding:4px 8px; }
+  h2 { font-size:17px; font-weight:700; margin:0 0 8px; }
+  .quiz-card { font-size:17px; font-weight:600; margin:10px 0; }
+  #qfb { font-size:14px; min-height:44px; color:var(--text2); }
+  #qfb .ok { color:var(--teal-stroke); font-weight:600; } #qfb .no { color:var(--coral-stroke); font-weight:600; }
+  .ops { display:grid; gap:10px; margin-top:12px; }
+  .op { display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; gap:8px; align-items:center; font-size:14px; background:var(--sunk); border-radius:12px; padding:8px 12px; }
+  .op b { font-weight:600; } .op small { display:block; color:var(--text2); font-size:12px; }
+  .op label { display:grid; gap:2px; font-size:12px; color:var(--text2); }
+  .op select { font-size:13px; padding:4px 8px; }
+  h2 { font-size:17px; font-weight:700; margin:0 0 8px; }
+  .op select { width:100%; }
+  label.seg { align-items:center; gap:6px; padding:6px 12px; font-size:14px; cursor:pointer; }
+  #d-note { font-size:14px; color:var(--text2); }
+  @media (max-width:560px) { .op { grid-template-columns:1fr 1fr; } .op > div:first-child { grid-column:1 / -1; } }
+</style>
+</head>
+<body>
+<main id="app">
+  <h1>企業倡議與永續揭露</h1>
+  <p class="sub">SBTi、RE100 是「設定目標」的倡議；TCFD、IFRS S2、GRI、SASB、CDP 是「揭露資訊」的框架與準則。再加上金管會的台灣時程。</p>
+  <div id="modes" role="tablist"><button id="m-walk" class="on" role="tab">導覽動畫</button><button id="m-ex" role="tab">動手試</button></div>
+
+  <section id="walk">
+    <svg id="wsvg" viewBox="0 0 680 360" role="img" aria-label="企業倡議導覽動畫"><defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" style="stroke:var(--muted)" stroke-width="1.5"/></marker></defs><g id="dyn"></g></svg>
+    <div id="cap" aria-live="polite"><div id="capch"></div><p id="captext"></p><div id="caphint"></div></div>
+    <div id="scrub" data-tip="拖曳可在動畫中移動。刻度是各章的起點。"><div class="track"></div><div class="fill"></div><div id="ticks"></div><div class="knob"></div></div>
+    <div class="prow"><button id="play">▶ 播放</button><button id="replay">↺ 重播此步</button><button id="next">下一步 ▸</button>
+      <select id="speed" aria-label="播放速度"><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option></select>
+      <button id="narr" aria-pressed="false" data-tip="用裝置內建語音朗讀字幕。開啟後，每步唸完會自動前進。">🔈 旁白：關</button><span id="time"></span></div>
+    <div id="chips"></div>
+  </section>
+
+  <section id="ex" hidden>
+    <div class="panel" style="margin-top:0">
+      <h2>1. SBTi：範疇三要不要設目標？</h2>
+      <p class="ts" style="font-size:13px;color:var(--text2);margin:0 0 8px">依 iPAS 公告試題：範疇三超過總排放 40% 時，近期目標至少要涵蓋 67% 的範疇三排放。排放量是虛構的。</p>
+      <svg id="ssvg" viewBox="0 0 680 120" role="img" aria-label="範疇一二三占比"></svg>
+      <div class="ctl" id="sctl" style="margin-top:12px"></div>
+      <div class="res" id="sres"></div>
+      <p id="s-note"></p>
+    </div>
+    <div class="panel">
+      <h2>2. 金管會：哪一年要適用 IFRS 永續揭露準則？</h2>
+      <div class="ctl"><label data-tip="以編製年度報導期間結束日（年底）的實收資本額判斷。"><span>實收資本額</span><input type="range" id="capital" min="1" max="300" step="1"><output id="o_capital"></output></label></div>
+      <svg id="fsvg" viewBox="0 0 680 150" role="img" aria-label="金管會三階段時程" style="margin-top:10px"></svg>
+      <div class="res" id="fres"></div>
+    </div>
+    <div class="panel">
+      <h2>3. 配對練習：這是哪一個？</h2>
+      <div id="qprog" style="font-size:13px;color:var(--text2)"></div>
+      <div class="quiz-card" id="qtext"></div>
+      <div class="prow" id="qbtn"></div>
+      <p id="qfb" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section class="sources">
+    <p><b>簡化說明：</b>SBTi 的範疇三 40%／67% 規則、中小企業條件與 RE100 的加入條件，依 iPAS 公告試題的官方答案整理；RE100 官網與 SBTi 標準 PDF 在本環境無法讀取。SBTi 已發布第 2.0 版標準，細節會改變，本頁以第 1.3 版為主。「目標倡議」與「揭露框架」的分類是本頁為了教學的整理。</p>
+    <p><b>資料來源</b></p>
+    <ol id="srclist"></ol>
+  </section>
+  <div id="tip"></div>
+</main>
+<script>
+
+
+
+
+
+
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+const clamp = u => Math.max(0, Math.min(1, u));
+const E = u => { u = clamp(u); return u < .5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2; };
+const seg = (u, a, b) => clamp((u - a) / (b - a));
+
+/* ---------- 場景動作（純函式：只依進度 u） ---------- */
+function add(S, u, id, it) { S[id] = { ...it, op: (it.op ?? 1) * E(u) }; }
+function del(S, u, id) { if (!S[id]) return; if (u >= 1) delete S[id]; else S[id].op *= 1 - E(u); }
+function delAll(S, u, ids) { ids.forEach(id => del(S, u, id)); }
+function mv(S, u, id, to) { const it = S[id]; if (!it) return; for (const [p, v] of Object.entries(to)) { if (typeof v === 'number' && typeof it[p] === 'number') it[p] += (v - it[p]) * E(u); else if (u >= .5) it[p] = v; } }
+function hl(S, u, ...ids) { if (u > 0) ids.forEach(id => S[id] && (S[id].hl = true)); }
+function fly(S, u, id, a, b, fill = '#7F77DD') { if (u <= 0 || u >= 1) { delete S[id]; return; } S[id] = { type: 'dot', x: a[0] + (b[0] - a[0]) * E(u), y: a[1] + (b[1] - a[1]) * E(u), fill, op: 1 }; }
+const box = (x, y, w, h, c, l1, tip, more = {}) => ({ type: 'box', x, y, w, h, c, l1, tip, ...more });
+const text = (x, y, s, c = 'ts', tip) => ({ type: 'text', x, y, s, c, tip });
+const line = (x1, y1, x2, y2, tip) => ({ type: 'arrow', x1, y1, x2, y2, c1x: x1 + (x2 - x1) / 3, c1y: y1 + (y2 - y1) / 3, c2x: x1 + 2 * (x2 - x1) / 3, c2y: y1 + 2 * (y2 - y1) / 3, tip });
+
+/* ---------- 腳本 ---------- */
+const CH = [], BEATS = [];
+const chapter = name => CH.push({ name, beat: BEATS.length });
+const step = (dur, cap, fn, pause = true) => BEATS.push({ dur, cap, fn, pause, ch: CH.length - 1 });
+
+chapter('1 · 兩大類');
+step(10, '名詞很多，先分兩類：SBTi、RE100 幫企業「設定目標」；TCFD、IFRS S2、GRI、SASB、CDP 則是「揭露資訊」的框架、準則或平台。', (S, u) => {
+  add(S, seg(u, .1, .35), 'k1', box(40, 40, 280, 54, 'purple', '設定目標的倡議', '企業自願參與。'));
+  add(S, seg(u, .2, .45), 'k2', box(360, 40, 280, 54, 'teal', '揭露資訊的框架與準則', '告訴投資人與利害關係人。'));
+  [['t1', 'SBTi'], ['t2', 'RE100']].forEach(([id, n], i) => add(S, seg(u, .4 + i * .1, .6 + i * .1), id, box(60 + i * 130, 130, 110, 44, 'purple', n, n)));
+  [['d1', 'TCFD'], ['d2', 'IFRS S2'], ['d3', 'GRI'], ['d4', 'SASB'], ['d5', 'CDP']].forEach(([id, n], i) => add(S, seg(u, .5 + i * .08, .7 + i * .08), id, box(360 + (i % 3) * 95, 130 + Math.floor(i / 3) * 56, 85, 44, 'teal', n, n)));
+  add(S, seg(u, .9, 1), 'kn', text(340, 300, '兩者不衝突：企業可以同時參與 SBTi 和 RE100', 'tm', '公告試題：兩者目標不衝突且可互補。'));
+});
+
+chapter('2 · SBTi');
+step(11, 'SBTi（科學基礎減量目標倡議）鼓勵企業設定符合巴黎協定溫控目標的科學減碳路徑。淨零標準第 1.3 版有四個重點：近期目標、長期目標、中和殘餘排放、價值鏈外減緩 (BVCM)。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['k1','k2','t1','t2','d1','d2','d3','d4','d5','kn']);
+  [['s1', '1 近期目標', '大幅、快速減少價值鏈排放。'], ['s2', '2 長期目標', '2050 年前減少所有可能的排放，通常超過 90%。'], ['s3', '3 中和殘餘排放', '用永久性的碳移除與封存，抵銷剩下 10% 以內的排放。'], ['s4', '4 價值鏈外減緩', 'BVCM：投資價值鏈以外的減排與移除。']]
+    .forEach(([id, n, tp], i) => add(S, seg(u, .3 + i * .12, .5 + i * .12), id, box(20 + i * 162, 60, 150, 54, i === 3 ? 'gray' : 'purple', n, tp)));
+});
+step(11, '長期目標要在 2050 年前減少所有可能的排放，通常超過 90%。剩下的殘餘排放，要用永久性的碳移除和封存來中和，才算達到淨零。', (S, u) => {
+  add(S, seg(u, .1, .45), 'b1', box(40, 160, 540, 50, 'purple', '減排 > 90%', '長期科學基礎目標。'));
+  add(S, seg(u, .35, .7), 'b2', box(580, 160, 60, 50, 'coral', '中和', '殘餘排放用永久性碳移除與封存抵銷。'));
+  add(S, seg(u, .7, 1), 'b3', text(340, 235, '淨零 = 達成長期目標 ＋ 中和殘餘排放', 'tm', 'SBTi 官網：第 1.3 版。'));
+});
+step(11, '範疇三涵蓋價值鏈上下游。範疇三超過總排放的 40% 時，近期目標至少要涵蓋 67% 的範疇三排放。中小企業的條件包括：員工少於 500 人、不是子公司、不是金融機構。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['s1','s2','s3','s4','b1','b2','b3']);
+  add(S, seg(u, .3, .6), 'c1', box(40, 60, 290, 54, 'coral', '範疇三 > 40% → 涵蓋 ≥ 67%', '公告試題的官方答案。'));
+  add(S, seg(u, .45, .75), 'c2', box(340, 60, 300, 54, 'gray', 'SME：<500 人・非子公司・非金融', '公告試題的官方答案。'));
+});
+step(11, 'SBTi 已發布淨零標準第 2.0 版。2027 年 2 月 1 日到 2028 年 1 月 31 日之間，兩個版本都能用；2028 年 2 月 1 日起，新提交的目標都要用第 2.0 版。', (S, u) => {
+  add(S, seg(u, 0, .3), 'v0', line(40, 210, 640, 210, '時間軸。'));
+  add(S, seg(u, .2, .5), 'v1', box(40, 160, 180, 40, 'purple', '～2027/1/31：1.3 版', 'SBTi 官網。'));
+  add(S, seg(u, .35, .65), 'v2', box(240, 160, 200, 40, 'gray', '過渡：1.3 或 2.0', '2027/2/1～2028/1/31。'));
+  add(S, seg(u, .5, .8), 'v3', box(460, 160, 180, 40, 'teal', '2028/2/1 起：2.0 版', '新提交目標一律用 2.0 版。'));
+});
+
+chapter('3 · RE100');
+step(11, 'RE100 是企業承諾使用 100% 再生能源電力的倡議，許多企業承諾在 2050 年前達成。注意：核能不算 RE100 接受的再生能源。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['c1','c2','v0','v1','v2','v3']);
+  add(S, seg(u, .3, .55), 'r1', box(140, 60, 400, 54, 'teal', 'RE100：100% 再生能源電力', '公告試題：許多企業承諾 2050 年前使用 100% 再生能源電力。'));
+  add(S, seg(u, .5, .8), 'r2', box(140, 140, 400, 46, 'coral', '核能不算', '公告試題：把核能列入的敘述是錯的。'));
+});
+step(10, '加入 RE100 的企業，每年電力需求至少要有 100 GWh，而且要以「集團層級」加入。', (S, u) => {
+  add(S, seg(u, .1, .5), 'r3', box(140, 210, 400, 50, 'purple', '每年 ≥ 100 GWh・集團層級', '公告試題的官方答案。'));
+});
+
+chapter('4 · 揭露框架');
+step(12, 'TCFD（氣候相關財務揭露）有四大核心要素：治理、策略、風險管理、指標與目標。氣候風險分成「實體風險」（例如颱風、乾旱）和「轉型風險」（例如碳定價、新技術）。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['r1','r2','r3']);
+  [['f1', '治理'], ['f2', '策略'], ['f3', '風險管理'], ['f4', '指標與目標']].forEach(([id, n], i) => add(S, seg(u, .3 + i * .1, .5 + i * .1), id, box(20 + i * 162, 50, 150, 50, 'teal', n, 'TCFD 四大核心要素。')));
+  add(S, seg(u, .7, .9), 'f5', box(40, 140, 290, 46, 'coral', '實體風險：颱風、乾旱', '公告試題。'));
+  add(S, seg(u, .75, .95), 'f6', box(350, 140, 290, 46, 'gray', '轉型風險：碳定價、新技術', '公告試題。'));
+});
+step(12, 'TCFD 已在 2023 年 10 月解散，工作由 ISSB 接手。ISSB 在 2023 年 6 月發布 IFRS S2「氣候相關揭露」，它整合 TCFD 建議並納入 SASB 的產業別要求，2024 年 1 月 1 日起適用，要揭露範疇一、二、三。', (S, u) => {
+  add(S, seg(u, 0, .35), 'i1', box(40, 220, 290, 50, 'purple', 'IFRS S2（2023/6 發布）', 'IFRS 官網。'));
+  add(S, seg(u, .3, .65), 'i2', box(350, 220, 290, 50, 'gray', 'TCFD 2023/10 解散', 'IFRS 官網：TCFD 工作完成並解散。'));
+  add(S, seg(u, .6, .95), 'i3', text(340, 300, 'IFRS S2：揭露範疇一、二、三', 'tm', '公告試題。'));
+});
+step(12, 'GRI 看企業整體的永續表現，對象是各種利害關係人；SASB 聚焦「財務重大性」，對象是投資人。CDP 是問卷揭露平台，涵蓋氣候變遷、水、森林、塑膠，並整合 SBTi 來評估減量目標。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['f1','f2','f3','f4','f5','f6','i1','i2','i3']);
+  add(S, seg(u, .3, .55), 'g1', box(40, 50, 290, 60, 'teal', 'GRI：整體永續表現', '利害關係人導向。'));
+  add(S, seg(u, .4, .65), 'g2', box(350, 50, 290, 60, 'purple', 'SASB：財務重大性', '投資人導向。'));
+  add(S, seg(u, .55, .85), 'g3', box(140, 150, 400, 54, 'gray', 'CDP：氣候、水、森林、塑膠', '公告試題的官方答案。'));
+});
+
+chapter('5 · 台灣');
+step(12, '金管會要求上市櫃公司依實收資本額，分三階段適用 IFRS 永續揭露準則，並在年報以專章揭露：100 億元以上從 115 會計年度起、50～100 億元從 116 年起、未達 50 億元從 117 年起，各自隔年申報。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['g1','g2','g3']);
+  [['p1', '≥100 億：115 年度', 'purple'], ['p2', '50～100 億：116 年度', 'teal'], ['p3', '<50 億：117 年度', 'gray']].forEach(([id, n, c], i) => add(S, seg(u, .3 + i * .15, .55 + i * .15), id, box(30 + i * 210, 80, 200, 54, c, n, '金管會 2026-01-20 新聞稿。')));
+  add(S, seg(u, .8, 1), 'p4', text(340, 175, '以報導期間結束日（年底）的實收資本額判斷', 'tm', '同新聞稿。'));
+});
+step(10, '另外，永續報告書須取得會計師確信報告的產業，包括食品工業、餐飲營收占比 50% 以上、化學工業，以及金融保險業。到「動手試」可以練習配對。', (S, u) => {
+  add(S, seg(u, .1, .5), 'p5', box(90, 220, 500, 50, 'coral', '確信：食品、餐飲、化學、金融保險', '公告試題的官方答案。'));
+});
+
+/* ---------- 時間與繪製 ---------- */
+const SETTLE = .5, EPS = .001;
+let acc = 0; BEATS.forEach(b => { b.t0 = acc; b.t1 = acc + b.dur + SETTLE; acc = b.t1; });
+const TOTAL = acc; CH.forEach(c => c.t0 = BEATS[c.beat].t0);
+function stateAt(t) {
+  const S = {}; let i = 0;
+  for (; i < BEATS.length && t >= BEATS[i].t1; i++) BEATS[i].fn(S, 1);
+  Object.values(S).forEach(it => it.hl = false);
+  if (i >= BEATS.length) i = BEATS.length - 1; else BEATS[i].fn(S, clamp((t - BEATS[i].t0) / BEATS[i].dur));
+  return { S, i };
+}
+const T = (x, y, s, c, a = 'middle') => `<text class="${c}" x="${x}" y="${y}" text-anchor="${a}" dominant-baseline="central">${esc(s)}</text>`;
+function draw(it, now) {
+  const op = clamp(it.op ?? 1); if (op < .01) return '';
+  const tp = it.tip ? ` data-tip="${esc(it.tip)}"` : '', o = ` opacity="${op.toFixed(3)}"`;
+  if (it.type === 'text') return `<g${o}${tp}>${T(it.x, it.y, it.s, it.c)}</g>`;
+  if (it.type === 'dot') return `<circle cx="${it.x}" cy="${it.y}" r="5" fill="${it.fill}"${o}/>`;
+  if (it.type === 'arrow') return `<path class="arr" d="M${it.x1} ${it.y1}C${it.c1x} ${it.c1y} ${it.c2x} ${it.c2y} ${it.x2} ${it.y2}" marker-end="url(#ah)"${o}${tp}/>`;
+  if (it.h < 1 && !it.l1) return '';
+  const fr = it.c === 'frame';
+  let s = `<g class="${fr ? '' : 'c-' + it.c}"${o}${tp}><rect class="${fr ? 'frame' : ''}" x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" rx="${fr ? 10 : 6}" stroke-width="0.8"/>`;
+  if (it.l1) s += T(it.x + it.w / 2, it.y + it.h / 2, it.l1, 'tm');
+  s += '</g>';
+  if (it.hl) s += `<rect class="hl" x="${it.x - 2.5}" y="${it.y - 2.5}" width="${it.w + 5}" height="${it.h + 5}" rx="8" opacity="${(op * (.55 + .45 * Math.sin(now / 260))).toFixed(3)}"/>`;
+  return s;
+}
+
+/* ---------- 播放器 ---------- */
+let t = 0, playing = false, speed = 1, last = null, skipPause = -1, capKey = '', mode = 'walk';
+const beatAt = tt => { let i = 0; while (i < BEATS.length - 1 && tt >= BEATS[i].t1) i++; return i; };
+function setPlaying(p) {
+  playing = p;
+  if (p) { if (t >= TOTAL - 2 * EPS) t = 0; const i = beatAt(t); if (t >= BEATS[i].t1 - 2 * EPS) skipPause = i; }
+  $('play').textContent = p ? '❚❚ 暫停' : '▶ 播放';
+}
+function seek(tt, play) { t = Math.max(0, Math.min(TOTAL - EPS, tt)); skipPause = -1; spokenBeat = -1; autoNext = false; if (TTS && !play) TTS.cancel(); setPlaying(!!play); if (play && narrOn) speak(beatAt(t)); }
+function tick(now) {
+  const dt = last == null ? 0 : Math.min(.1, (now - last) / 1000); last = now;
+  if (mode === 'walk') {
+    if (playing) {
+      const i = beatAt(t), b = BEATS[i]; let nt = t + dt * speed;
+      if (i !== skipPause && b.pause && nt >= b.t1 - EPS) { nt = b.t1 - EPS; setPlaying(false); autoNext = narrOn; }
+      if (nt >= TOTAL - EPS) { nt = TOTAL - EPS; setPlaying(false); }
+      if (beatAt(nt) !== i) skipPause = -1;
+      t = nt;
+    }
+    const { S, i } = stateAt(t);
+    $('dyn').innerHTML = Object.values(S).map(it => draw(it, now)).join('');
+    const b = BEATS[i], atEnd = t >= b.t1 - .03, key = i + '|' + playing + '|' + atEnd + '|' + narrOn + '|' + speechErr;
+    if (key !== capKey) {
+      capKey = key;
+      $('capch').textContent = `${CH[b.ch].name} ・ 第 ${i + 1} / ${BEATS.length} 步`;
+      $('captext').textContent = b.cap;
+      $('caphint').textContent = speechErr ? `旁白無法播放（${speechErr}）。請確認裝置沒有靜音，並已安裝中文語音。` : playing ? '' : atEnd ? (narrOn ? '旁白唸完會自動繼續。' : '已暫停。按「播放」或空白鍵繼續。') : '已暫停。';
+      [...$('chips').children].forEach((c, k) => c.classList.toggle('on', k === b.ch));
+    }
+    const pct = t / TOTAL * 100 + '%';
+    document.querySelector('#scrub .fill').style.width = pct; document.querySelector('#scrub .knob').style.left = pct;
+    const f = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+    $('time').textContent = `${f(t)} / ${f(TOTAL)}`;
+  }
+  narrTick();
+  requestAnimationFrame(tick);
+}
+$('ticks').innerHTML = CH.map(c => `<div class="tick" style="left:${c.t0 / TOTAL * 100}%"></div>`).join('');
+$('chips').innerHTML = CH.map((c, k) => `<button data-ch="${k}">${esc(c.name)}</button>`).join('');
+$('chips').onclick = e => { const b = e.target.closest('[data-ch]'); if (b) seek(CH[+b.dataset.ch].t0, true); };
+$('play').onclick = () => { autoNext = false; if (playing && TTS) TTS.cancel(); if (!playing) { const i = beatAt(t), j = t >= BEATS[i].t1 - .03 && i < BEATS.length - 1 ? i + 1 : i; if (narrOn) speak(j); else spokenBeat = t >= BEATS[i].t1 - .03 ? i : -1; } setPlaying(!playing); };
+$('replay').onclick = () => seek(BEATS[beatAt(t)].t0, true);
+$('next').onclick = () => { const i = beatAt(t); if (i < BEATS.length - 1) seek(BEATS[i + 1].t0, true); };
+$('speed').onchange = e => speed = +e.target.value;
+const sc = $('scrub'), posT = x => { const r = sc.getBoundingClientRect(); return clamp((x - r.left) / r.width) * TOTAL; };
+let drag = false;
+sc.onpointerdown = e => { drag = true; sc.setPointerCapture(e.pointerId); seek(posT(e.clientX), false); };
+sc.onpointermove = e => { if (drag) seek(posT(e.clientX), false); };
+sc.onpointerup = () => drag = false;
+document.addEventListener('keydown', e => {
+  if (mode !== 'walk' || e.target.closest('button, select, input')) return;
+  if (e.key === ' ') { e.preventDefault(); $('play').click(); }
+  else if (e.key === 'ArrowRight') $('next').click(); else if (e.key === 'ArrowLeft') $('replay').click();
+});
+const tipEl = $('tip'), app = $('app');
+function showTip(e) {
+  const el = !drag && e.target.closest && e.target.closest('[data-tip]');
+  if (!el) return tipEl.style.display = 'none';
+  tipEl.textContent = el.dataset.tip; tipEl.style.display = 'block';
+  const a = app.getBoundingClientRect();
+  tipEl.style.left = Math.max(0, Math.min(e.clientX - a.left + 14, a.width - tipEl.offsetWidth - 8)) + 'px';
+  tipEl.style.top = e.clientY - a.top + 18 + 'px';
+}
+document.addEventListener('mousemove', showTip);
+window.addEventListener('resize', () => mode === 'ex' && renderEx());
+document.addEventListener('click', e => { if (!e.target.closest('[data-tip]')) tipEl.style.display = 'none'; else showTip(e); });
+
+/* ---------- 動手試 1：SBTi 範疇三 ---------- */
+const SB = { s1: 300, s2: 200, s3: 500, cov: 50 };
+const SBC = [
+  { k: 's1', label: '範疇一', max: 1000, tip: '直接排放（虛構）。' },
+  { k: 's2', label: '範疇二', max: 1000, tip: '外購能源間接排放（虛構）。' },
+  { k: 's3', label: '範疇三', max: 3000, tip: '價值鏈上下游的其他間接排放（虛構）。' },
+  { k: 'cov', label: '近期目標涵蓋的範疇三', max: 100, tip: '近期目標涵蓋多少比例的範疇三排放。', unit: '%' },
+];
+$('sctl').innerHTML = SBC.map(c => `<label data-tip="${esc(c.tip)}"><span>${esc(c.label)}</span><input type="range" id="r_${c.k}" min="0" max="${c.max}" step="${c.k === 'cov' ? 1 : 10}"><output id="o_${c.k}"></output></label>`).join('');
+SBC.forEach(c => $('r_' + c.k).oninput = e => { SB[c.k] = +e.target.value; renderEx(); });
+function renderS() {
+  SBC.forEach(c => { $('r_' + c.k).value = SB[c.k]; $('o_' + c.k).textContent = SB[c.k].toLocaleString() + (c.unit || ' 公噸'); });
+  const tot = SB.s1 + SB.s2 + SB.s3, sh = tot ? SB.s3 / tot * 100 : 0, need = sh > 40, ok = !need || SB.cov >= 67;
+  const narrow = innerWidth < 560, W = narrow ? 420 : 680, bx = 20, bw = W - 40;
+  $('ssvg').setAttribute('viewBox', `0 0 ${W} 120`);
+  let s = '', x = bx;
+  [['範疇一', SB.s1, 'c-coral'], ['範疇二', SB.s2, 'c-teal'], ['範疇三', SB.s3, 'c-purple']].forEach(([n, v, cl]) => {
+    const w = tot ? bw * v / tot : 0;
+    if (w > 0) s += `<g class="${cl}" data-tip="${esc(`${n}：${v.toLocaleString()} 公噸（${tot ? (v / tot * 100).toFixed(1) : 0}%）`)}"><rect x="${x}" y="30" width="${w}" height="40" rx="4" stroke-width=".8"/></g>` + (w > 70 ? T(x + w / 2, 50, n, 'tm') : '');
+    x += w;
+  });
+  s += `<line x1="${bx + bw * .6}" y1="20" x2="${bx + bw * .6}" y2="80" stroke="#EF9F27" stroke-width="2" stroke-dasharray="5 3"/>` + T(bx + bw * .6, 100, '範疇三超過 40% 的分界', 'ts');
+  $('ssvg').innerHTML = s;
+  $('sres').innerHTML = [['範疇三占比', sh.toFixed(1) + '%'], ['要設範疇三近期目標？', need ? '要' : '不需要'], ['涵蓋率', need ? (ok ? '足夠（≥67%）' : '不足（<67%）') : '—']].map(([k, v]) => `<div><b>${esc(v)}</b><span>${esc(k)}</span></div>`).join('');
+  $('s-note').textContent = need ? (ok ? '範疇三超過 40%，近期目標涵蓋 67% 以上，符合要求。' : `範疇三超過 40%，近期目標至少要涵蓋 67% 的範疇三排放（目前 ${SB.cov}%）。`) : '範疇三沒有超過總排放的 40%，這條規則不適用。試試看：把範疇三調高。';
+}
+
+/* ---------- 動手試 2：金管會時程 ---------- */
+let cap = 120;
+$('capital').value = cap; $('capital').oninput = e => { cap = +e.target.value; renderEx(); };
+function renderF() {
+  $('o_capital').textContent = cap + ' 億元';
+  const ph = cap >= 100 ? 0 : cap >= 50 ? 1 : 2, PH = [['第一階段', '≥ 100 億', 115, 116], ['第二階段', '50～100 億', 116, 117], ['第三階段', '< 50 億', 117, 118]];
+  const narrow = innerWidth < 560, W = narrow ? 420 : 680, bw = (W - 40) / 3;
+  $('fsvg').setAttribute('viewBox', `0 0 ${W} 150`);
+  let s = '';
+  PH.forEach(([n, c, y1, y2], i) => {
+    const on = i === ph;
+    s += `<g class="${on ? 'c-purple' : 'c-gray'}" opacity="${on ? 1 : .55}" data-tip="${esc(`${n}（實收資本額 ${c}）：${y1} 會計年度起適用，${y2} 年起申報。`)}"><rect x="${20 + i * bw}" y="20" width="${bw - 8}" height="100" rx="8" stroke-width=".8"/>${T(20 + i * bw + (bw - 8) / 2, 45, n, 'th')}${T(20 + i * bw + (bw - 8) / 2, 72, c, 'tm')}${T(20 + i * bw + (bw - 8) / 2, 98, y1 + ' 年度起', 'tm')}</g>`;
+  });
+  $('fsvg').innerHTML = s;
+  const p = PH[ph];
+  $('fres').innerHTML = [['階段', p[0]], ['開始適用', p[2] + ' 會計年度'], ['開始申報', p[3] + ' 年']].map(([k, v]) => `<div><b>${esc(v)}</b><span>${esc(k)}</span></div>`).join('');
+}
+
+/* ---------- 動手試 3：配對練習 ---------- */
+const OPTS = ['SBTi', 'RE100', 'TCFD', 'IFRS S2', 'GRI', 'SASB', 'CDP'];
+const QS = [
+  ['四大核心要素：治理、策略、風險管理、指標與目標', 'TCFD', 'TCFD 的四大核心要素（IFRS S2 也與它一致）。'],
+  ['承諾 100% 使用再生能源電力，核能不算', 'RE100', 'RE100。加入條件包括每年電力需求至少 100 GWh、以集團層級加入。'],
+  ['長期目標在 2050 年前減少超過 90% 的排放', 'SBTi', 'SBTi 淨零標準的長期目標。'],
+  ['2023 年 6 月由 ISSB 發布，要揭露範疇一、二、三', 'IFRS S2', 'IFRS S2「氣候相關揭露」，2024 年 1 月 1 日起適用。'],
+  ['聚焦財務重大性，主要對象是投資人', 'SASB', 'SASB。IFRS S2 也納入了 SASB 的產業別要求。'],
+  ['看企業整體的永續表現，對象是各種利害關係人', 'GRI', 'GRI。'],
+  ['問卷涵蓋氣候變遷、水、森林、塑膠', 'CDP', 'CDP，並整合 SBTi 評估企業的減量目標。'],
+  ['已在 2023 年 10 月解散，工作由 ISSB 接手', 'TCFD', 'TCFD 解散後，揭露進度的監測移交 IFRS 基金會。'],
+  ['範疇三超過 40% 時，近期目標至少涵蓋 67% 的範疇三', 'SBTi', 'SBTi 的範疇三規則（依公告試題）。'],
+  ['把氣候風險分成實體風險與轉型風險', 'TCFD', 'TCFD 架構。'],
+];
+let qi = 0, qok = 0, qans = false;
+function renderQ() {
+  if (qi >= QS.length) { $('qprog').textContent = `完成！答對 ${qok} / ${QS.length} 題`; $('qtext').textContent = '再練一次？'; $('qbtn').innerHTML = '<button id="qre">重新開始</button>'; $('qre').onclick = () => { qi = 0; qok = 0; renderQ(); }; $('qfb').textContent = ''; return; }
+  qans = false;
+  $('qprog').textContent = `第 ${qi + 1} / ${QS.length} 題・答對 ${qok}`;
+  $('qtext').textContent = QS[qi][0];
+  $('qbtn').innerHTML = OPTS.map(o => `<button data-o="${o}">${o}</button>`).join('');
+  $('qfb').textContent = '';
+}
+$('qbtn').onclick = e => {
+  const b = e.target.closest('[data-o]'); if (!b || qans) return;
+  qans = true; const q = QS[qi], ok = b.dataset.o === q[1]; if (ok) qok++;
+  $('qfb').innerHTML = `<span class="${ok ? 'ok' : 'no'}">${ok ? '答對了。' : '不對，答案是 ' + q[1] + '。'}</span> ${esc(q[2])}`;
+  $('qbtn').innerHTML = `<button id="qnext">下一題 ▸</button>`; $('qnext').onclick = () => { qi++; renderQ(); };
+};
+function renderEx() { renderS(); renderF(); }
+window.addEventListener('resize', () => mode === 'ex' && renderEx());
+
+/* ---------- 旁白（瀏覽器內建語音，Web Speech API） ---------- */
+const TTS = 'speechSynthesis' in window ? window.speechSynthesis : null;
+let narrOn = false, spokenBeat = -1, autoNext = false;
+const SAY = s => s.replace(/[（(][A-Za-z0-9₀-₉⁻ .,\/'’\-]*[）)]/g, '').replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂e/g, '二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/CH₄/g, '甲烷').replace(/N₂O/g, '氧化亞氮').replace(/10⁻⁹/g, '十的負九次方').replace(/kcal\/L/g, '大卡每公升').replace(/kcal\/m³/g, '大卡每立方公尺').replace(/kcal/g, '大卡').replace(/\bTJ\b/g, '兆焦耳').replace(/44\/12/g, '十二分之四十四').replace(/kgCO₂e/g, '公斤二氧化碳當量').replace(/\bGWP\b/g, '全球暖化潛勢').replace(/≥/g, '至少').replace(/～/g, '到').replace(/(\d+)\/(\d+)(?=\s|前|：|，|。)/g, '$1月$2日').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/(甲烷|氧化亞氮|二氧化碳)\s*\1/g, '$1');
+// 優先順序：曉臻（Microsoft Edge 的自然語音）→ 美佳增強／高品質版 → Google 國語（臺灣，Chrome）→ 美佳 → 其他台灣中文 → 其他中文
+function voice() {
+  const v = TTS.getVoices(), tw = v.filter(x => /zh[-_]TW/i.test(x.lang)), mj = tw.filter(x => /Meijia|美佳/i.test(x.name));
+  return v.find(x => /HsiaoChen|曉臻|晓臻/i.test(x.name)) || mj.find(x => /enhanced|premium|增強|高品質|優化/i.test(x.name)) || tw.find(x => /^Google/i.test(x.name)) || mj[0] || tw[0] || v.find(x => /^zh/i.test(x.lang)) || null;
+}
+const ZH_NAME = { HsiaoChen: '曉臻', HsiaoYu: '曉雨', YunJhe: '雲哲', Yating: '雅婷', Hanhan: '涵涵', Zhiwei: '志瑋', Meijia: '美佳', Tingting: '婷婷', 'Sin-ji': '善怡' };
+const voiceName = () => { const v = TTS && voice(); if (!v) return ''; if (/^Google/i.test(v.name)) return 'Google 國語'; const k = Object.keys(ZH_NAME).find(n => v.name.includes(n)); return k ? ZH_NAME[k] + (/enhanced|premium|增強|高品質/i.test(v.name) ? '・高品質' : '') : v.name.replace(/^Microsoft\s+/i, '').replace(/\s*\(.*$|\s+-\s+.*$/, ''); };
+function narrLabel() { $('narr').textContent = narrOn ? `🔊 旁白：開${voiceName() ? '（' + voiceName() + '）' : ''}` : '🔈 旁白：關'; }
+if (TTS && 'onvoiceschanged' in TTS) TTS.onvoiceschanged = () => narrOn && narrLabel();
+let curU = null, speechErr = '';
+// iOS／Safari：第一次朗讀必須在點擊當下呼叫；保留 utterance 參照，避免被回收而中斷。
+function speak(i) {
+  if (!TTS || !narrOn) return;
+  if (TTS.speaking || TTS.pending) TTS.cancel();
+  spokenBeat = i;
+  const u = new SpeechSynthesisUtterance(SAY(BEATS[i].cap)); u.lang = 'zh-TW'; u.rate = speed; const v = voice(); if (v) u.voice = v;
+  u.onstart = () => { if (speechErr) { speechErr = ''; capKey = ''; } };
+  u.onerror = e => { if (e.error && e.error !== 'interrupted' && e.error !== 'canceled') { speechErr = e.error; capKey = ''; } };
+  // 逐句排入佇列：Chrome 的 Google 語音遇到長句會中途停止
+  const parts = SAY(BEATS[i].cap).split(/(?<=[。；！？])/).map(x => x.trim()).filter(Boolean);
+  curU = parts.map((txt, k) => { const w = k ? new SpeechSynthesisUtterance(txt) : u; if (k) { w.lang = u.lang; w.rate = u.rate; if (u.voice) w.voice = u.voice; w.onerror = u.onerror; } else w.text = txt; return w; });
+  curU.forEach(w => TTS.speak(w)); if (TTS.paused) TTS.resume();
+}
+if (!TTS) $('narr').hidden = true;
+$('narr').onclick = () => {
+  narrOn = !narrOn; $('narr').classList.toggle('on', narrOn); $('narr').setAttribute('aria-pressed', narrOn);
+  narrLabel();
+  if (!narrOn) { TTS.cancel(); autoNext = false; speechErr = ''; capKey = ''; } else { speak(beatAt(t)); if (!playing) setPlaying(true); }
+};
+function narrTick() {
+  if (!TTS || !narrOn || mode !== 'walk') return;
+  const i = beatAt(t);
+  if (playing && spokenBeat !== i) speak(i);
+  // 這一步的動畫播完而自動暫停時，等旁白唸完再前進
+  if (!playing && autoNext && !TTS.speaking && !TTS.pending) { autoNext = false; if (i < BEATS.length - 1) seek(BEATS[i + 1].t0, true); }
+}
+function setMode(m) {
+  mode = m; $('walk').hidden = m !== 'walk'; $('ex').hidden = m !== 'ex';
+  $('m-walk').classList.toggle('on', m === 'walk'); $('m-ex').classList.toggle('on', m === 'ex');
+  if (m === 'ex') { setPlaying(false); autoNext = false; if (TTS) TTS.cancel(); renderEx(); renderQ(); }
+}
+$('m-walk').onclick = () => setMode('walk'); $('m-ex').onclick = () => setMode('ex');
+
+$('srclist').innerHTML = [
+  ['SBTi：The Corporate Net-Zero Standard Version 1.3（官網頁面）', 'https://sciencebasedtargets.org/corporate-net-zero-v1'],
+  ['SBTi：The Corporate Net-Zero Standard（第 2.0 版說明）', 'https://sciencebasedtargets.org/corporate-net-zero'],
+  ['IFRS：IFRS S2 Climate-related Disclosures', 'https://www.ifrs.org/issued-standards/ifrs-sustainability-standards-navigator/ifrs-s2-climate-related-disclosures/'],
+  ['IFRS：ISSB and TCFD', 'https://www.ifrs.org/sustainability/tcfd/'],
+  ['金管會新聞稿：提醒上市上櫃公司注意適用 IFRS 永續揭露準則之時程（2026-01-20）', 'https://www.fsc.gov.tw/ch/home.jsp?id=96&parentpath=0%2C2&mcustomize=news_view.jsp&dataserno=202601200001&dtable=News'],
+  ['iPAS 淨零碳規劃管理師初級：115 年第 1、2 次公告試題，第一科（本站題庫內建）', ''],
+].map(([n, u]) => u ? `<li><a href="${u}" target="_blank" rel="noopener">${esc(n)}</a></li>` : `<li>${esc(n)}</li>`).join('');
+seek(0, false); renderEx(); renderQ(); requestAnimationFrame(tick);
+</script>
+</body>
+</html>
