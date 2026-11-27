@@ -275,7 +275,7 @@ function setPlaying(p) {
   if (p) { if (t >= TOTAL - 2 * EPS) t = 0; const i = beatAt(t); if (t >= BEATS[i].t1 - 2 * EPS) skipPause = i; }
   $('play').textContent = p ? '❚❚ 暫停' : '▶ 播放';
 }
-function seek(tt, play) { t = Math.max(0, Math.min(TOTAL - EPS, tt)); skipPause = -1; spokenBeat = -1; autoNext = false; if (TTS && !play) TTS.cancel(); setPlaying(!!play); }
+function seek(tt, play) { t = Math.max(0, Math.min(TOTAL - EPS, tt)); skipPause = -1; spokenBeat = -1; autoNext = false; if (TTS && !play) TTS.cancel(); setPlaying(!!play); if (play && narrOn) speak(beatAt(t)); }
 function tick(now) {
   const dt = last == null ? 0 : Math.min(.1, (now - last) / 1000); last = now;
   if (mode === 'walk') {
@@ -288,12 +288,12 @@ function tick(now) {
     }
     const { S, i } = stateAt(t);
     $('dyn').innerHTML = Object.values(S).map(it => draw(it, now)).join('');
-    const b = BEATS[i], atEnd = t >= b.t1 - .03, key = i + '|' + playing + '|' + atEnd + '|' + narrOn;
+    const b = BEATS[i], atEnd = t >= b.t1 - .03, key = i + '|' + playing + '|' + atEnd + '|' + narrOn + '|' + speechErr;
     if (key !== capKey) {
       capKey = key;
       $('capch').textContent = `${CH[b.ch].name} ・ 第 ${i + 1} / ${BEATS.length} 步`;
       $('captext').textContent = b.cap;
-      $('caphint').textContent = playing ? '' : atEnd ? (narrOn ? '旁白唸完會自動繼續。' : '已暫停。按「播放」或空白鍵繼續。') : '已暫停。';
+      $('caphint').textContent = speechErr ? `旁白無法播放（${speechErr}）。請確認裝置沒有靜音，並已安裝中文語音。` : playing ? '' : atEnd ? (narrOn ? '旁白唸完會自動繼續。' : '已暫停。按「播放」或空白鍵繼續。') : '已暫停。';
       [...$('chips').children].forEach((c, k) => c.classList.toggle('on', k === b.ch));
     }
     const pct = t / TOTAL * 100 + '%';
@@ -307,7 +307,7 @@ function tick(now) {
 $('ticks').innerHTML = CH.map(c => `<div class="tick" style="left:${c.t0 / TOTAL * 100}%"></div>`).join('');
 $('chips').innerHTML = CH.map((c, k) => `<button data-ch="${k}">${esc(c.name)}</button>`).join('');
 $('chips').onclick = e => { const b = e.target.closest('[data-ch]'); if (b) seek(CH[+b.dataset.ch].t0, true); };
-$('play').onclick = () => { autoNext = false; if (playing && TTS) TTS.cancel(); if (!playing) { const i = beatAt(t); spokenBeat = t >= BEATS[i].t1 - .03 ? i : -1; } setPlaying(!playing); };
+$('play').onclick = () => { autoNext = false; if (playing && TTS) TTS.cancel(); if (!playing) { const i = beatAt(t), j = t >= BEATS[i].t1 - .03 && i < BEATS.length - 1 ? i + 1 : i; if (narrOn) speak(j); else spokenBeat = t >= BEATS[i].t1 - .03 ? i : -1; } setPlaying(!playing); };
 $('replay').onclick = () => seek(BEATS[beatAt(t)].t0, true);
 $('next').onclick = () => { const i = beatAt(t); if (i < BEATS.length - 1) seek(BEATS[i + 1].t0, true); };
 $('speed').onchange = e => speed = +e.target.value;
@@ -392,17 +392,22 @@ const TTS = 'speechSynthesis' in window ? window.speechSynthesis : null;
 let narrOn = false, spokenBeat = -1, autoNext = false;
 const SAY = s => s.replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂e/g, '二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/≥/g, '至少').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/[（(][A-Za-z0-9 .,\/'’\-]*[）)]/g, '');
 function voice() { const v = TTS.getVoices(); return v.find(x => /zh[-_]TW/i.test(x.lang)) || v.find(x => /^zh/i.test(x.lang)) || null; }
+let curU = null, speechErr = '';
+// iOS／Safari：第一次朗讀必須在點擊當下呼叫；保留 utterance 參照，避免被回收而中斷。
 function speak(i) {
   if (!TTS || !narrOn) return;
-  TTS.cancel(); spokenBeat = i;
+  if (TTS.speaking || TTS.pending) TTS.cancel();
+  spokenBeat = i;
   const u = new SpeechSynthesisUtterance(SAY(BEATS[i].cap)); u.lang = 'zh-TW'; u.rate = speed; const v = voice(); if (v) u.voice = v;
-  TTS.speak(u);
+  u.onstart = () => { if (speechErr) { speechErr = ''; capKey = ''; } };
+  u.onerror = e => { if (e.error && e.error !== 'interrupted' && e.error !== 'canceled') { speechErr = e.error; capKey = ''; } };
+  curU = u; TTS.speak(u); if (TTS.paused) TTS.resume();
 }
 if (!TTS) $('narr').hidden = true;
 $('narr').onclick = () => {
   narrOn = !narrOn; $('narr').classList.toggle('on', narrOn); $('narr').setAttribute('aria-pressed', narrOn);
   $('narr').textContent = narrOn ? '🔊 旁白：開' : '🔈 旁白：關';
-  if (!narrOn) { TTS.cancel(); autoNext = false; } else { spokenBeat = -1; if (!playing) setPlaying(true); }
+  if (!narrOn) { TTS.cancel(); autoNext = false; speechErr = ''; capKey = ''; } else { speak(beatAt(t)); if (!playing) setPlaying(true); }
 };
 function narrTick() {
   if (!TTS || !narrOn || mode !== 'walk') return;
