@@ -12,6 +12,7 @@ import { go, href } from '@/lib/router'
 import { TYPE_LABEL, TYPE_ROUTE, type Item, type SrsData } from '@/lib/types'
 import type { MindmapHandle } from './MindmapCanvas'
 import { QuizView } from './Quiz'
+import { VisualView } from './Visual'
 import { Loading, Prog, Segmented, TextField } from '@/ui/kit'
 
 export const MindmapCanvas = lazy(() => import('./MindmapCanvas'))
@@ -415,6 +416,7 @@ export function ItemView({ courseId, itemId, review }: { courseId: string; itemI
       {item.type === 'mindmap' && <Mindmap md={item.content} />}
       {item.type === 'flashcards' && <Flashcards item={item} review={review} />}
       {item.type === 'quiz' && <QuizView item={item} review={review} />}
+      {item.type === 'visual' && <VisualView item={item} />}
     </section>
   )
 }

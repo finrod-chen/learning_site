@@ -45,7 +45,7 @@ function sane(r: unknown, kind: 'c' | 'i' | 'p'): Rec | null {
     return { id: o.id, name: o.name.slice(0, 200), createdAt: Number(o.createdAt) || o.updatedAt, updatedAt: o.updatedAt, ...(o.deleted ? { deleted: true } : {}) }
   }
   if (typeof o.courseId !== 'string' || typeof o.title !== 'string') return null
-  if (o.type !== 'note' && o.type !== 'mindmap' && o.type !== 'flashcards' && o.type !== 'quiz' && o.type !== 'audio') return null
+  if (o.type !== 'note' && o.type !== 'mindmap' && o.type !== 'visual' && o.type !== 'flashcards' && o.type !== 'quiz' && o.type !== 'audio') return null
   const content = typeof o.content === 'string' ? o.content.slice(0, MAX_CONTENT) : ''
   return {
     id: o.id,

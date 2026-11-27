@@ -33,7 +33,9 @@ export function ItemMenu({ item, onEdit, onDeleted }: { item: Item; onEdit: () =
           { label: '更名', icon: <Pencil {...ic} />, onSelect: () => setDlg('rename') },
           item.type === 'audio'
             ? { label: '下載音檔', icon: <Download {...ic} />, onSelect: () => downloadAudio(item) }
-            : { label: '匯出 Markdown', icon: <Download {...ic} />, onSelect: () => download(item.title, item.content) },
+            : item.type === 'visual'
+              ? { label: '匯出 HTML', icon: <Download {...ic} />, onSelect: () => download(item.title, item.content, '.html') }
+              : { label: '匯出 Markdown', icon: <Download {...ic} />, onSelect: () => download(item.title, item.content) },
           { label: '刪除', icon: <Trash2 {...ic} />, destructive: true, separatorBefore: true, onSelect: () => setDlg('delete') },
         ]}
       />
