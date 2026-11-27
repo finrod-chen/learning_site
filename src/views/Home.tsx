@@ -71,7 +71,7 @@ export function Home() {
                   <span className="course-name">{c.name}</span>
                 </a>
                 <p className="course-meta">
-                  筆記 <b>{n('note')}</b> · 心智圖 <b>{n('mindmap')}</b> · 快閃卡 <b>{n('flashcards')}</b> · 題庫 <b>{n('quiz')}</b> · 有聲書 <b>{n('audio')}</b>
+                  筆記 <b>{n('note')}</b> · 心智圖 <b>{n('mindmap')}</b> · 視覺學習 <b>{n('visual')}</b> · 快閃卡 <b>{n('flashcards')}</b> · 題庫 <b>{n('quiz')}</b> · 有聲書 <b>{n('audio')}</b>
                 </p>
                 {next && <p className="course-next">{next.name} · {describeDays(next.days).text}</p>}
                 <div className="course-foot">

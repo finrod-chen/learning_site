@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, FileText, Headphones, Layers, ListChecks, Network, Plus, Upload } from 'lucide-react'
+import { ArrowLeft, FileText, Headphones, Layers, ListChecks, MonitorPlay, Network, Plus, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs'
 import { CourseMenu, ItemMenu } from '@/ui/Menus'
@@ -12,10 +12,11 @@ import { ALL_TYPES, ROUTE_TYPE, TYPE_LABEL, TYPE_ROUTE, type Item, type ItemType
 import { AudioList, UploadDialog } from './Audio'
 import { CountdownStrip } from '@/ui/Countdowns'
 
-const ICON = { note: FileText, mindmap: Network, flashcards: Layers, quiz: ListChecks, audio: Headphones }
+const ICON = { note: FileText, mindmap: Network, visual: MonitorPlay, flashcards: Layers, quiz: ListChecks, audio: Headphones }
 const HINT: Record<ItemType, string> = {
   note: '用 Markdown 寫下重點、整理概念。',
   mindmap: '用標題與清單縮排，自動畫成心智圖。',
+  visual: '貼上或載入互動動畫的 HTML，用視覺方式理解概念。',
   flashcards: '每行一張卡：問題 :: 答案。',
   quiz: '貼上考古題：每題 1. 題目、(A)～(D) 選項、答案: C。',
   audio: '上傳 mp3 等音檔，直接在這裡播放。',
@@ -24,6 +25,7 @@ const HINT: Record<ItemType, string> = {
 function meta(it: Item): string {
   if (it.type === 'flashcards') return `${parseFlashcards(it.content).cards.length} 張卡片`
   if (it.type === 'quiz') return `${parseQuiz(it.content).questions.length} 題`
+  if (it.type === 'visual') return `${Math.max(1, Math.round(it.content.length / 1024))} KB`
   if (it.type === 'mindmap') return `${countNodes(it.content)} 個節點`
   return `${it.content.replace(/\s/g, '').length} 字`
 }

@@ -53,11 +53,11 @@ export function countNodes(md: string): number {
   return md.split(/\r?\n/).filter(l => /^\s*(#{1,6}\s|[-*+]\s)/.test(l)).length
 }
 
-export function download(filename: string, text: string) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'text/markdown;charset=utf-8' }))
+export function download(filename: string, text: string, ext: '.md' | '.html' = '.md') {
+  const url = URL.createObjectURL(new Blob([text], { type: ext === '.html' ? 'text/html;charset=utf-8' : 'text/markdown;charset=utf-8' }))
   const a = document.createElement('a')
   a.href = url
-  a.download = filename.endsWith('.md') ? filename : filename + '.md'
+  a.download = filename.endsWith(ext) ? filename : filename + ext
   document.body.append(a)
   a.click()
   a.remove()

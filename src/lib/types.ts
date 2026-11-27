@@ -1,6 +1,6 @@
-export type ItemType = 'note' | 'mindmap' | 'flashcards' | 'quiz' | 'audio'
+export type ItemType = 'note' | 'mindmap' | 'visual' | 'flashcards' | 'quiz' | 'audio'
 export type TextType = Exclude<ItemType, 'audio'>
-export const ALL_TYPES: ItemType[] = ['note', 'mindmap', 'flashcards', 'quiz', 'audio']
+export const ALL_TYPES: ItemType[] = ['note', 'mindmap', 'visual', 'flashcards', 'quiz', 'audio']
 
 export interface Course {
   id: string
@@ -82,6 +82,7 @@ export interface DB {
 export const TYPE_LABEL: Record<ItemType, string> = {
   note: '筆記',
   mindmap: '心智圖',
+  visual: '視覺學習',
   flashcards: '快閃卡',
   quiz: '題庫',
   audio: '有聲書',
@@ -90,6 +91,7 @@ export const TYPE_LABEL: Record<ItemType, string> = {
 export const TYPE_ROUTE: Record<ItemType, string> = {
   note: 'notes',
   mindmap: 'mindmaps',
+  visual: 'visuals',
   flashcards: 'flashcards',
   quiz: 'quizzes',
   audio: 'audiobooks',
@@ -98,6 +100,7 @@ export const TYPE_ROUTE: Record<ItemType, string> = {
 export const ROUTE_TYPE: Record<string, ItemType> = {
   notes: 'note',
   mindmaps: 'mindmap',
+  visuals: 'visual',
   flashcards: 'flashcards',
   quizzes: 'quiz',
   audiobooks: 'audio',

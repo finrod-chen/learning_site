@@ -555,3 +555,11 @@ body:has(.player) .toaster { bottom: 240px; }
 .install-actions { grid-column: 2; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .install-steps { margin: 0; padding-inline-start: 1.4em; display: grid; gap: 10px; }
 .install-steps li svg { display: inline; vertical-align: -3px; margin-inline-end: 4px; }
+
+/* visual learning */
+.visual-wrap { display: grid; gap: 12px; }
+.visual-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.visual-bar p { margin: 0; }
+.visual-frame { display: block; width: 100%; height: min(80dvh, 940px); min-height: 520px; border: 1px solid var(--border); border-radius: var(--radius-2xl); background: var(--card); }
+.visual-frame.visual-small { height: 100%; min-height: 360px; }
+.visual-frame:fullscreen { border: 0; border-radius: 0; height: 100%; }

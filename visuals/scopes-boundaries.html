@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>排放範疇與盤查邊界</title>
+<!-- 單一檔案：導覽動畫（walkthrough）+ 動手試（explorer）。依 visual-learning skill 製作。 -->
+<style>
+  :root { --bg:oklch(.97 0 0); --surface:oklch(.994 0 0); --sunk:oklch(0 0 0 / .04);
+          --text:oklch(.097 0 0); --text2:oklch(.097 0 0 / .62); --muted:oklch(.097 0 0 / .45);
+          --border:oklch(0 0 0 / .07); --border-strong:oklch(0 0 0 / .13); --border-emph:oklch(0 0 0 / .3);
+          --accent:oklch(.097 0 0); --on-accent:oklch(.994 0 0); --track:oklch(0 0 0 / .08);
+          --gray-fill:#F5F5F5; --gray-stroke:#737373; --purple-fill:#EEEDFE; --purple-stroke:#534AB7; --purple-text:#3C3489;
+          --coral-fill:#FAECE7; --coral-stroke:#C0472B; --coral-text:#7A2A16; --teal-fill:#E1F5EE; --teal-stroke:#0F8F6B; --teal-text:#085041;
+          --shadow-m:0 4px 6px -2px oklch(0 0 0 / .025), 0 2px 2px -2px oklch(0 0 0 / .05);
+          --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .08), 0 16px 32px -6px oklch(0 0 0 / .12); color-scheme:light; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:oklch(.145 0 0); --surface:oklch(.205 0 0); --sunk:oklch(.994 0 0 / .05);
+    --text:oklch(.985 0 0); --text2:oklch(.985 0 0 / .62); --muted:oklch(.985 0 0 / .45);
+    --border:oklch(.994 0 0 / .07); --border-strong:oklch(.994 0 0 / .13); --border-emph:oklch(.994 0 0 / .4);
+    --accent:oklch(.994 0 0); --on-accent:oklch(.097 0 0); --track:oklch(.994 0 0 / .1);
+    --gray-fill:#262626; --gray-stroke:#A1A1A1; --purple-fill:#3C3489; --purple-stroke:#AFA9EC; --purple-text:#CECBF6;
+    --coral-fill:#5A2414; --coral-stroke:#F0997B; --coral-text:#F7C9BA; --teal-fill:#06403A; --teal-stroke:#5DCAA5; --teal-text:#9FE1CB;
+    --shadow-m:0 4px 6px -2px oklch(0 0 0 / .08); --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .2); color-scheme:dark; } }
+  :root[data-theme="dark"] { --bg:oklch(.145 0 0); --surface:oklch(.205 0 0); --sunk:oklch(.994 0 0 / .05);
+    --text:oklch(.985 0 0); --text2:oklch(.985 0 0 / .62); --muted:oklch(.985 0 0 / .45);
+    --border:oklch(.994 0 0 / .07); --border-strong:oklch(.994 0 0 / .13); --border-emph:oklch(.994 0 0 / .4);
+    --accent:oklch(.994 0 0); --on-accent:oklch(.097 0 0); --track:oklch(.994 0 0 / .1);
+    --gray-fill:#262626; --gray-stroke:#A1A1A1; --purple-fill:#3C3489; --purple-stroke:#AFA9EC; --purple-text:#CECBF6;
+    --coral-fill:#5A2414; --coral-stroke:#F0997B; --coral-text:#F7C9BA; --teal-fill:#06403A; --teal-stroke:#5DCAA5; --teal-text:#9FE1CB;
+    --shadow-m:0 4px 6px -2px oklch(0 0 0 / .08); --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .2); color-scheme:dark; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:400 16px/1.55 system-ui,-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; }
+  main { position:relative; max-width:760px; margin:0 auto; padding:20px 14px 32px; }
+  h1 { font-size:22px; font-weight:650; line-height:1.2; margin:0 0 4px; }
+  .sub { color:var(--text2); font-size:14px; margin:0 0 14px; }
+  #modes { display:inline-flex; gap:4px; padding:4px; background:var(--sunk); border-radius:12px; margin-bottom:14px; }
+  #modes button { border-color:transparent; background:transparent; box-shadow:none; color:var(--text2); }
+  #modes button.on { background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:var(--shadow-m); }
+  svg { display:block; width:100%; height:auto; background:var(--surface); border:1px solid var(--border); border-radius:16px; }
+  #wsvg { border-bottom:none; border-radius:16px 16px 0 0; }
+  svg text { font-family:inherit; }
+  .tm { font-size:13px; fill:var(--text); } .th { font-size:14px; font-weight:600; fill:var(--text); } .ts { font-size:12px; fill:var(--text2); }
+  .frame { fill:none; stroke:var(--border-emph); } .arr { stroke:var(--muted); stroke-width:1.2; fill:none; }
+  .hl { fill:none; stroke:#EF9F27; stroke-width:2.2; }
+  .c-gray>rect { fill:var(--gray-fill); stroke:var(--gray-stroke); } .c-gray>.tm { }
+  .c-purple>rect { fill:var(--purple-fill); stroke:var(--purple-stroke); } .c-purple>.tm { fill:var(--purple-text); }
+  .c-coral>rect { fill:var(--coral-fill); stroke:var(--coral-stroke); } .c-coral>.tm { fill:var(--coral-text); }
+  .c-teal>rect { fill:var(--teal-fill); stroke:var(--teal-stroke); } .c-teal>.tm { fill:var(--teal-text); }
+  #cap { background:var(--surface); border:1px solid var(--border); border-radius:0 0 16px 16px; padding:14px 18px 14px; min-height:118px; }
+  #capch { display:inline-block; font-size:12px; font-weight:600; color:var(--text2); background:var(--sunk); border-radius:999px; padding:2px 10px; }
+  #captext { font-size:16px; margin:8px 0 2px; } #caphint { font-size:13px; color:var(--text2); min-height:18px; }
+  .prow { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  button, select { font:inherit; font-size:14px; font-weight:500; line-height:20px; color:var(--text); background:var(--surface); border:1px solid var(--border-strong); border-radius:10px; padding:6px 14px; cursor:pointer; box-shadow:var(--shadow-m); }
+  button:hover, select:hover { background:var(--sunk); box-shadow:none; }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline:2px solid #EF9F27; outline-offset:2px; }
+  #play { background:var(--accent); color:var(--on-accent); border-color:transparent; min-width:96px; } #play:hover { opacity:.8; }
+  #time { font-size:13px; color:var(--text2); margin-left:auto; font-variant-numeric:tabular-nums; }
+  #scrub { position:relative; height:28px; margin:12px 0 8px; cursor:pointer; touch-action:none; }
+  #scrub .track, #scrub .fill { position:absolute; top:11px; height:6px; border-radius:999px; left:0; }
+  #scrub .track { right:0; background:var(--track); } #scrub .fill { background:var(--accent); }
+  #scrub .tick { position:absolute; top:8px; width:2px; height:12px; margin-left:-1px; border-radius:1px; background:var(--muted); }
+  #scrub .knob { position:absolute; top:5px; width:18px; height:18px; margin-left:-9px; border-radius:50%; background:var(--surface); border:1px solid var(--border-emph); box-shadow:var(--shadow-m); }
+  #chips { display:inline-flex; flex-wrap:wrap; gap:4px; margin-top:10px; padding:4px; background:var(--sunk); border-radius:12px; }
+  #chips button { border-color:transparent; background:transparent; box-shadow:none; color:var(--text2); padding:5px 10px; }
+  #chips button.on { background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:var(--shadow-m); }
+  .panel { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px 18px; margin-top:14px; }
+  .ctl { display:grid; grid-template-columns:1fr; gap:10px; }
+  .ctl label { display:grid; grid-template-columns:150px 1fr 120px; gap:10px; align-items:center; font-size:14px; }
+  .ctl output { font-variant-numeric:tabular-nums; text-align:right; font-size:14px; }
+  input[type=range] { width:100%; accent-color:var(--purple-stroke); }
+  .grp { font-size:12px; font-weight:600; color:var(--text2); margin:6px 0 0; }
+  #ex-note { font-size:14px; color:var(--text2); margin:10px 0 0; }
+  .res { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-top:12px; }
+  .res div { background:var(--sunk); border-radius:12px; padding:8px 12px; }
+  .res b { display:block; font-size:20px; font-variant-numeric:tabular-nums; } .res span { font-size:12px; color:var(--text2); }
+  .sources { font-size:14px; color:var(--text2); background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:4px 18px; margin-top:18px; }
+  .sources b { color:var(--text); font-weight:600; } .sources ol, .sources ul { padding-left:20px; }
+  .sources a { color:var(--text); text-decoration:underline; text-decoration-color:var(--border-emph); text-underline-offset:3px; }
+  #tip { position:absolute; display:none; max-width:270px; padding:8px 12px; font-size:13px; line-height:1.45; background:var(--surface); border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow-xl); pointer-events:none; z-index:5; }
+  [hidden] { display:none !important; }
+  @media (max-width:560px) { #wsvg .tm { font-size:18px; } #wsvg .ts { font-size:16px; } #wsvg .th { font-size:19px; } .res { grid-template-columns:1fr 1fr; } .tm { font-size:15px; } .ts { font-size:14px; } .th { font-size:16px; } .ctl label { grid-template-columns:1fr 120px; } .ctl label input { grid-column:1 / -1; grid-row:2; } .ctl label span:first-child { grid-row:1; } .ctl output { grid-row:1; grid-column:2; } }
+
+  #narr.on { background:var(--purple-fill); color:var(--purple-text); border-color:var(--purple-stroke); }
+  .seg { display:inline-flex; gap:4px; padding:4px; background:var(--sunk); border-radius:12px; flex-wrap:wrap; }
+  .seg button { border-color:transparent; background:transparent; box-shadow:none; color:var(--text2); padding:5px 12px; }
+  .seg button.on { background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:var(--shadow-m); }
+  .ops { display:grid; gap:10px; margin-top:12px; }
+  .op { display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; gap:8px; align-items:center; font-size:14px; background:var(--sunk); border-radius:12px; padding:8px 12px; }
+  .op b { font-weight:600; } .op small { display:block; color:var(--text2); font-size:12px; }
+  .op label { display:grid; gap:2px; font-size:12px; color:var(--text2); }
+  .op select { font-size:13px; padding:4px 8px; }
+  h2 { font-size:17px; font-weight:650; margin:0 0 8px; }
+  .quiz-card { font-size:17px; font-weight:600; margin:10px 0; }
+  #qfb { font-size:14px; min-height:44px; color:var(--text2); }
+  #qfb .ok { color:var(--teal-stroke); font-weight:600; } #qfb .no { color:var(--coral-stroke); font-weight:600; }
+  @media (max-width:560px) { .op { grid-template-columns:1fr 1fr; } .op > div:first-child { grid-column:1 / -1; } }
+</style>
+</head>
+<body>
+<main id="app">
+  <h1>排放範疇與盤查邊界</h1>
+  <p class="sub">先畫組織邊界（哪些公司算進來），再畫營運邊界（算哪些排放：範疇一、二、三）。</p>
+  <div id="modes" role="tablist"><button id="m-walk" class="on" role="tab">導覽動畫</button><button id="m-ex" role="tab">動手試</button></div>
+
+  <section id="walk">
+    <svg id="wsvg" viewBox="0 0 680 360" role="img" aria-label="盤查邊界導覽動畫"><defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" style="stroke:var(--muted)" stroke-width="1.5"/></marker></defs><g id="dyn"></g></svg>
+    <div id="cap" aria-live="polite"><div id="capch"></div><p id="captext"></p><div id="caphint"></div></div>
+    <div id="scrub" data-tip="拖曳可在動畫中移動。刻度是各章的起點。"><div class="track"></div><div class="fill"></div><div id="ticks"></div><div class="knob"></div></div>
+    <div class="prow"><button id="play">▶ 播放</button><button id="replay">↺ 重播此步</button><button id="next">下一步 ▸</button>
+      <select id="speed" aria-label="播放速度"><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option></select>
+      <button id="narr" aria-pressed="false" data-tip="用裝置內建語音朗讀字幕。開啟後，每步唸完會自動前進。">🔈 旁白：關</button><span id="time"></span></div>
+    <div id="chips"></div>
+  </section>
+
+  <section id="ex" hidden>
+    <div class="panel" style="margin-top:0">
+      <h2>1. 組織邊界：三種方法算出來差多少？</h2>
+      <div class="seg" id="appr"></div>
+      <svg id="esvg" viewBox="0 0 680 230" role="img" aria-label="各營運單位計入的排放量" style="margin-top:12px"></svg>
+      <div class="res" id="res"></div>
+      <div class="ops" id="ops"></div>
+      <p id="ex-note"></p>
+    </div>
+    <div class="panel">
+      <h2>2. 排放源分類練習</h2>
+      <div id="qprog" class="ts" style="font-size:13px;color:var(--text2)"></div>
+      <div class="quiz-card" id="qtext"></div>
+      <div class="prow" id="qbtn"></div>
+      <p id="qfb" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section class="sources">
+    <p><b>簡化說明：</b>營運單位與排放量都是虛構的練習數字。GHG Protocol 還有加盟、租賃資產等特殊情況，本頁沒有展開。GHG Protocol 企業標準正在修訂：2025 年 12 月的進度報告提議取消股權比例法、把範疇三改為必要項目，但這些都還是草案，本頁與考試仍依現行版本。範疇三與 ISO 類別的對照，只採用環境部對照表中對應清楚的項目。</p>
+    <p><b>資料來源</b></p>
+    <ol id="srcs"></ol>
+  </section>
+  <div id="tip"></div>
+</main>
+<script>
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+const clamp = u => Math.max(0, Math.min(1, u));
+const E = u => { u = clamp(u); return u < .5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2; };
+const seg = (u, a, b) => clamp((u - a) / (b - a));
+
+/* ---------- 場景動作（純函式：只依進度 u） ---------- */
+function add(S, u, id, it) { S[id] = { ...it, op: (it.op ?? 1) * E(u) }; }
+function del(S, u, id) { if (!S[id]) return; if (u >= 1) delete S[id]; else S[id].op *= 1 - E(u); }
+function delAll(S, u, ids) { ids.forEach(id => del(S, u, id)); }
+function mv(S, u, id, to) { const it = S[id]; if (!it) return; for (const [p, v] of Object.entries(to)) { if (typeof v === 'number' && typeof it[p] === 'number') it[p] += (v - it[p]) * E(u); else if (u >= .5) it[p] = v; } }
+function hl(S, u, ...ids) { if (u > 0) ids.forEach(id => S[id] && (S[id].hl = true)); }
+function fly(S, u, id, a, b, fill = '#7F77DD') { if (u <= 0 || u >= 1) { delete S[id]; return; } S[id] = { type: 'dot', x: a[0] + (b[0] - a[0]) * E(u), y: a[1] + (b[1] - a[1]) * E(u), fill, op: 1 }; }
+const box = (x, y, w, h, c, l1, tip, more = {}) => ({ type: 'box', x, y, w, h, c, l1, tip, ...more });
+const text = (x, y, s, c = 'ts', tip) => ({ type: 'text', x, y, s, c, tip });
+const line = (x1, y1, x2, y2, tip) => ({ type: 'arrow', x1, y1, x2, y2, c1x: x1 + (x2 - x1) / 3, c1y: y1 + (y2 - y1) / 3, c2x: x1 + 2 * (x2 - x1) / 3, c2y: y1 + 2 * (y2 - y1) / 3, tip });
+
+/* ---------- 腳本 ---------- */
+const CH = [], BEATS = [];
+const chapter = name => CH.push({ name, beat: BEATS.length });
+const step = (dur, cap, fn, pause = true) => BEATS.push({ dur, cap, fn, pause, ch: CH.length - 1 });
+const OPS4 = [['o1', '母公司', 'gray', '集團最上層的公司。'], ['o2', '子公司 甲', 'purple', '母公司控制的公司。'], ['o3', '合資 乙', 'purple', '和其他公司一起出資的事業。'], ['o4', '關聯企業 丙', 'gray', '有影響力，但沒有控制權：只有股權比例法會計入。', { dash: true }]];
+
+chapter('1 · 兩道邊界');
+step(7, '盤查之前要先畫兩道邊界。第一道是「組織邊界」：哪些公司、哪些工廠要算進來。', (S, u) => {
+  add(S, seg(u, 0, .25), 'grp', box(40, 30, 600, 150, 'frame', null, '組織邊界：決定哪些營運單位算進來。'));
+  add(S, seg(u, 0, .25), 'grpl', text(340, 48, '組織邊界', 'th'));
+  OPS4.forEach(([id, n, c, tp, m], i) => add(S, seg(u, .2 + i * .12, .45 + i * .12), id, box(60 + i * 145, 80, 130, 50, c, n, tp, m)));
+});
+step(7, '第二道是「營運邊界」：在組織邊界裡，要算哪些排放，並把排放分成範疇一、二、三。', (S, u) => {
+  add(S, seg(u, 0, .3), 'opb', box(40, 210, 600, 110, 'frame', null, '營運邊界：決定要算哪些排放，並分類。'));
+  add(S, seg(u, 0, .3), 'opbl', text(340, 228, '營運邊界', 'th'));
+  [['sc1', '範疇一 直接排放', 'coral'], ['sc2', '範疇二 外購能源', 'teal'], ['sc3', '範疇三 其他間接', 'purple']].forEach(([id, n, c], i) =>
+    add(S, seg(u, .3 + i * .15, .55 + i * .15), id, box(60 + i * 195, 255, 170, 46, c, n, n + '。第 3 章會說明。')));
+  add(S, seg(u, .5, .8), 'gl', line(340, 182, 340, 208, '先畫組織邊界，再畫營運邊界。'));
+});
+
+chapter('2 · 組織邊界的方法');
+step(8, '方法一是「股權比例法」(equity share)：依持股比例計算排放。例如持股 60%，就計入 60% 的排放。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['grp','grpl','o1','o2','o3','o4','opb','opbl','sc1','sc2','sc3','gl']);
+  add(S, seg(u, .3, .55), 'jv', box(60, 70, 200, 56, 'purple', '合資 乙：持股 60%', '母公司持有合資乙 60% 的股份。'));
+  add(S, seg(u, .45, .7), 'ja', line(262, 98, 338, 98, '依持股比例。'));
+  add(S, seg(u, .55, .8), 'r1', box(340, 70, 280, 56, 'teal', '股權比例法：計入 60%', '股權比例反映經濟利益；實質重於法律形式。'));
+  hl(S, seg(u, .8, 1), 'r1');
+});
+step(8, '方法二是「控制權法」：有控制權就計入 100%，沒有就計入 0%。控制權要從「財務控制」和「營運控制」中選一種來判定。', (S, u) => {
+  add(S, seg(u, 0, .35), 'r2', box(340, 150, 280, 56, 'coral', '控制權法：100% 或 0%', '有控制權算 100%，沒有就不算。'));
+  add(S, seg(u, .1, .4), 'jb', line(262, 110, 338, 170, '依控制權。'));
+  add(S, seg(u, .45, .75), 'fc', box(340, 240, 135, 50, 'gray', '財務控制', '第 5 步說明。'));
+  add(S, seg(u, .55, .85), 'oc', box(485, 240, 135, 50, 'gray', '營運控制', '第 6 步說明。'));
+  add(S, seg(u, .6, .9), 'ca', line(480, 208, 480, 238, '二選一。'));
+  hl(S, seg(u, .8, 1), 'r2');
+});
+step(8, '「財務控制」：能主導對方的財務和營運政策，從中取得經濟利益。在財報上通常是子公司。持股不到 50% 也可能有財務控制。共同財務控制的合資依持股比例計入；關聯企業不計入。', (S, u) => {
+  hl(S, u, 'fc');
+  add(S, seg(u, .3, .7), 'fct', text(200, 265, '財報上的子公司 → 100%', 'tm', '財務控制和財務會計的子公司判定一致。'));
+});
+step(8, '「營運控制」：公司或其子公司有完整權限，能在那個營運單位推行自己的營運政策。通常就是持有營運執照、實際營運的一方。', (S, u) => {
+  hl(S, u, 'oc');
+  add(S, seg(u, .3, .7), 'oct', text(200, 310, '實際營運的一方 → 100%', 'tm', '營運控制不代表所有決策都能自己決定，例如大型投資可能仍需合夥人同意。'));
+});
+step(7, '如果每個營運單位都是全資擁有，三種方法結果一樣。有合資或部分持股時，結果就可能不同。切到「動手試」可以比較。', (S, u) => {
+  add(S, seg(u, 0, .4), 'eq', text(160, 165, '全資擁有：三種方法相同', 'th', 'GHG Protocol：全資擁有時，組織邊界不受方法影響。'));
+});
+
+chapter('3 · 範疇一二三');
+step(8, '範疇一是直接排放：排放源由公司擁有或控制。例如自有鍋爐、窯爐、車輛的燃燒，以及製程設備的排放。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['jv','ja','r1','r2','jb','fc','oc','ca','fct','oct','eq']);
+  add(S, seg(u, .25, .5), 'co', box(190, 30, 300, 210, 'frame', null, '公司的組織邊界。'));
+  add(S, seg(u, .25, .5), 'cot', text(340, 48, '公司（組織邊界內）', 'th'));
+  add(S, seg(u, .4, .7), 's1', box(215, 70, 250, 50, 'coral', '範疇一：直接排放', '鍋爐、窯爐、車輛燃燒；製程排放。排放源在公司內。'));
+  add(S, seg(u, .7, 1), 's1t', text(340, 140, '鍋爐・公司車・製程', 'ts'));
+});
+step(9, 'GHG Protocol 和環境部指引都把冷媒等「逸散排放」列為直接排放。範疇二是外購的電力、蒸汽等能源：排放發生在發電端，但因公司使用而計入。', (S, u) => {
+  add(S, seg(u, 0, .3), 's1t2', text(340, 162, '冷媒逸散也算範疇一', 'ts', '例如設備洩漏的冷媒，屬於直接排放。'));
+  add(S, seg(u, .35, .6), 's2', box(500, 180, 170, 50, 'teal', '範疇二：外購能源', '外購電力、蒸汽、熱或冷。排放實際發生在供應端。'));
+  add(S, seg(u, .45, .7), 's2a', line(498, 205, 492, 205, '能源流入公司。'));
+  fly(S, seg(u, .6, .95), 'dot', [585, 180], [470, 205], '#0F8F6B');
+  add(S, seg(u, .7, 1), 's2t', text(585, 250, '供應端排放，公司使用', 'ts'));
+});
+step(9, '範疇三是其他間接排放：因公司活動而產生，但排放源不屬於公司。例如原料的開採與生產、外購燃料的運輸、客戶使用公司賣出的產品。', (S, u) => {
+  add(S, seg(u, 0, .3), 's3u', box(20, 90, 150, 50, 'purple', '範疇三：上游', '例如購買原料的開採與生產。'));
+  add(S, seg(u, .2, .5), 's3d', box(20, 180, 150, 50, 'purple', '範疇三：下游', '例如客戶使用公司賣出的產品。'));
+  add(S, seg(u, .3, .6), 's3ua', line(172, 115, 188, 115, '上游活動。'));
+  add(S, seg(u, .4, .7), 's3da', line(188, 205, 172, 205, '下游活動。'));
+  add(S, seg(u, .5, .8), 's3t', text(95, 250, '排放源不屬於公司', 'ts'));
+  add(S, seg(u, .7, 1), 'mn', text(340, 300, 'GHG Protocol：範疇一、二至少要分開報告', 'tm', '現行版本中，範疇三為選擇性報告。'));
+});
+
+chapter('4 · ISO 類別與台灣規定');
+step(9, 'ISO／CNS 14064-1 改用 6 個「類別」：類別 1 對應範疇一，類別 2 對應範疇二，類別 3 到 6 是範疇三拆開來的。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['co','cot','s1','s1t','s1t2','s2','s2a','s2t','s3u','s3d','s3ua','s3da','s3t','mn']);
+  [['k1', '類別 1 直接', 'coral', '直接溫室氣體排放與移除。'], ['k2', '類別 2 輸入能源', 'teal', '輸入能源的間接排放，例如外購電力。'], ['k3', '類別 3 運輸', 'purple', '運輸：上下游運輸、商務旅行、員工通勤。'],
+   ['k4', '類別 4 使用的產品', 'purple', '組織使用的產品，例如購買的商品與服務。'], ['k5', '類別 5 產品的使用', 'purple', '與組織產品使用相關，例如客戶使用賣出的產品。'], ['k6', '類別 6 其他', 'purple', '其他來源的間接排放。']]
+   .forEach(([id, n, c, tp], i) => add(S, seg(u, .3 + i * .08, .5 + i * .08), id, box(40 + (i % 3) * 205, 150 + Math.floor(i / 3) * 70, 190, 50, c, n, tp)));
+  add(S, seg(u, .25, .5), 'm1', text(142, 50, '範疇一', 'th')); add(S, seg(u, .25, .5), 'm2', text(347, 50, '範疇二', 'th')); add(S, seg(u, .25, .5), 'm3', text(552, 50, '範疇三', 'th'));
+  add(S, seg(u, .7, 1), 'ma1', line(142, 62, 135, 148, '範疇一 = 類別 1。'));
+  add(S, seg(u, .72, 1), 'ma2', line(347, 62, 340, 148, '範疇二 = 類別 2。'));
+  add(S, seg(u, .75, 1), 'ma3', line(552, 62, 545, 148, '範疇三 = 類別 3 到 6。'));
+});
+step(9, '依環境部規定，列管事業要盤查直接排放和能源間接排放，邊界以工廠登記證或商工登記為準。其他間接排放，列管事業不須執行；金管會指定揭露對象和自願盤查者，則視目的而定。', (S, u) => {
+  hl(S, u, 'k1', 'k2');
+  add(S, seg(u, .3, .7), 'tw', box(90, 305, 500, 40, 'gray', '環境部列管事業：必做類別 1、2（範疇一、二）', '依指引表 2：直接排放、能源間接排放為強制要求。'));
+});
+
+/* ---------- 時間與繪製 ---------- */
+const SETTLE = .5, EPS = .001;
+let acc = 0; BEATS.forEach(b => { b.t0 = acc; b.t1 = acc + b.dur + SETTLE; acc = b.t1; });
+const TOTAL = acc; CH.forEach(c => c.t0 = BEATS[c.beat].t0);
+function stateAt(t) {
+  const S = {}; let i = 0;
+  for (; i < BEATS.length && t >= BEATS[i].t1; i++) BEATS[i].fn(S, 1);
+  Object.values(S).forEach(it => it.hl = false);
+  if (i >= BEATS.length) i = BEATS.length - 1; else BEATS[i].fn(S, clamp((t - BEATS[i].t0) / BEATS[i].dur));
+  return { S, i };
+}
+const T = (x, y, s, c, a = 'middle') => `<text class="${c}" x="${x}" y="${y}" text-anchor="${a}" dominant-baseline="central">${esc(s)}</text>`;
+function draw(it, now) {
+  const op = clamp(it.op ?? 1); if (op < .01) return '';
+  const tp = it.tip ? ` data-tip="${esc(it.tip)}"` : '', o = ` opacity="${op.toFixed(3)}"`;
+  if (it.type === 'text') return `<g${o}${tp}>${T(it.x, it.y, it.s, it.c)}</g>`;
+  if (it.type === 'dot') return `<circle cx="${it.x}" cy="${it.y}" r="5" fill="${it.fill}"${o}/>`;
+  if (it.type === 'arrow') return `<path class="arr" d="M${it.x1} ${it.y1}C${it.c1x} ${it.c1y} ${it.c2x} ${it.c2y} ${it.x2} ${it.y2}" marker-end="url(#ah)"${o}${tp}/>`;
+  if (it.h < 1 && !it.l1) return '';
+  const fr = it.c === 'frame';
+  let s = `<g class="${fr ? '' : 'c-' + it.c}"${o}${tp}><rect class="${fr ? 'frame' : ''}" x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" rx="${fr ? 10 : 6}" stroke-width="0.8"${it.dash ? ' stroke-dasharray="5 4"' : ''}/>`;
+  if (it.l1) s += T(it.x + it.w / 2, it.y + it.h / 2, it.l1, 'tm');
+  s += '</g>';
+  if (it.hl) s += `<rect class="hl" x="${it.x - 2.5}" y="${it.y - 2.5}" width="${it.w + 5}" height="${it.h + 5}" rx="8" opacity="${(op * (.55 + .45 * Math.sin(now / 260))).toFixed(3)}"/>`;
+  return s;
+}
+
+/* ---------- 播放器 ---------- */
+let t = 0, playing = false, speed = 1, last = null, skipPause = -1, capKey = '', mode = 'walk';
+const beatAt = tt => { let i = 0; while (i < BEATS.length - 1 && tt >= BEATS[i].t1) i++; return i; };
+function setPlaying(p) {
+  playing = p;
+  if (p) { if (t >= TOTAL - 2 * EPS) t = 0; const i = beatAt(t); if (t >= BEATS[i].t1 - 2 * EPS) skipPause = i; }
+  $('play').textContent = p ? '❚❚ 暫停' : '▶ 播放';
+}
+function seek(tt, play) { t = Math.max(0, Math.min(TOTAL - EPS, tt)); skipPause = -1; spokenBeat = -1; autoNext = false; if (TTS && !play) TTS.cancel(); setPlaying(!!play); }
+function tick(now) {
+  const dt = last == null ? 0 : Math.min(.1, (now - last) / 1000); last = now;
+  if (mode === 'walk') {
+    if (playing) {
+      const i = beatAt(t), b = BEATS[i]; let nt = t + dt * speed;
+      if (i !== skipPause && b.pause && nt >= b.t1 - EPS) { nt = b.t1 - EPS; setPlaying(false); autoNext = narrOn; }
+      if (nt >= TOTAL - EPS) { nt = TOTAL - EPS; setPlaying(false); }
+      if (beatAt(nt) !== i) skipPause = -1;
+      t = nt;
+    }
+    const { S, i } = stateAt(t);
+    $('dyn').innerHTML = Object.values(S).map(it => draw(it, now)).join('');
+    const b = BEATS[i], atEnd = t >= b.t1 - .03, key = i + '|' + playing + '|' + atEnd + '|' + narrOn;
+    if (key !== capKey) {
+      capKey = key;
+      $('capch').textContent = `${CH[b.ch].name} ・ 第 ${i + 1} / ${BEATS.length} 步`;
+      $('captext').textContent = b.cap;
+      $('caphint').textContent = playing ? '' : atEnd ? (narrOn ? '旁白唸完會自動繼續。' : '已暫停。按「播放」或空白鍵繼續。') : '已暫停。';
+      [...$('chips').children].forEach((c, k) => c.classList.toggle('on', k === b.ch));
+    }
+    const pct = t / TOTAL * 100 + '%';
+    document.querySelector('#scrub .fill').style.width = pct; document.querySelector('#scrub .knob').style.left = pct;
+    const f = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+    $('time').textContent = `${f(t)} / ${f(TOTAL)}`;
+  }
+  narrTick();
+  requestAnimationFrame(tick);
+}
+$('ticks').innerHTML = CH.map(c => `<div class="tick" style="left:${c.t0 / TOTAL * 100}%"></div>`).join('');
+$('chips').innerHTML = CH.map((c, k) => `<button data-ch="${k}">${esc(c.name)}</button>`).join('');
+$('chips').onclick = e => { const b = e.target.closest('[data-ch]'); if (b) seek(CH[+b.dataset.ch].t0, true); };
+$('play').onclick = () => { autoNext = false; if (playing && TTS) TTS.cancel(); if (!playing) { const i = beatAt(t); spokenBeat = t >= BEATS[i].t1 - .03 ? i : -1; } setPlaying(!playing); };
+$('replay').onclick = () => seek(BEATS[beatAt(t)].t0, true);
+$('next').onclick = () => { const i = beatAt(t); if (i < BEATS.length - 1) seek(BEATS[i + 1].t0, true); };
+$('speed').onchange = e => speed = +e.target.value;
+const sc = $('scrub'), posT = x => { const r = sc.getBoundingClientRect(); return clamp((x - r.left) / r.width) * TOTAL; };
+let drag = false;
+sc.onpointerdown = e => { drag = true; sc.setPointerCapture(e.pointerId); seek(posT(e.clientX), false); };
+sc.onpointermove = e => { if (drag) seek(posT(e.clientX), false); };
+sc.onpointerup = () => drag = false;
+document.addEventListener('keydown', e => {
+  if (mode !== 'walk' || e.target.closest('button, select, input')) return;
+  if (e.key === ' ') { e.preventDefault(); $('play').click(); }
+  else if (e.key === 'ArrowRight') $('next').click(); else if (e.key === 'ArrowLeft') $('replay').click();
+});
+const tipEl = $('tip'), app = $('app');
+function showTip(e) {
+  const el = !drag && e.target.closest && e.target.closest('[data-tip]');
+  if (!el) return tipEl.style.display = 'none';
+  tipEl.textContent = el.dataset.tip; tipEl.style.display = 'block';
+  const a = app.getBoundingClientRect();
+  tipEl.style.left = Math.max(0, Math.min(e.clientX - a.left + 14, a.width - tipEl.offsetWidth - 8)) + 'px';
+  tipEl.style.top = e.clientY - a.top + 18 + 'px';
+}
+document.addEventListener('mousemove', showTip);
+window.addEventListener('resize', () => mode === 'ex' && renderEx());
+document.addEventListener('click', e => { if (!e.target.closest('[data-tip]')) tipEl.style.display = 'none'; else showTip(e); });
+
+/* ---------- 動手試 1：組織邊界 ---------- */
+const CAT = { sub: '子公司', jfc: '共同財務控制的合資', assoc: '關聯企業', fixed: '固定資產投資' };
+const CAT_TIP = { sub: '母公司能主導財務與營運政策。', jfc: '合夥各方共同擁有財務控制。', assoc: '有重大影響力，但沒有財務控制。', fixed: '沒有重大影響力，也沒有財務控制。' };
+const OPS = [
+  { n: '子公司 甲', e: 1000, own: 100, cat: 'sub', op: 'us' },
+  { n: '合資 乙', e: 800, own: 60, cat: 'sub', op: 'us' },
+  { n: '合資 丙', e: 600, own: 50, cat: 'jfc', op: 'them' },
+  { n: '關聯企業 丁', e: 500, own: 30, cat: 'assoc', op: 'them' },
+  { n: '投資 戊', e: 400, own: 5, cat: 'fixed', op: 'them' },
+];
+const APPR = [['eq', '股權比例法'], ['fin', '財務控制'], ['opc', '營運控制']];
+let appr = 'eq';
+function share(o, a) {
+  if (a === 'eq') return o.cat === 'fixed' ? 0 : o.own / 100;
+  if (a === 'fin') return o.cat === 'sub' ? 1 : o.cat === 'jfc' ? o.own / 100 : 0;
+  return o.op === 'us' ? 1 : 0;
+}
+const why = (o, a) => a === 'eq' ? (o.cat === 'fixed' ? '固定資產投資：不計入' : `依持股 ${o.own}%`)
+  : a === 'fin' ? (o.cat === 'sub' ? '子公司：全部計入' : o.cat === 'jfc' ? `共同財務控制：依持股 ${o.own}%` : CAT[o.cat] + '：不計入')
+  : (o.op === 'us' ? '我方營運：全部計入' : '他方營運：不計入');
+$('appr').innerHTML = APPR.map(([k, n]) => `<button data-a="${k}">${n}</button>`).join('');
+$('appr').onclick = e => { const b = e.target.closest('[data-a]'); if (b) { appr = b.dataset.a; renderEx(); } };
+$('ops').innerHTML = OPS.map((o, i) => `<div class="op"><div><b>${o.n}</b><small>排放 ${o.e.toLocaleString()} tCO₂e（假設）</small></div>
+  <label data-tip="母公司持有的股權比例。">持股 <output id="ow${i}"></output><input type="range" min="0" max="100" step="5" id="own${i}"></label>
+  <label data-tip="財務會計上的分類，影響財務控制法。">財報分類<select id="cat${i}">${Object.entries(CAT).map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select></label>
+  <label data-tip="誰有完整權限推行營運政策，影響營運控制法。">營運者<select id="op${i}"><option value="us">我方</option><option value="them">他方</option></select></label></div>`).join('');
+OPS.forEach((o, i) => {
+  $('own' + i).oninput = e => { o.own = +e.target.value; renderEx(); };
+  $('cat' + i).onchange = e => { o.cat = e.target.value; renderEx(); };
+  $('op' + i).onchange = e => { o.op = e.target.value; renderEx(); };
+});
+const fmt = n => Math.round(n).toLocaleString('zh-Hant');
+function renderEx() {
+  [...$('appr').children].forEach(b => b.classList.toggle('on', b.dataset.a === appr));
+  OPS.forEach((o, i) => { $('own' + i).value = o.own; $('ow' + i).textContent = o.own + '%'; $('cat' + i).value = o.cat; $('op' + i).value = o.op; });
+  const narrow = innerWidth < 560, W = narrow ? 420 : 680, lx = narrow ? 10 : 20, bx = narrow ? 150 : 170, bw = W - bx - (narrow ? 60 : 80);
+  $('esvg').setAttribute('viewBox', `0 0 ${W} 230`);
+  let s = '';
+  OPS.forEach((o, i) => {
+    const y = 14 + i * 42, f = share(o, appr), w = bw * o.e / 1000;
+    s += T(lx, y + 13, o.n, 'tm', 'start');
+    s += `<g class="c-gray" data-tip="${esc(o.n)} 的總排放：${fmt(o.e)} tCO₂e。"><rect x="${bx}" y="${y}" width="${w}" height="26" rx="5" stroke-width=".8"/></g>`;
+    if (f > 0) s += `<g class="c-purple" data-tip="${esc(why(o, appr))}，計入 ${fmt(o.e * f)} tCO₂e。"><rect x="${bx}" y="${y}" width="${w * f}" height="26" rx="5" stroke-width=".8"/></g>`;
+    s += T(bx + w + 8, y + 13, Math.round(f * 100) + '%', 'ts', 'start');
+  });
+  $('esvg').innerHTML = s;
+  $('res').innerHTML = APPR.map(([k, n]) => `<div${k === appr ? ' style="outline:2px solid var(--purple-stroke)"' : ''}><b>${fmt(OPS.reduce((a, o) => a + o.e * share(o, k), 0))}</b><span>${n}合計（tCO₂e）</span></div>`).join('');
+  $('ex-note').textContent = '目前方法：' + OPS.map(o => `${o.n}－${why(o, appr)}`).join('；') + '。試試看：把「合資 丙」的營運者改成「我方」，比較三種方法的差異。';
+}
+
+/* ---------- 動手試 2：排放源分類 ---------- */
+const QS = [
+  ['工廠自有鍋爐燃燒天然氣', 1, '範疇一，ISO 類別 1：公司擁有的設備燃燒燃料。'],
+  ['公司自有貨車的柴油', 1, '範疇一，ISO 類別 1：公司擁有的車輛燃燒燃料。'],
+  ['冷氣機冷媒逸散', 1, '範疇一，ISO 類別 1：環境部指引把逸散排放列為直接排放。'],
+  ['辦公室使用的外購電力', 2, '範疇二，ISO 類別 2：外購電力的間接排放。'],
+  ['工廠外購的蒸汽', 2, '範疇二，ISO 類別 2：環境部指引把外購蒸汽列為能源間接排放。'],
+  ['員工通勤', 3, '範疇三（GHG Protocol 第 7 類），ISO 類別 3：運輸。'],
+  ['員工出差搭飛機', 3, '範疇三（第 6 類，商務旅行），ISO 類別 3：運輸。'],
+  ['購買原料在供應商端的生產排放', 3, '範疇三（第 1 類，購買商品或服務），ISO 類別 4。'],
+  ['委外物流把原料送到工廠', 3, '範疇三（第 4 類，上游運輸和配送），ISO 類別 3。'],
+  ['委外物流把產品送到客戶手上', 3, '範疇三（第 9 類，下游運輸和配送），ISO 類別 3。'],
+];
+let qi = 0, qok = 0, qans = false;
+function renderQ() {
+  if (qi >= QS.length) { $('qprog').textContent = `完成！答對 ${qok} / ${QS.length} 題`; $('qtext').textContent = '再練一次？'; $('qbtn').innerHTML = '<button id="qre">重新開始</button>'; $('qre').onclick = () => { qi = 0; qok = 0; renderQ(); }; $('qfb').textContent = ''; return; }
+  qans = false;
+  $('qprog').textContent = `第 ${qi + 1} / ${QS.length} 題・答對 ${qok}`;
+  $('qtext').textContent = QS[qi][0] + '，屬於哪個範疇？';
+  $('qbtn').innerHTML = [1, 2, 3].map(k => `<button data-k="${k}">範疇${'一二三'[k - 1]}</button>`).join('');
+  $('qfb').textContent = '';
+}
+$('qbtn').onclick = e => {
+  const b = e.target.closest('[data-k]'); if (!b) return;
+  if (qans) return;
+  qans = true; const q = QS[qi], ok = +b.dataset.k === q[1]; if (ok) qok++;
+  $('qfb').innerHTML = `<span class="${ok ? 'ok' : 'no'}">${ok ? '答對了。' : '不對。'}</span> ${esc(q[2])}`;
+  $('qbtn').innerHTML = `<button id="qnext">下一題 ▸</button>`; $('qnext').onclick = () => { qi++; renderQ(); };
+};
+window.addEventListener('resize', () => mode === 'ex' && renderEx());
+
+/* ---------- 旁白（瀏覽器內建語音，Web Speech API） ---------- */
+const TTS = 'speechSynthesis' in window ? window.speechSynthesis : null;
+let narrOn = false, spokenBeat = -1, autoNext = false;
+const SAY = s => s.replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂e/g, '二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/≥/g, '至少').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/[（(][A-Za-z0-9 .,\/'’\-]*[）)]/g, '');
+function voice() { const v = TTS.getVoices(); return v.find(x => /zh[-_]TW/i.test(x.lang)) || v.find(x => /^zh/i.test(x.lang)) || null; }
+function speak(i) {
+  if (!TTS || !narrOn) return;
+  TTS.cancel(); spokenBeat = i;
+  const u = new SpeechSynthesisUtterance(SAY(BEATS[i].cap)); u.lang = 'zh-TW'; u.rate = speed; const v = voice(); if (v) u.voice = v;
+  TTS.speak(u);
+}
+if (!TTS) $('narr').hidden = true;
+$('narr').onclick = () => {
+  narrOn = !narrOn; $('narr').classList.toggle('on', narrOn); $('narr').setAttribute('aria-pressed', narrOn);
+  $('narr').textContent = narrOn ? '🔊 旁白：開' : '🔈 旁白：關';
+  if (!narrOn) { TTS.cancel(); autoNext = false; } else { spokenBeat = -1; if (!playing) setPlaying(true); }
+};
+function narrTick() {
+  if (!TTS || !narrOn || mode !== 'walk') return;
+  const i = beatAt(t);
+  if (playing && spokenBeat !== i) speak(i);
+  // 這一步的動畫播完而自動暫停時，等旁白唸完再前進
+  if (!playing && autoNext && !TTS.speaking && !TTS.pending) { autoNext = false; if (i < BEATS.length - 1) seek(BEATS[i + 1].t0, true); }
+}
+function setMode(m) {
+  mode = m; $('walk').hidden = m !== 'walk'; $('ex').hidden = m !== 'ex';
+  $('m-walk').classList.toggle('on', m === 'walk'); $('m-ex').classList.toggle('on', m === 'ex');
+  if (m === 'ex') { setPlaying(false); autoNext = false; if (TTS) TTS.cancel(); renderEx(); renderQ(); }
+}
+$('m-walk').onclick = () => setMode('walk'); $('m-ex').onclick = () => setMode('ex');
+
+$('srcs').innerHTML = [
+  ['GHG Protocol：A Corporate Accounting and Reporting Standard（修訂版），第 3、4 章', 'https://ghgprotocol.org/sites/default/files/standards/ghg-protocol-revised.pdf'],
+  ['環境部：溫室氣體排放量盤查作業指引（113 年版）', 'https://ghgregistry.moenv.gov.tw/upload/Tools/%E6%BA%AB%E5%AE%A4%E6%B0%A3%E9%AB%94%E6%8E%92%E6%94%BE%E9%87%8F%E7%9B%A4%E6%9F%A5%E4%BD%9C%E6%A5%AD%E6%8C%87%E5%BC%95113%E5%B9%B4%E7%89%88.pdf'],
+  ['GHG Protocol：Corporate Standard Revisions — Phase 1 Progress Update（2025 年 12 月）', 'https://ghgprotocol.org/sites/default/files/2025-12/CS-Phase1-ProgressUpdate.pdf'],
+].map(([n, u]) => `<li><a href="${u}" target="_blank" rel="noopener">${esc(n)}</a></li>`).join('');
+seek(0, false); renderEx(); renderQ(); requestAnimationFrame(tick);
+</script>
+</body>
+</html>

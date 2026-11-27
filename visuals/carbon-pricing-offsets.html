@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>碳權、碳定價與抵換</title>
+<!-- 單一檔案：導覽動畫（walkthrough）+ 動手試（explorer）。依 visual-learning skill 製作。 -->
+<style>
+  :root { --bg:oklch(.97 0 0); --surface:oklch(.994 0 0); --sunk:oklch(0 0 0 / .04);
+          --text:oklch(.097 0 0); --text2:oklch(.097 0 0 / .62); --muted:oklch(.097 0 0 / .45);
+          --border:oklch(0 0 0 / .07); --border-strong:oklch(0 0 0 / .13); --border-emph:oklch(0 0 0 / .3);
+          --accent:oklch(.097 0 0); --on-accent:oklch(.994 0 0); --track:oklch(0 0 0 / .08);
+          --gray-fill:#F5F5F5; --gray-stroke:#737373; --purple-fill:#EEEDFE; --purple-stroke:#534AB7; --purple-text:#3C3489;
+          --coral-fill:#FAECE7; --coral-stroke:#C0472B; --coral-text:#7A2A16; --teal-fill:#E1F5EE; --teal-stroke:#0F8F6B; --teal-text:#085041;
+          --shadow-m:0 4px 6px -2px oklch(0 0 0 / .025), 0 2px 2px -2px oklch(0 0 0 / .05);
+          --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .08), 0 16px 32px -6px oklch(0 0 0 / .12); color-scheme:light; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:oklch(.145 0 0); --surface:oklch(.205 0 0); --sunk:oklch(.994 0 0 / .05);
+    --text:oklch(.985 0 0); --text2:oklch(.985 0 0 / .62); --muted:oklch(.985 0 0 / .45);
+    --border:oklch(.994 0 0 / .07); --border-strong:oklch(.994 0 0 / .13); --border-emph:oklch(.994 0 0 / .4);
+    --accent:oklch(.994 0 0); --on-accent:oklch(.097 0 0); --track:oklch(.994 0 0 / .1);
+    --gray-fill:#262626; --gray-stroke:#A1A1A1; --purple-fill:#3C3489; --purple-stroke:#AFA9EC; --purple-text:#CECBF6;
+    --coral-fill:#5A2414; --coral-stroke:#F0997B; --coral-text:#F7C9BA; --teal-fill:#06403A; --teal-stroke:#5DCAA5; --teal-text:#9FE1CB;
+    --shadow-m:0 4px 6px -2px oklch(0 0 0 / .08); --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .2); color-scheme:dark; } }
+  :root[data-theme="dark"] { --bg:oklch(.145 0 0); --surface:oklch(.205 0 0); --sunk:oklch(.994 0 0 / .05);
+    --text:oklch(.985 0 0); --text2:oklch(.985 0 0 / .62); --muted:oklch(.985 0 0 / .45);
+    --border:oklch(.994 0 0 / .07); --border-strong:oklch(.994 0 0 / .13); --border-emph:oklch(.994 0 0 / .4);
+    --accent:oklch(.994 0 0); --on-accent:oklch(.097 0 0); --track:oklch(.994 0 0 / .1);
+    --gray-fill:#262626; --gray-stroke:#A1A1A1; --purple-fill:#3C3489; --purple-stroke:#AFA9EC; --purple-text:#CECBF6;
+    --coral-fill:#5A2414; --coral-stroke:#F0997B; --coral-text:#F7C9BA; --teal-fill:#06403A; --teal-stroke:#5DCAA5; --teal-text:#9FE1CB;
+    --shadow-m:0 4px 6px -2px oklch(0 0 0 / .08); --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .2); color-scheme:dark; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:400 16px/1.55 system-ui,-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; }
+  main { position:relative; max-width:760px; margin:0 auto; padding:20px 14px 32px; }
+  h1 { font-size:22px; font-weight:650; line-height:1.2; margin:0 0 4px; }
+  .sub { color:var(--text2); font-size:14px; margin:0 0 14px; }
+  #modes { display:inline-flex; gap:4px; padding:4px; background:var(--sunk); border-radius:12px; margin-bottom:14px; }
+  #modes button { border-color:transparent; background:transparent; box-shadow:none; color:var(--text2); }
+  #modes button.on { background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:var(--shadow-m); }
+  svg { display:block; width:100%; height:auto; background:var(--surface); border:1px solid var(--border); border-radius:16px; }
+  #wsvg { border-bottom:none; border-radius:16px 16px 0 0; }
+  svg text { font-family:inherit; }
+  .tm { font-size:13px; fill:var(--text); } .th { font-size:14px; font-weight:600; fill:var(--text); } .ts { font-size:12px; fill:var(--text2); }
+  .frame { fill:none; stroke:var(--border-emph); } .arr { stroke:var(--muted); stroke-width:1.2; fill:none; }
+  .hl { fill:none; stroke:#EF9F27; stroke-width:2.2; }
+  .c-gray>rect { fill:var(--gray-fill); stroke:var(--gray-stroke); } .c-gray>.tm { }
+  .c-purple>rect { fill:var(--purple-fill); stroke:var(--purple-stroke); } .c-purple>.tm { fill:var(--purple-text); }
+  .c-coral>rect { fill:var(--coral-fill); stroke:var(--coral-stroke); } .c-coral>.tm { fill:var(--coral-text); }
+  .c-teal>rect { fill:var(--teal-fill); stroke:var(--teal-stroke); } .c-teal>.tm { fill:var(--teal-text); }
+  #cap { background:var(--surface); border:1px solid var(--border); border-radius:0 0 16px 16px; padding:14px 18px 14px; min-height:118px; }
+  #capch { display:inline-block; font-size:12px; font-weight:600; color:var(--text2); background:var(--sunk); border-radius:999px; padding:2px 10px; }
+  #captext { font-size:16px; margin:8px 0 2px; } #caphint { font-size:13px; color:var(--text2); min-height:18px; }
+  .prow { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  button, select { font:inherit; font-size:14px; font-weight:500; line-height:20px; color:var(--text); background:var(--surface); border:1px solid var(--border-strong); border-radius:10px; padding:6px 14px; cursor:pointer; box-shadow:var(--shadow-m); }
+  button:hover, select:hover { background:var(--sunk); box-shadow:none; }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline:2px solid #EF9F27; outline-offset:2px; }
+  #play { background:var(--accent); color:var(--on-accent); border-color:transparent; min-width:96px; } #play:hover { opacity:.8; }
+  #time { font-size:13px; color:var(--text2); margin-left:auto; font-variant-numeric:tabular-nums; }
+  #scrub { position:relative; height:28px; margin:12px 0 8px; cursor:pointer; touch-action:none; }
+  #scrub .track, #scrub .fill { position:absolute; top:11px; height:6px; border-radius:999px; left:0; }
+  #scrub .track { right:0; background:var(--track); } #scrub .fill { background:var(--accent); }
+  #scrub .tick { position:absolute; top:8px; width:2px; height:12px; margin-left:-1px; border-radius:1px; background:var(--muted); }
+  #scrub .knob { position:absolute; top:5px; width:18px; height:18px; margin-left:-9px; border-radius:50%; background:var(--surface); border:1px solid var(--border-emph); box-shadow:var(--shadow-m); }
+  #chips { display:inline-flex; flex-wrap:wrap; gap:4px; margin-top:10px; padding:4px; background:var(--sunk); border-radius:12px; }
+  #chips button { border-color:transparent; background:transparent; box-shadow:none; color:var(--text2); padding:5px 10px; }
+  #chips button.on { background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:var(--shadow-m); }
+  .panel { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px 18px; margin-top:14px; }
+  .ctl { display:grid; grid-template-columns:1fr; gap:10px; }
+  .ctl label { display:grid; grid-template-columns:150px 1fr 120px; gap:10px; align-items:center; font-size:14px; }
+  .ctl output { font-variant-numeric:tabular-nums; text-align:right; font-size:14px; }
+  input[type=range] { width:100%; accent-color:var(--purple-stroke); }
+  .grp { font-size:12px; font-weight:600; color:var(--text2); margin:6px 0 0; }
+  #ex-note { font-size:14px; color:var(--text2); margin:10px 0 0; }
+  .res { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-top:12px; }
+  .res div { background:var(--sunk); border-radius:12px; padding:8px 12px; }
+  .res b { display:block; font-size:20px; font-variant-numeric:tabular-nums; } .res span { font-size:12px; color:var(--text2); }
+  .sources { font-size:14px; color:var(--text2); background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:4px 18px; margin-top:18px; }
+  .sources b { color:var(--text); font-weight:600; } .sources ol, .sources ul { padding-left:20px; }
+  .sources a { color:var(--text); text-decoration:underline; text-decoration-color:var(--border-emph); text-underline-offset:3px; }
+  #tip { position:absolute; display:none; max-width:270px; padding:8px 12px; font-size:13px; line-height:1.45; background:var(--surface); border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow-xl); pointer-events:none; z-index:5; }
+  [hidden] { display:none !important; }
+  @media (max-width:560px) { #wsvg .tm { font-size:18px; } #wsvg .ts { font-size:16px; } #wsvg .th { font-size:19px; } .res { grid-template-columns:1fr 1fr; } .tm { font-size:15px; } .ts { font-size:14px; } .th { font-size:16px; } .ctl label { grid-template-columns:1fr 120px; } .ctl label input { grid-column:1 / -1; grid-row:2; } .ctl label span:first-child { grid-row:1; } .ctl output { grid-row:1; grid-column:2; } }
+
+  #narr.on { background:var(--purple-fill); color:var(--purple-text); border-color:var(--purple-stroke); }
+  .seg { display:inline-flex; gap:4px; padding:4px; background:var(--sunk); border-radius:12px; flex-wrap:wrap; }
+  .seg button { border-color:transparent; background:transparent; box-shadow:none; color:var(--text2); padding:5px 12px; }
+  .seg button.on { background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:var(--shadow-m); }
+  .ops { display:grid; gap:10px; margin-top:12px; }
+  .op { display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; gap:8px; align-items:center; font-size:14px; background:var(--sunk); border-radius:12px; padding:8px 12px; }
+  .op b { font-weight:600; } .op small { display:block; color:var(--text2); font-size:12px; }
+  .op label { display:grid; gap:2px; font-size:12px; color:var(--text2); }
+  .op select { font-size:13px; padding:4px 8px; }
+  h2 { font-size:17px; font-weight:650; margin:0 0 8px; }
+  .quiz-card { font-size:17px; font-weight:600; margin:10px 0; }
+  #qfb { font-size:14px; min-height:44px; color:var(--text2); }
+  #qfb .ok { color:var(--teal-stroke); font-weight:600; } #qfb .no { color:var(--coral-stroke); font-weight:600; }
+  label.seg { align-items:center; gap:6px; padding:6px 12px; font-size:14px; cursor:pointer; }
+  #d-note { font-size:14px; color:var(--text2); }
+  @media (max-width:560px) { .op { grid-template-columns:1fr 1fr; } .op > div:first-child { grid-column:1 / -1; } }
+</style>
+</head>
+<body>
+<main id="app">
+  <h1>碳權、碳定價與抵換</h1>
+  <p class="sub">碳定價的兩種工具、台灣碳費怎麼算，以及減量額度（碳權）怎麼用來抵換。</p>
+  <div id="modes" role="tablist"><button id="m-walk" class="on" role="tab">導覽動畫</button><button id="m-ex" role="tab">動手試</button></div>
+
+  <section id="walk">
+    <svg id="wsvg" viewBox="0 0 680 360" role="img" aria-label="碳定價導覽動畫"><defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" style="stroke:var(--muted)" stroke-width="1.5"/></marker></defs><g id="dyn"></g></svg>
+    <div id="cap" aria-live="polite"><div id="capch"></div><p id="captext"></p><div id="caphint"></div></div>
+    <div id="scrub" data-tip="拖曳可在動畫中移動。刻度是各章的起點。"><div class="track"></div><div class="fill"></div><div id="ticks"></div><div class="knob"></div></div>
+    <div class="prow"><button id="play">▶ 播放</button><button id="replay">↺ 重播此步</button><button id="next">下一步 ▸</button>
+      <select id="speed" aria-label="播放速度"><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option></select>
+      <button id="narr" aria-pressed="false" data-tip="用裝置內建語音朗讀字幕。開啟後，每步唸完會自動前進。">🔈 旁白：關</button><span id="time"></span></div>
+    <div id="chips"></div>
+  </section>
+
+  <section id="ex" hidden>
+    <div class="panel" style="margin-top:0">
+      <h2>1. 台灣碳費計算器</h2>
+      <svg id="esvg" viewBox="0 0 680 250" role="img" aria-label="碳費計算步驟"></svg>
+      <div class="ctl" id="ctl" style="margin-top:12px"></div>
+      <div class="prow" style="margin-top:10px">
+        <label class="seg" data-tip="經主管機關審查認定為高碳洩漏風險，且取得核定的自主減量計畫。"><input type="checkbox" id="hl"> 高碳洩漏風險事業</label>
+        <select id="period" aria-label="期別" data-tip="高碳洩漏風險事業的排放量調整係數，依期別不同。"><option value="0.2">第一期（係數 0.2）</option><option value="0.4">第二期（係數 0.4）</option><option value="0.6">第三期（係數 0.6）</option></select>
+        <select id="rate" aria-label="費率"><option value="300">一般費率 300 元</option><option value="100">優惠費率 B 100 元</option><option value="50">優惠費率 A 50 元</option></select>
+      </div>
+      <div class="res" id="res"></div>
+      <p id="ex-note"></p>
+    </div>
+    <div class="panel">
+      <h2>2. 雙重核算：為什麼需要相應調整？</h2>
+      <p class="ts" style="font-size:13px;color:var(--text2);margin:0 0 8px">依巴黎協定第 6 條第 2 項（避免雙重核算）的原則做的簡化示意；兩國的排放數字是虛構的。</p>
+      <svg id="dsvg" viewBox="0 0 680 220" role="img" aria-label="雙重核算示意"></svg>
+      <div class="ctl" id="ctl2" style="margin-top:12px"></div>
+      <div class="prow" style="margin-top:10px"><label class="seg"><input type="checkbox" id="ca"> 賣方國家做「相應調整」</label></div>
+      <p id="d-note"></p>
+    </div>
+  </section>
+
+  <section class="sources">
+    <p><b>簡化說明：</b>計算器省略了先期專案減量額度、增量抵換、電力業扣除與國外減量額度的扣除比率；四捨五入規則只做了碳費取整數。第 1 章碳稅與總量管制的比較是一般說明，<b>未於來源中查證</b>。「相應調整」一詞不在協定本文，是後續締約方會議決議的核算規則；雙重核算的動手試是簡化示意。年份以西元表示：2025 年 = 民國 114 年，2026 年 = 民國 115 年。碳費費率依 113 年公告；環境部 115 年 11 月的審議會仍在討論是否調整。</p>
+    <p><b>資料來源</b></p>
+    <ol id="srcs"></ol>
+  </section>
+  <div id="tip"></div>
+</main>
+<script>
+
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+const clamp = u => Math.max(0, Math.min(1, u));
+const E = u => { u = clamp(u); return u < .5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2; };
+const seg = (u, a, b) => clamp((u - a) / (b - a));
+
+/* ---------- 場景動作（純函式：只依進度 u） ---------- */
+function add(S, u, id, it) { S[id] = { ...it, op: (it.op ?? 1) * E(u) }; }
+function del(S, u, id) { if (!S[id]) return; if (u >= 1) delete S[id]; else S[id].op *= 1 - E(u); }
+function delAll(S, u, ids) { ids.forEach(id => del(S, u, id)); }
+function mv(S, u, id, to) { const it = S[id]; if (!it) return; for (const [p, v] of Object.entries(to)) { if (typeof v === 'number' && typeof it[p] === 'number') it[p] += (v - it[p]) * E(u); else if (u >= .5) it[p] = v; } }
+function hl(S, u, ...ids) { if (u > 0) ids.forEach(id => S[id] && (S[id].hl = true)); }
+function fly(S, u, id, a, b, fill = '#7F77DD') { if (u <= 0 || u >= 1) { delete S[id]; return; } S[id] = { type: 'dot', x: a[0] + (b[0] - a[0]) * E(u), y: a[1] + (b[1] - a[1]) * E(u), fill, op: 1 }; }
+const box = (x, y, w, h, c, l1, tip, more = {}) => ({ type: 'box', x, y, w, h, c, l1, tip, ...more });
+const text = (x, y, s, c = 'ts', tip) => ({ type: 'text', x, y, s, c, tip });
+const line = (x1, y1, x2, y2, tip) => ({ type: 'arrow', x1, y1, x2, y2, c1x: x1 + (x2 - x1) / 3, c1y: y1 + (y2 - y1) / 3, c2x: x1 + 2 * (x2 - x1) / 3, c2y: y1 + 2 * (y2 - y1) / 3, tip });
+
+/* ---------- 腳本 ---------- */
+const CH = [], BEATS = [];
+const chapter = name => CH.push({ name, beat: BEATS.length });
+const step = (dur, cap, fn, pause = true) => BEATS.push({ dur, cap, fn, pause, ch: CH.length - 1 });
+
+chapter('1 · 碳定價（一般說明）');
+step(7, '碳定價就是讓排放溫室氣體要付出代價，常見兩種工具。（本章前兩步是一般說明，未於來源中查證。）', (S, u) => {
+  add(S, seg(u, .1, .4), 'cp', box(240, 30, 200, 50, 'gray', '碳定價', '讓排放有價格。'));
+  add(S, seg(u, .4, .7), 'tx', box(60, 130, 230, 56, 'coral', '碳稅／碳費', '政府訂每噸的價格。'));
+  add(S, seg(u, .5, .8), 'et', box(390, 130, 230, 56, 'teal', '總量管制與交易', 'Cap-and-trade：政府訂總量，配額可交易。'));
+  add(S, seg(u, .45, .75), 'a1', line(300, 82, 200, 128, '工具一。'));
+  add(S, seg(u, .55, .85), 'a2', line(380, 82, 480, 128, '工具二。'));
+});
+step(8, '碳稅或碳費：政府先訂好每噸的價格，排放量會減多少，要看企業怎麼反應。', (S, u) => {
+  hl(S, u, 'tx');
+  add(S, seg(u, .3, .7), 'txt', text(175, 210, '價格固定・排放量不固定', 'tm'));
+});
+step(9, '總量管制與交易：政府先訂排放總量並發出配額，配額可以買賣，價格由市場決定。歐盟 EU ETS 屬於這類，CBAM 憑證的價格就是參照它。', (S, u) => {
+  hl(S, u, 'et');
+  add(S, seg(u, .3, .7), 'ett', text(505, 210, '總量固定・價格不固定', 'tm'));
+  add(S, seg(u, .6, 1), 'etn', text(505, 235, 'EU ETS 屬於這類', 'ts', 'CBAM 憑證價格參照 EU ETS 拍賣價。'));
+});
+
+chapter('2 · 台灣碳費');
+step(9, '台灣依「氣候變遷因應法」第 28 條與「碳費收費辦法」第 3 條徵收碳費。對象是直接排放加上用電間接排放，每年合計達 2.5 萬噸 CO₂e 以上的電力、燃氣供應業及製造業。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['cp','tx','et','a1','a2','txt','ett','etn']);
+  add(S, seg(u, .3, .55), 'd1', box(60, 40, 180, 50, 'coral', '直接排放', '工廠的燃燒、製程、逸散排放。'));
+  add(S, seg(u, .35, .6), 'd2', box(260, 40, 180, 50, 'teal', '用電間接排放', '使用電力的間接排放。'));
+  add(S, seg(u, .5, .75), 'd3', box(460, 40, 160, 50, 'purple', '≥ 2.5 萬噸／年', '全廠合計達 25,000 tCO₂e 以上。'));
+  add(S, seg(u, .7, 1), 'd4', text(340, 115, '電力、燃氣供應業及製造業', 'tm', '碳費收費辦法第 3 條。'));
+});
+step(10, '碳費 = 收費排放量 × 費率。收費排放量 =（年排放量 − K 值）× 排放量調整係數。一般事業的 K 值是 2.5 萬噸，係數是 1。', (S, u) => {
+  add(S, seg(u, 0, .35), 'f1', box(40, 160, 600, 50, 'frame', '收費排放量 =（年排放量 − K 值）× 排放量調整係數', '碳費收費辦法第 5 條。'));
+  add(S, seg(u, .35, .7), 'f2', box(140, 230, 400, 46, 'purple', '碳費 = 收費排放量 × 費率', '碳費應繳金額取整數，小數無條件捨去。'));
+  hl(S, seg(u, .7, 1), 'f1');
+});
+step(10, '一般費率每噸 300 元。提出自主減量計畫並達到指定目標，可以適用優惠費率：技術標竿是 100 元，行業別削減率是 50 元。', (S, u) => {
+  [['r1', '一般 300 元', 'coral', '一般費率：每噸 CO₂e 新臺幣 300 元。'], ['r2', '優惠 B 100 元', 'teal', '符合技術標竿指定削減率。'], ['r3', '優惠 A 50 元', 'teal', '符合行業別指定削減率。']]
+    .forEach(([id, n, c, tp], i) => add(S, seg(u, .1 + i * .2, .4 + i * .2), id, box(60 + i * 195, 300, 170, 44, c, n, tp)));
+  add(S, seg(u, .7, 1), 'ra', line(340, 278, 340, 298, '乘上費率。'));
+});
+step(10, '高碳洩漏風險事業的 K 值是 0，但調整係數依期別只有 0.2、0.4、0.6。碳費從 2025 年開始實施，2026 年 5 月底前首次申報繳納。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['d1','d2','d3','d4','f1','f2','r1','r2','r3','ra']);
+  add(S, seg(u, .3, .55), 'h1', box(30, 60, 300, 50, 'coral', '一般事業：K = 2.5 萬，係數 1', '多數事業適用。'));
+  add(S, seg(u, .4, .65), 'h2', box(350, 60, 300, 50, 'purple', '高碳洩漏：K = 0，係數 0.2～0.6', '需經審查認定，並有核定的自主減量計畫。'));
+  add(S, seg(u, .6, .85), 'h3', box(60, 170, 260, 46, 'gray', '2025 年起實施', '費率 114 年 1 月 1 日生效。'));
+  add(S, seg(u, .7, .95), 'h4', box(360, 170, 260, 46, 'gray', '2026 年 5 月底首次繳費', '依 2025 年全年排放量申報繳納。'));
+});
+
+chapter('3 · 減量額度與抵換');
+step(10, '一般俗稱的「碳權」，在台灣法規裡稱為「減量額度」。事業或政府可以提出自願減量專案，經主管機關核准後取得額度，並可以移轉、交易或拍賣。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['h1','h2','h3','h4']);
+  add(S, seg(u, .3, .5), 'p1', box(40, 60, 170, 50, 'teal', '自願減量專案', '執行減量措施的專案。'));
+  add(S, seg(u, .4, .6), 'p2', box(255, 60, 170, 50, 'gray', '主管機關核准', '依專案類型指定查驗方式。'));
+  add(S, seg(u, .5, .7), 'p3', box(470, 60, 170, 50, 'purple', '減量額度', '可移轉、交易或拍賣。'));
+  add(S, seg(u, .45, .65), 'pa', line(212, 85, 253, 85, '申請。'));
+  add(S, seg(u, .55, .75), 'pb', line(427, 85, 468, 85, '核發。'));
+  fly(S, seg(u, .7, .95), 'dot', [125, 112], [555, 112], '#0F8F6B');
+});
+step(11, '減量額度可以扣除收費排放量。自願減量或抵換專案的額度，每 1 噸可扣 1.2 噸，但最多扣收費排放量的 10%。國外額度要先經認可，最多扣 5%，高碳洩漏風險事業不能用。', (S, u) => {
+  add(S, seg(u, 0, .35), 'c1', box(60, 170, 260, 56, 'teal', '國內額度：×1.2，上限 10%', '碳費收費辦法第 9 條：自願減量或抵換專案額度 ×1.2；先期專案額度另有較低比率。'));
+  add(S, seg(u, .3, .65), 'c2', box(360, 170, 260, 56, 'gray', '國外額度：須認可，上限 5%', '碳費收費辦法第 10 條；高碳洩漏風險事業不適用。'));
+  add(S, seg(u, .2, .5), 'ca1', line(555, 112, 190, 168, '用來扣除。'));
+  add(S, seg(u, .7, 1), 'c3', text(340, 260, '扣的是「收費排放量」，不是年排放量', 'tm'));
+  hl(S, seg(u, .7, 1), 'c1');
+});
+
+chapter('4 · 巴黎協定第 6 條');
+step(10, '巴黎協定第 6 條第 2 項：國家可以自願合作，用「國際轉讓的減緩成果」(ITMOs) 來達成自己的國家自定貢獻 (NDC)，但必須用穩健的核算，避免雙重核算。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['p1','p2','p3','pa','pb','c1','c2','ca1','c3']);
+  add(S, seg(u, .3, .55), 'ka', box(60, 80, 200, 60, 'teal', 'A 國：減了 100 噸', '賣方國家。'));
+  add(S, seg(u, .4, .65), 'kb', box(420, 80, 200, 60, 'purple', 'B 國：買 100 噸', '買方國家，用來達成自己的 NDC。'));
+  add(S, seg(u, .5, .75), 'kab', line(262, 110, 418, 110, '移轉減量成果。'));
+  fly(S, seg(u, .6, .9), 'dot', [262, 110], [418, 110], '#0F8F6B');
+  add(S, seg(u, .7, 1), 'kc', box(60, 170, 200, 44, 'coral', '相應調整：+100', '相應調整 (corresponding adjustment)：A 國不再把賣出的 100 噸算進自己的成果。這個詞不在協定本文，是後續締約方會議決議的核算規則；這裡用「加回帳上」簡化表示。'));
+});
+step(10, '第 4 項設立一個由指定機構監督的機制，產生的額度稱為 A6.4ER。第 5 項：這個機制的減排量被另一國用來達成 NDC 後，地主國（東道國）就不能再用，否則會「雙重核算」。第 8 項則是非市場方法。', (S, u) => {
+  add(S, seg(u, 0, .4), 'dc', box(140, 260, 400, 50, 'frame', '沒有相應調整 → 同一噸被算兩次', '雙重核算會讓帳面減量大於實際減量。'));
+  hl(S, seg(u, .4, 1), 'dc');
+});
+
+/* ---------- 時間與繪製 ---------- */
+const SETTLE = .5, EPS = .001;
+let acc = 0; BEATS.forEach(b => { b.t0 = acc; b.t1 = acc + b.dur + SETTLE; acc = b.t1; });
+const TOTAL = acc; CH.forEach(c => c.t0 = BEATS[c.beat].t0);
+function stateAt(t) {
+  const S = {}; let i = 0;
+  for (; i < BEATS.length && t >= BEATS[i].t1; i++) BEATS[i].fn(S, 1);
+  Object.values(S).forEach(it => it.hl = false);
+  if (i >= BEATS.length) i = BEATS.length - 1; else BEATS[i].fn(S, clamp((t - BEATS[i].t0) / BEATS[i].dur));
+  return { S, i };
+}
+const T = (x, y, s, c, a = 'middle') => `<text class="${c}" x="${x}" y="${y}" text-anchor="${a}" dominant-baseline="central">${esc(s)}</text>`;
+function draw(it, now) {
+  const op = clamp(it.op ?? 1); if (op < .01) return '';
+  const tp = it.tip ? ` data-tip="${esc(it.tip)}"` : '', o = ` opacity="${op.toFixed(3)}"`;
+  if (it.type === 'text') return `<g${o}${tp}>${T(it.x, it.y, it.s, it.c)}</g>`;
+  if (it.type === 'dot') return `<circle cx="${it.x}" cy="${it.y}" r="5" fill="${it.fill}"${o}/>`;
+  if (it.type === 'arrow') return `<path class="arr" d="M${it.x1} ${it.y1}C${it.c1x} ${it.c1y} ${it.c2x} ${it.c2y} ${it.x2} ${it.y2}" marker-end="url(#ah)"${o}${tp}/>`;
+  if (it.h < 1 && !it.l1) return '';
+  const fr = it.c === 'frame';
+  let s = `<g class="${fr ? '' : 'c-' + it.c}"${o}${tp}><rect class="${fr ? 'frame' : ''}" x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" rx="${fr ? 10 : 6}" stroke-width="0.8"/>`;
+  if (it.l1) s += T(it.x + it.w / 2, it.y + it.h / 2, it.l1, 'tm');
+  s += '</g>';
+  if (it.hl) s += `<rect class="hl" x="${it.x - 2.5}" y="${it.y - 2.5}" width="${it.w + 5}" height="${it.h + 5}" rx="8" opacity="${(op * (.55 + .45 * Math.sin(now / 260))).toFixed(3)}"/>`;
+  return s;
+}
+
+/* ---------- 播放器 ---------- */
+let t = 0, playing = false, speed = 1, last = null, skipPause = -1, capKey = '', mode = 'walk';
+const beatAt = tt => { let i = 0; while (i < BEATS.length - 1 && tt >= BEATS[i].t1) i++; return i; };
+function setPlaying(p) {
+  playing = p;
+  if (p) { if (t >= TOTAL - 2 * EPS) t = 0; const i = beatAt(t); if (t >= BEATS[i].t1 - 2 * EPS) skipPause = i; }
+  $('play').textContent = p ? '❚❚ 暫停' : '▶ 播放';
+}
+function seek(tt, play) { t = Math.max(0, Math.min(TOTAL - EPS, tt)); skipPause = -1; spokenBeat = -1; autoNext = false; if (TTS && !play) TTS.cancel(); setPlaying(!!play); }
+function tick(now) {
+  const dt = last == null ? 0 : Math.min(.1, (now - last) / 1000); last = now;
+  if (mode === 'walk') {
+    if (playing) {
+      const i = beatAt(t), b = BEATS[i]; let nt = t + dt * speed;
+      if (i !== skipPause && b.pause && nt >= b.t1 - EPS) { nt = b.t1 - EPS; setPlaying(false); autoNext = narrOn; }
+      if (nt >= TOTAL - EPS) { nt = TOTAL - EPS; setPlaying(false); }
+      if (beatAt(nt) !== i) skipPause = -1;
+      t = nt;
+    }
+    const { S, i } = stateAt(t);
+    $('dyn').innerHTML = Object.values(S).map(it => draw(it, now)).join('');
+    const b = BEATS[i], atEnd = t >= b.t1 - .03, key = i + '|' + playing + '|' + atEnd + '|' + narrOn;
+    if (key !== capKey) {
+      capKey = key;
+      $('capch').textContent = `${CH[b.ch].name} ・ 第 ${i + 1} / ${BEATS.length} 步`;
+      $('captext').textContent = b.cap;
+      $('caphint').textContent = playing ? '' : atEnd ? (narrOn ? '旁白唸完會自動繼續。' : '已暫停。按「播放」或空白鍵繼續。') : '已暫停。';
+      [...$('chips').children].forEach((c, k) => c.classList.toggle('on', k === b.ch));
+    }
+    const pct = t / TOTAL * 100 + '%';
+    document.querySelector('#scrub .fill').style.width = pct; document.querySelector('#scrub .knob').style.left = pct;
+    const f = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+    $('time').textContent = `${f(t)} / ${f(TOTAL)}`;
+  }
+  narrTick();
+  requestAnimationFrame(tick);
+}
+$('ticks').innerHTML = CH.map(c => `<div class="tick" style="left:${c.t0 / TOTAL * 100}%"></div>`).join('');
+$('chips').innerHTML = CH.map((c, k) => `<button data-ch="${k}">${esc(c.name)}</button>`).join('');
+$('chips').onclick = e => { const b = e.target.closest('[data-ch]'); if (b) seek(CH[+b.dataset.ch].t0, true); };
+$('play').onclick = () => { autoNext = false; if (playing && TTS) TTS.cancel(); if (!playing) { const i = beatAt(t); spokenBeat = t >= BEATS[i].t1 - .03 ? i : -1; } setPlaying(!playing); };
+$('replay').onclick = () => seek(BEATS[beatAt(t)].t0, true);
+$('next').onclick = () => { const i = beatAt(t); if (i < BEATS.length - 1) seek(BEATS[i + 1].t0, true); };
+$('speed').onchange = e => speed = +e.target.value;
+const sc = $('scrub'), posT = x => { const r = sc.getBoundingClientRect(); return clamp((x - r.left) / r.width) * TOTAL; };
+let drag = false;
+sc.onpointerdown = e => { drag = true; sc.setPointerCapture(e.pointerId); seek(posT(e.clientX), false); };
+sc.onpointermove = e => { if (drag) seek(posT(e.clientX), false); };
+sc.onpointerup = () => drag = false;
+document.addEventListener('keydown', e => {
+  if (mode !== 'walk' || e.target.closest('button, select, input')) return;
+  if (e.key === ' ') { e.preventDefault(); $('play').click(); }
+  else if (e.key === 'ArrowRight') $('next').click(); else if (e.key === 'ArrowLeft') $('replay').click();
+});
+const tipEl = $('tip'), app = $('app');
+function showTip(e) {
+  const el = !drag && e.target.closest && e.target.closest('[data-tip]');
+  if (!el) return tipEl.style.display = 'none';
+  tipEl.textContent = el.dataset.tip; tipEl.style.display = 'block';
+  const a = app.getBoundingClientRect();
+  tipEl.style.left = Math.max(0, Math.min(e.clientX - a.left + 14, a.width - tipEl.offsetWidth - 8)) + 'px';
+  tipEl.style.top = e.clientY - a.top + 18 + 'px';
+}
+document.addEventListener('mousemove', showTip);
+window.addEventListener('resize', () => mode === 'ex' && renderEx());
+document.addEventListener('click', e => { if (!e.target.closest('[data-tip]')) tipEl.style.display = 'none'; else showTip(e); });
+
+/* ---------- 動手試 1：台灣碳費 ---------- */
+const X = { e: 80000, dom: 0 };
+const CTL = [
+  { k: 'e', label: '年排放量（直接＋用電間接）', min: 0, max: 200000, step: 1000, unit: ' 噸', tip: '全廠直接排放加上使用電力的間接排放，單位 tCO₂e。' },
+  { k: 'dom', label: '國內減量額度', min: 0, max: 20000, step: 500, unit: ' 噸', tip: '自願減量專案或抵換專案取得的額度。每 1 噸可扣 1.2 噸，上限是收費排放量的 10%。' },
+];
+$('ctl').innerHTML = CTL.map(c => `<label data-tip="${esc(c.tip)}"><span>${esc(c.label)}</span><input type="range" id="r_${c.k}" min="${c.min}" max="${c.max}" step="${c.step}"><output id="o_${c.k}"></output></label>`).join('');
+CTL.forEach(c => $('r_' + c.k).oninput = e => { X[c.k] = +e.target.value; renderEx(); });
+['hl', 'period', 'rate'].forEach(id => $(id).onchange = renderEx);
+const fmt = (n, d = 0) => (+n).toLocaleString('zh-Hant', { maximumFractionDigits: d });
+function calcFee() {
+  const high = $('hl').checked, f = high ? +$('period').value : 1, K = high ? 0 : 25000, rate = +$('rate').value;
+  const subject = X.e >= 25000;
+  const base = subject ? Math.round(Math.max(0, X.e - K) * f * 1000) / 1000 : 0;
+  const cap = base * .1, ded = Math.min(X.dom * 1.2, cap);
+  const charge = Math.max(0, base - ded);
+  return { high, f, K, rate, subject, base, cap, ded, charge, fee: Math.floor(charge * rate) };
+}
+function renderEx() {
+  CTL.forEach(c => { $('r_' + c.k).value = X[c.k]; $('o_' + c.k).textContent = fmt(X[c.k]) + c.unit; });
+  $('period').disabled = !$('hl').checked;
+  const c = calcFee(), narrow = innerWidth < 560, W = narrow ? 420 : 680;
+  $('esvg').setAttribute('viewBox', `0 0 ${W} 250`);
+  const lx = narrow ? 10 : 20, bx = narrow ? 150 : 200, bw = W - bx - 20, mx = Math.max(X.e, 25000), sx = v => bw * v / mx;
+  const rows = [
+    ['年排放量', X.e, 'c-gray', '直接＋用電間接排放。'],
+    ['減 K 值後', c.subject ? Math.max(0, X.e - c.K) : 0, 'c-gray', c.subject ? `K 值 = ${fmt(c.K)} 噸。` : '未達 2.5 萬噸，不是徵收對象。'],
+    ['× 調整係數', c.subject ? Math.max(0, X.e - c.K) * c.f : 0, 'c-purple', `排放量調整係數 = ${c.f}。`],
+    ['減量額度扣除', c.ded, 'c-teal', `國內額度 ${fmt(X.dom)} 噸 × 1.2，上限 ${fmt(c.cap, 1)} 噸。`],
+    ['收費排放量', c.charge, 'c-coral', '乘上費率就是碳費。'],
+  ];
+  let s = '';
+  rows.forEach(([n, v, cl, tp], i) => {
+    const y = 16 + i * 44;
+    s += T(lx, y + 14, n, 'tm', 'start');
+    s += `<g class="${cl}" data-tip="${esc(tp)}"><rect x="${bx}" y="${y}" width="${Math.max(1, sx(v))}" height="28" rx="5" stroke-width=".8"/></g>`;
+    const lab = fmt(v, 1) + ' 噸', inside = sx(v) > bw * .6;
+    s += inside ? T(bx + sx(v) - 8, y + 14, lab, 'tm', 'end') : T(bx + sx(v) + 8, y + 14, lab, 'ts', 'start');
+  });
+  $('esvg').innerHTML = s;
+  $('res').innerHTML = [
+    ['徵收對象', c.subject ? '是' : '否（未達 2.5 萬噸）'], ['收費排放量', fmt(c.charge, 1) + ' 噸'],
+    ['費率', c.rate + ' 元／噸'], ['碳費', 'NT$ ' + fmt(c.fee)],
+  ].map(([k, v]) => `<div><b>${esc(v)}</b><span>${esc(k)}</span></div>`).join('');
+  let note = c.subject ? `碳費 = ${fmt(c.charge, 1)} 噸 × ${c.rate} 元 = ${fmt(c.fee)} 元（取整數，小數捨去）。` : '年排放量未達 2.5 萬噸，不是碳費徵收對象。';
+  if (c.subject && X.dom * 1.2 > c.cap) note += ` 減量額度可扣 ${fmt(X.dom * 1.2, 1)} 噸，但超過上限，只扣 ${fmt(c.cap, 1)} 噸。`;
+  if (c.rate < 300) note += ' 優惠費率要有核定的自主減量計畫，並達到指定目標。';
+  $('ex-note').textContent = note + ' 試試看：勾選「高碳洩漏風險事業」，比較 K 值與係數的影響。';
+  renderDC();
+}
+
+/* ---------- 動手試 2：雙重核算 ---------- */
+const D = { q: 100 };
+$('ctl2').innerHTML = `<label data-tip="A 國賣給 B 國的減量（噸）。"><span>移轉的減量</span><input type="range" id="r_q" min="0" max="300" step="10"><output id="o_q"></output></label>`;
+$('r_q').oninput = e => { D.q = +e.target.value; renderEx(); };
+$('ca').onchange = renderEx;
+function renderDC() {
+  $('r_q').value = D.q; $('o_q').textContent = D.q + ' 噸';
+  const ca = $('ca').checked, A = 1000 - D.q, B = 1000;          // 實際排放：A 國因專案少排 q
+  const repA = ca ? A + D.q : A, repB = B - D.q, real = A + B, rep = repA + repB;
+  const narrow = innerWidth < 560, W = narrow ? 420 : 680, bx = narrow ? 120 : 170, bw = W - bx - 70, sx = v => bw * v / 2000;
+  $('dsvg').setAttribute('viewBox', `0 0 ${W} 220`);
+  const rows = [['實際總排放', real, 'c-gray', 'A 國實際排放加 B 國實際排放。'], ['帳面總排放', rep, rep < real ? 'c-coral' : 'c-teal', rep < real ? '帳面比實際少：有雙重核算。' : '帳面等於實際：沒有雙重核算。'],
+    ['A 國帳面', repA, 'c-purple', ca ? 'A 國做了相應調整，把賣出的量加回來。' : 'A 國照算自己的減量。'], ['B 國帳面', repB, 'c-purple', 'B 國用買來的減量扣自己的排放。']];
+  let s = '';
+  rows.forEach(([n, v, cl, tp], i) => { const y = 14 + i * 50; s += T(narrow ? 8 : 20, y + 15, n, 'tm', 'start') + `<g class="${cl}" data-tip="${esc(tp)}"><rect x="${bx}" y="${y}" width="${sx(v)}" height="30" rx="5" stroke-width=".8"/></g>` + T(bx + sx(v) + 8, y + 15, fmt(v) + ' 噸', 'ts', 'start'); });
+  $('dsvg').innerHTML = s;
+  $('d-note').textContent = rep < real ? `沒有相應調整：帳面總排放比實際少 ${fmt(real - rep)} 噸，同一份減量被兩國各算一次（雙重核算）。` : (D.q ? '有相應調整：帳面總排放等於實際總排放。' : '沒有移轉，兩邊帳面都等於實際。');
+}
+window.addEventListener('resize', () => mode === 'ex' && renderEx());
+
+/* ---------- 旁白（瀏覽器內建語音，Web Speech API） ---------- */
+const TTS = 'speechSynthesis' in window ? window.speechSynthesis : null;
+let narrOn = false, spokenBeat = -1, autoNext = false;
+const SAY = s => s.replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂e/g, '二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/≥/g, '至少').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/[（(][A-Za-z0-9 .,\/'’\-]*[）)]/g, '');
+function voice() { const v = TTS.getVoices(); return v.find(x => /zh[-_]TW/i.test(x.lang)) || v.find(x => /^zh/i.test(x.lang)) || null; }
+function speak(i) {
+  if (!TTS || !narrOn) return;
+  TTS.cancel(); spokenBeat = i;
+  const u = new SpeechSynthesisUtterance(SAY(BEATS[i].cap)); u.lang = 'zh-TW'; u.rate = speed; const v = voice(); if (v) u.voice = v;
+  TTS.speak(u);
+}
+if (!TTS) $('narr').hidden = true;
+$('narr').onclick = () => {
+  narrOn = !narrOn; $('narr').classList.toggle('on', narrOn); $('narr').setAttribute('aria-pressed', narrOn);
+  $('narr').textContent = narrOn ? '🔊 旁白：開' : '🔈 旁白：關';
+  if (!narrOn) { TTS.cancel(); autoNext = false; } else { spokenBeat = -1; if (!playing) setPlaying(true); }
+};
+function narrTick() {
+  if (!TTS || !narrOn || mode !== 'walk') return;
+  const i = beatAt(t);
+  if (playing && spokenBeat !== i) speak(i);
+  // 這一步的動畫播完而自動暫停時，等旁白唸完再前進
+  if (!playing && autoNext && !TTS.speaking && !TTS.pending) { autoNext = false; if (i < BEATS.length - 1) seek(BEATS[i + 1].t0, true); }
+}
+function setMode(m) {
+  mode = m; $('walk').hidden = m !== 'walk'; $('ex').hidden = m !== 'ex';
+  $('m-walk').classList.toggle('on', m === 'walk'); $('m-ex').classList.toggle('on', m === 'ex');
+  if (m === 'ex') { setPlaying(false); autoNext = false; if (TTS) TTS.cancel(); renderEx(); }
+}
+$('m-walk').onclick = () => setMode('walk'); $('m-ex').onclick = () => setMode('ex');
+
+$('srcs').innerHTML = [
+  ['全國法規資料庫：碳費收費辦法', 'https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=O0020139'],
+  ['全國法規資料庫：氣候變遷因應法（第 25、27～30 條）', 'https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=O0020098'],
+  ['環境部新聞：環境部公告「碳費徵收費率」（113 年 10 月）', 'https://enews.moenv.gov.tw/moenv-news/zh-tw/News/2756'],
+  ['環境部新聞：碳費費率審議會 費率是否調整須補充資料再審（115 年 11 月 2 日）', 'https://enews.moenv.gov.tw/moenv-news/zh-tw/News/14412'],
+  ['聯合國：《巴黎協定》中文本，第六條（PDF，由使用者提供）', ''],
+  ['財團法人國際合作發展基金會：《巴黎協定》第 6 條機制於國際發展合作計畫之意義（國際開發援助現場季刊第 6 期）', 'https://www.icdf.org.tw/wSite/ct?xItem=70337&ctNode=31858&mp=2'],
+  ['歐盟執委會：CBAM Questions and Answers（EU ETS 與 CBAM 價格的關係）', 'https://taxation-customs.ec.europa.eu/document/download/013fa763-5dce-4726-a204-69fec04d5ce2_en'],
+].map(([n, u]) => u ? `<li><a href="${u}" target="_blank" rel="noopener">${esc(n)}</a></li>` : `<li>${esc(n)}</li>`).join('');
+seek(0, false); renderEx(); requestAnimationFrame(tick);
+</script>
+</body>
+</html>

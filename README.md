@@ -1,6 +1,6 @@
 # JustNote Learning
 
-自我學習 PWA：每個課程有「筆記、心智圖、快閃卡、題庫、有聲書」五個區塊，內容皆為 Markdown。
+自我學習 PWA：每個課程有「筆記、心智圖、視覺學習、快閃卡、題庫、有聲書」六個區塊，內容皆為 Markdown。
 資料先存本機（離線可用），連線時同步到 Cloudflare Workers KV。
 
 - 前端：Vite + React + [coss ui](https://coss.com/ui)（Tailwind CSS v4 + Base UI，元件在 `src/components/ui`，設計權杖在 `src/styles.css`）
@@ -15,6 +15,10 @@
 | 筆記 | 一般 Markdown（GFM） |
 | 心智圖 | 標題層級（`#`）與清單縮排（`-`），由 markmap 轉成心智圖 |
 | 快閃卡 | 每行一張卡 `問題 :: 答案`；以 `#` 開頭的行是標籤（例 `#flashcards/iPAS`） |
+
+視覺學習：把單檔 HTML 互動解說（導覽動畫、可操作的探索頁）顯示在沙箱 iframe 內（`sandbox="allow-scripts ..."`，不含 `allow-same-origin`，頁面讀不到 App 的資料）。
+可貼上或載入 `.html` 檔，大小上限 500 KB；App 的深淺色會同步給內嵌頁面（`data-theme` + `postMessage`）。
+解說的製作流程採用 [VisualLearning.Skill](https://github.com/andrewalumkal/VisualLearning.Skill)（MIT），放在 `.claude/skills/visual-learning`，專案約定見該資料夾的 `PROJECT.md`。
 
 題庫：每題 `1. 題目`、`(A)`～`(D)` 選項、`答案: C`、可選的 `主題: …`、`解析: …`（`解析(AI):` 會顯示「AI 草稿」標籤）。
 支援練習模式（即時對答案）、模擬考（計時、交卷計分）、錯題本、標記、歷次成績，錯題可一鍵轉成快閃卡。

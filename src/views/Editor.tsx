@@ -11,16 +11,19 @@ import { createItem, updateItem, useDB } from '@/lib/store'
 import { go } from '@/lib/router'
 import { TYPE_LABEL, TYPE_ROUTE, type TextType as ItemType } from '@/lib/types'
 import { MindmapCanvas, Note } from './Viewers'
+import { VisualFrame } from './Visual'
 import { Loading, Segmented, SplitButton, TextField } from '@/ui/kit'
 
 const PLACEHOLDER: Record<ItemType, string> = {
   note: '# 標題\n\n用 Markdown 寫筆記。\n\n- 重點一\n- 重點二',
   mindmap: '# 主題\n## 分支一\n- 重點 A\n  - 細節\n## 分支二\n- 重點 B',
   flashcards: '#flashcards/標籤\n問題一 :: 答案一\n問題二 :: 答案二',
+  visual: '<!doctype html>\n<html lang="zh-Hant">\n<body>\n  貼上完整的 HTML，或按「載入 .html 檔」。\n</body>\n</html>',
   quiz: '#quiz/標籤\n1. 題目內容\n(A)選項一\n(B)選項二\n(C)選項三\n(D)選項四\n答案: C\n解析: 這裡寫解析（可留空）',
 }
 
 const TEXT_TYPES: ItemType[] = ['note', 'mindmap', 'flashcards', 'quiz']
+const MAX_HTML = 500 * 1024
 
 function Preview({ as, md }: { as: ItemType; md: string }) {
   const deck = useMemo(() => (as === 'flashcards' ? parseFlashcards(md) : null), [as, md])
@@ -29,6 +32,7 @@ function Preview({ as, md }: { as: ItemType; md: string }) {
     return <EmptyState title="預覽會顯示在這裡" description={`${TYPE_LABEL[as]}格式範例：\n${PLACEHOLDER[as]}`} />
   }
   if (as === 'note') return <Note md={md} />
+  if (as === 'visual') return <VisualFrame html={md} title="預覽" className="visual-frame visual-small" />
   if (as === 'mindmap')
     return (
       <div className="mm-canvas mm-small">
@@ -89,6 +93,7 @@ export function Editor({ courseId, type, itemId }: { courseId: string; type: Ite
   const [leave, setLeave] = useState(false)
   const saved = useRef(false)
   const area = useRef<HTMLTextAreaElement>(null)
+  const htmlFile = useRef<HTMLInputElement>(null)
 
   const home = (existing ? existing.type : type) as ItemType
   const dirty = !saved.current && (title !== base.title || content !== base.content)
@@ -105,6 +110,8 @@ export function Editor({ courseId, type, itemId }: { courseId: string; type: Ite
     if (!title.trim()) return setError('請先替這份內容取個名稱。')
     if (target === 'flashcards' && parseFlashcards(content).cards.length === 0) return setError('快閃卡至少需要一行「問題 :: 答案」。')
     if (target === 'quiz' && parseQuiz(content).questions.length === 0) return setError('題庫至少需要一題：1. 題目、(A)(B) 選項與「答案: X」。')
+    if (target === 'visual' && !/<\s*(html|body|svg|div|script)/i.test(content)) return setError('視覺學習需要完整的 HTML（例如以 <html> 或 <body> 開頭的單一檔案）。')
+    if (target === 'visual' && content.length > MAX_HTML) return setError(`HTML 太大（${Math.round(content.length / 1024)} KB），請控制在 500 KB 以內。`)
     if (target === 'mindmap' && countNodes(content) === 0) return setError('心智圖至少需要一個標題（#）或清單項目（-）。')
     setError('')
     saved.current = true
@@ -139,7 +146,7 @@ export function Editor({ courseId, type, itemId }: { courseId: string; type: Ite
   }
 
   const backPath = existing ? `/c/${courseId}/${TYPE_ROUTE[existing.type]}/${existing.id}` : `/c/${courseId}/${TYPE_ROUTE[type]}`
-  const others = TEXT_TYPES.filter(t => t !== home)
+  const others = home === 'visual' ? [] : TEXT_TYPES.filter(t => t !== home)
 
   return (
     <section className="page editor">
@@ -148,11 +155,15 @@ export function Editor({ courseId, type, itemId }: { courseId: string; type: Ite
       </button>
       <header className="page-head">
         <h1>{existing ? `編輯${TYPE_LABEL[existing.type]}` : `新增${TYPE_LABEL[type]}`}</h1>
-        <SplitButton
-          label="儲存"
-          onClick={() => save(home)}
-          actions={others.map(t => ({ label: `${existing ? '另存為' : '存為'}${TYPE_LABEL[t]}`, onSelect: () => save(t) }))}
-        />
+        {home === 'visual' ? (
+          <Button onClick={() => save(home)}>儲存</Button>
+        ) : (
+          <SplitButton
+            label="儲存"
+            onClick={() => save(home)}
+            actions={others.map(t => ({ label: `${existing ? '另存為' : '存為'}${TYPE_LABEL[t]}`, onSelect: () => save(t) }))}
+          />
+        )}
       </header>
 
       <TextField label="名稱" value={title} onChange={e => setTitle(e.target.value)} maxLength={120} placeholder="例如：第一章重點整理" error={error && !title.trim() ? error : undefined} />
@@ -162,17 +173,38 @@ export function Editor({ courseId, type, itemId }: { courseId: string; type: Ite
         <div className="pane-toggle">
           <Segmented label="編輯或預覽" value={pane} onValueChange={v => setPane(v as 'edit' | 'preview')} options={[{ value: 'edit', label: '編輯' }, { value: 'preview', label: '預覽' }]} />
         </div>
-        <Segmented
-          label="預覽方式"
-          value={previewAs}
-          onValueChange={v => setPreviewAs(v as ItemType)}
-          options={TEXT_TYPES.map(t => ({ value: t, label: TYPE_LABEL[t] }))}
-        />
+        {home === 'visual' ? (
+          <>
+            <Button variant="outline" size="sm" onClick={() => htmlFile.current?.click()}>載入 .html 檔</Button>
+            <input
+              ref={htmlFile}
+              type="file"
+              accept=".html,.htm,text/html"
+              hidden
+              onChange={e => {
+                const f = e.target.files?.[0]
+                if (!f) return
+                void f.text().then(t => {
+                  setContent(t)
+                  if (!title.trim()) setTitle(f.name.replace(/\.[^.]+$/, ''))
+                  e.target.value = ''
+                })
+              }}
+            />
+          </>
+        ) : (
+          <Segmented
+            label="預覽方式"
+            value={previewAs}
+            onValueChange={v => setPreviewAs(v as ItemType)}
+            options={TEXT_TYPES.map(t => ({ value: t, label: TYPE_LABEL[t] }))}
+          />
+        )}
       </div>
 
       <div className="editor-grid" data-pane={pane}>
         <div className="editor-pane">
-          <label className="sr-only" htmlFor="md-input">Markdown 內容</label>
+          <label className="sr-only" htmlFor="md-input">{home === 'visual' ? 'HTML 內容' : 'Markdown 內容'}</label>
           <textarea
             id="md-input"
             ref={area}
