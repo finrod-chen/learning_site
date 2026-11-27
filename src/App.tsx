@@ -18,6 +18,11 @@ import { ItemView } from '@/views/Viewers'
 import { Editor } from '@/views/Editor'
 import { InsightsPage, MixedQuizPage } from '@/views/QuizHub'
 
+/** Sends the browser through the Cloudflare Access login, then back to the app. */
+function relogin() {
+  window.location.assign(`/cdn-cgi/access/login/${location.hostname}?redirect_url=${encodeURIComponent('/')}`)
+}
+
 function SyncBadge({ onAuth }: { onAuth: () => void }) {
   const s = useSync()
   const map = {
@@ -27,11 +32,12 @@ function SyncBadge({ onAuth }: { onAuth: () => void }) {
     offline: { variant: 'warning', text: '離線，已存本機' },
     error: { variant: 'warning', text: '同步失敗，稍後重試' },
     auth: { variant: 'warning', text: '需要密碼' },
+    login: { variant: 'warning', text: '登入已過期，點此重新登入' },
   } as const
   const m = map[s.state]
   const Icon = s.state === 'offline' || s.state === 'error' ? CloudOff : Cloud
   return (
-    <button type="button" className="sync" onClick={s.state === 'auth' ? onAuth : undefined} aria-live="polite" disabled={s.state !== 'auth'}>
+    <button type="button" className="sync" onClick={s.state === 'auth' ? onAuth : s.state === 'login' ? relogin : undefined} aria-live="polite" disabled={s.state !== 'auth' && s.state !== 'login'}>
       <Badge variant={m.variant} size="sm"><Icon aria-hidden="true" />{m.text}</Badge>
     </button>
   )

@@ -168,7 +168,7 @@ export const getProgress = (d: DB, quizId: string): QuizProgress => getDoc<QuizP
 export const updateProgress = (quizId: string, fn: (p: QuizProgress) => QuizProgress) => putDoc<QuizProgress>(quizId, prev => fn(prev ?? emptyProgress()))
 
 /* ---------- sync with Workers KV ---------- */
-export type SyncState = 'idle' | 'syncing' | 'synced' | 'offline' | 'error' | 'auth'
+export type SyncState = 'idle' | 'syncing' | 'synced' | 'offline' | 'error' | 'auth' | 'login'
 export interface SyncInfo {
   state: SyncState
   at: number
@@ -245,7 +245,12 @@ export async function syncNow(): Promise<void> {
     if (token) headers['x-sync-token'] = token
     const payload = JSON.stringify({ courses, items, progress })
     // keepalive lets a final push survive the tab closing (the browser caps it at 64 KB)
-    const res = await fetch('/api/sync', { method: 'POST', headers, body: payload, keepalive: payload.length < 60000 })
+    const res = await fetch('/api/sync', { method: 'POST', headers, body: payload, keepalive: payload.length < 60000, redirect: 'manual' })
+    // Cloudflare Access answers an expired session with a redirect to its login page
+    if (res.type === 'opaqueredirect') {
+      setSync('login')
+      return
+    }
     if (res.status === 401) {
       setSync('auth')
       return
