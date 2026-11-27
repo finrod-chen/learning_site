@@ -46,7 +46,14 @@ function seedOnce() {
   }
   const courseGone = next.courses[seedCourse.id]?.deleted
   for (const it of seedItems) {
-    if (done.has(it.id)) continue
+    if (done.has(it.id)) {
+      // 使用者沒編輯過的內建項目（updatedAt 仍是植入時的值）跟著新版內容更新；編輯或刪除過的保持不動。
+      const cur = next.items[it.id]
+      if (cur && !cur.deleted && cur.updatedAt === it.updatedAt && (cur.content !== it.content || cur.title !== it.title)) {
+        next.items[it.id] = { ...cur, title: it.title, content: it.content }
+      }
+      continue
+    }
     if (!courseGone && !next.items[it.id]) next.items[it.id] = it
     done.add(it.id)
   }

@@ -7,7 +7,7 @@
 <!-- 單一檔案：導覽動畫（walkthrough）+ 動手試（explorer）。依 visual-learning skill 製作。 -->
 <style>
   :root { --bg:oklch(.97 0 0); --surface:oklch(.994 0 0); --sunk:oklch(0 0 0 / .04);
-          --text:oklch(.097 0 0); --text2:oklch(.097 0 0 / .62); --muted:oklch(.097 0 0 / .45);
+          --text:oklch(.097 0 0); --text2:oklch(.097 0 0 / .7); --muted:oklch(.097 0 0 / .45);
           --border:oklch(0 0 0 / .07); --border-strong:oklch(0 0 0 / .13); --border-emph:oklch(0 0 0 / .3);
           --accent:oklch(.097 0 0); --on-accent:oklch(.994 0 0); --track:oklch(0 0 0 / .08);
           --gray-fill:#F5F5F5; --gray-stroke:#737373; --purple-fill:#EEEDFE; --purple-stroke:#534AB7; --purple-text:#3C3489;
@@ -15,23 +15,23 @@
           --shadow-m:0 4px 6px -2px oklch(0 0 0 / .025), 0 2px 2px -2px oklch(0 0 0 / .05);
           --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .08), 0 16px 32px -6px oklch(0 0 0 / .12); color-scheme:light; }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:oklch(.145 0 0); --surface:oklch(.205 0 0); --sunk:oklch(.994 0 0 / .05);
-    --text:oklch(.985 0 0); --text2:oklch(.985 0 0 / .62); --muted:oklch(.985 0 0 / .45);
+    --text:oklch(.985 0 0); --text2:oklch(.985 0 0 / .72); --muted:oklch(.985 0 0 / .45);
     --border:oklch(.994 0 0 / .07); --border-strong:oklch(.994 0 0 / .13); --border-emph:oklch(.994 0 0 / .4);
     --accent:oklch(.994 0 0); --on-accent:oklch(.097 0 0); --track:oklch(.994 0 0 / .1);
     --gray-fill:#262626; --gray-stroke:#A1A1A1; --purple-fill:#3C3489; --purple-stroke:#AFA9EC; --purple-text:#CECBF6;
     --coral-fill:#5A2414; --coral-stroke:#F0997B; --coral-text:#F7C9BA; --teal-fill:#06403A; --teal-stroke:#5DCAA5; --teal-text:#9FE1CB;
     --shadow-m:0 4px 6px -2px oklch(0 0 0 / .08); --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .2); color-scheme:dark; } }
   :root[data-theme="dark"] { --bg:oklch(.145 0 0); --surface:oklch(.205 0 0); --sunk:oklch(.994 0 0 / .05);
-    --text:oklch(.985 0 0); --text2:oklch(.985 0 0 / .62); --muted:oklch(.985 0 0 / .45);
+    --text:oklch(.985 0 0); --text2:oklch(.985 0 0 / .72); --muted:oklch(.985 0 0 / .45);
     --border:oklch(.994 0 0 / .07); --border-strong:oklch(.994 0 0 / .13); --border-emph:oklch(.994 0 0 / .4);
     --accent:oklch(.994 0 0); --on-accent:oklch(.097 0 0); --track:oklch(.994 0 0 / .1);
     --gray-fill:#262626; --gray-stroke:#A1A1A1; --purple-fill:#3C3489; --purple-stroke:#AFA9EC; --purple-text:#CECBF6;
     --coral-fill:#5A2414; --coral-stroke:#F0997B; --coral-text:#F7C9BA; --teal-fill:#06403A; --teal-stroke:#5DCAA5; --teal-text:#9FE1CB;
     --shadow-m:0 4px 6px -2px oklch(0 0 0 / .08); --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .2); color-scheme:dark; }
   * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--text); font:400 16px/1.55 system-ui,-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; }
+  body { margin:0; background:var(--bg); color:var(--text); font:500 16px/1.55 system-ui,-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; }
   main { position:relative; max-width:760px; margin:0 auto; padding:20px 14px 32px; }
-  h1 { font-size:22px; font-weight:650; line-height:1.2; margin:0 0 4px; }
+  h1 { font-size:22px; font-weight:700; line-height:1.2; margin:0 0 4px; }
   .sub { color:var(--text2); font-size:14px; margin:0 0 14px; }
   #modes { display:inline-flex; gap:4px; padding:4px; background:var(--sunk); border-radius:12px; margin-bottom:14px; }
   #modes button { border-color:transparent; background:transparent; box-shadow:none; color:var(--text2); }
@@ -39,7 +39,7 @@
   svg { display:block; width:100%; height:auto; background:var(--surface); border:1px solid var(--border); border-radius:16px; }
   #wsvg { border-bottom:none; border-radius:16px 16px 0 0; }
   svg text { font-family:inherit; }
-  .tm { font-size:13px; fill:var(--text); } .th { font-size:14px; font-weight:600; fill:var(--text); } .ts { font-size:12px; fill:var(--text2); }
+  .tm { font-size:13px; font-weight:500; fill:var(--text); } .th { font-size:14px; font-weight:700; fill:var(--text); } .ts { font-size:12px; font-weight:500; fill:var(--text2); }
   .frame { fill:none; stroke:var(--border-emph); } .arr { stroke:var(--muted); stroke-width:1.2; fill:none; }
   .hl { fill:none; stroke:#EF9F27; stroke-width:2.2; }
   .c-gray>rect { fill:var(--gray-fill); stroke:var(--gray-stroke); } .c-gray>.tm { }
@@ -89,7 +89,7 @@
   .op b { font-weight:600; } .op small { display:block; color:var(--text2); font-size:12px; }
   .op label { display:grid; gap:2px; font-size:12px; color:var(--text2); }
   .op select { font-size:13px; padding:4px 8px; }
-  h2 { font-size:17px; font-weight:650; margin:0 0 8px; }
+  h2 { font-size:17px; font-weight:700; margin:0 0 8px; }
   .quiz-card { font-size:17px; font-weight:600; margin:10px 0; }
   #qfb { font-size:14px; min-height:44px; color:var(--text2); }
   #qfb .ok { color:var(--teal-stroke); font-weight:600; } #qfb .no { color:var(--coral-stroke); font-weight:600; }
