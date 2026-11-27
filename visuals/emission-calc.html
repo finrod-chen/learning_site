@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>排放量計算與係數</title>
+<!-- 單一檔案：導覽動畫（walkthrough）+ 動手試（explorer）。依 visual-learning skill 製作。 -->
+<style>
+  :root { --bg:oklch(.97 0 0); --surface:oklch(.994 0 0); --sunk:oklch(0 0 0 / .04);
+          --text:oklch(.097 0 0); --text2:oklch(.097 0 0 / .7); --muted:oklch(.097 0 0 / .45);
+          --border:oklch(0 0 0 / .07); --border-strong:oklch(0 0 0 / .13); --border-emph:oklch(0 0 0 / .3);
+          --accent:oklch(.097 0 0); --on-accent:oklch(.994 0 0); --track:oklch(0 0 0 / .08);
+          --gray-fill:#F5F5F5; --gray-stroke:#737373; --purple-fill:#EEEDFE; --purple-stroke:#534AB7; --purple-text:#3C3489;
+          --coral-fill:#FAECE7; --coral-stroke:#C0472B; --coral-text:#7A2A16; --teal-fill:#E1F5EE; --teal-stroke:#0F8F6B; --teal-text:#085041;
+          --shadow-m:0 4px 6px -2px oklch(0 0 0 / .025), 0 2px 2px -2px oklch(0 0 0 / .05);
+          --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .08), 0 16px 32px -6px oklch(0 0 0 / .12); color-scheme:light; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:oklch(.145 0 0); --surface:oklch(.205 0 0); --sunk:oklch(.994 0 0 / .05);
+    --text:oklch(.985 0 0); --text2:oklch(.985 0 0 / .72); --muted:oklch(.985 0 0 / .45);
+    --border:oklch(.994 0 0 / .07); --border-strong:oklch(.994 0 0 / .13); --border-emph:oklch(.994 0 0 / .4);
+    --accent:oklch(.994 0 0); --on-accent:oklch(.097 0 0); --track:oklch(.994 0 0 / .1);
+    --gray-fill:#262626; --gray-stroke:#A1A1A1; --purple-fill:#3C3489; --purple-stroke:#AFA9EC; --purple-text:#CECBF6;
+    --coral-fill:#5A2414; --coral-stroke:#F0997B; --coral-text:#F7C9BA; --teal-fill:#06403A; --teal-stroke:#5DCAA5; --teal-text:#9FE1CB;
+    --shadow-m:0 4px 6px -2px oklch(0 0 0 / .08); --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .2); color-scheme:dark; } }
+  :root[data-theme="dark"] { --bg:oklch(.145 0 0); --surface:oklch(.205 0 0); --sunk:oklch(.994 0 0 / .05);
+    --text:oklch(.985 0 0); --text2:oklch(.985 0 0 / .72); --muted:oklch(.985 0 0 / .45);
+    --border:oklch(.994 0 0 / .07); --border-strong:oklch(.994 0 0 / .13); --border-emph:oklch(.994 0 0 / .4);
+    --accent:oklch(.994 0 0); --on-accent:oklch(.097 0 0); --track:oklch(.994 0 0 / .1);
+    --gray-fill:#262626; --gray-stroke:#A1A1A1; --purple-fill:#3C3489; --purple-stroke:#AFA9EC; --purple-text:#CECBF6;
+    --coral-fill:#5A2414; --coral-stroke:#F0997B; --coral-text:#F7C9BA; --teal-fill:#06403A; --teal-stroke:#5DCAA5; --teal-text:#9FE1CB;
+    --shadow-m:0 4px 6px -2px oklch(0 0 0 / .08); --shadow-xl:0 8px 16px -4px oklch(0 0 0 / .2); color-scheme:dark; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:500 16px/1.55 system-ui,-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; }
+  main { position:relative; max-width:760px; margin:0 auto; padding:20px 14px 32px; }
+  h1 { font-size:22px; font-weight:700; line-height:1.2; margin:0 0 4px; }
+  .sub { color:var(--text2); font-size:14px; margin:0 0 14px; }
+  #modes { display:inline-flex; gap:4px; padding:4px; background:var(--sunk); border-radius:12px; margin-bottom:14px; }
+  #modes button { border-color:transparent; background:transparent; box-shadow:none; color:var(--text2); }
+  #modes button.on { background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:var(--shadow-m); }
+  svg { display:block; width:100%; height:auto; background:var(--surface); border:1px solid var(--border); border-radius:16px; }
+  #wsvg { border-bottom:none; border-radius:16px 16px 0 0; }
+  svg text { font-family:inherit; }
+  .tm { font-size:13px; font-weight:500; fill:var(--text); } .th { font-size:14px; font-weight:700; fill:var(--text); } .ts { font-size:12px; font-weight:500; fill:var(--text2); }
+  .frame { fill:none; stroke:var(--border-emph); } .arr { stroke:var(--muted); stroke-width:1.2; fill:none; }
+  .hl { fill:none; stroke:#EF9F27; stroke-width:2.2; }
+  .c-gray>rect { fill:var(--gray-fill); stroke:var(--gray-stroke); } .c-gray>.tm { }
+  .c-purple>rect { fill:var(--purple-fill); stroke:var(--purple-stroke); } .c-purple>.tm { fill:var(--purple-text); }
+  .c-coral>rect { fill:var(--coral-fill); stroke:var(--coral-stroke); } .c-coral>.tm { fill:var(--coral-text); }
+  .c-teal>rect { fill:var(--teal-fill); stroke:var(--teal-stroke); } .c-teal>.tm { fill:var(--teal-text); }
+  #cap { background:var(--surface); border:1px solid var(--border); border-radius:0 0 16px 16px; padding:14px 18px 14px; min-height:118px; }
+  #capch { display:inline-block; font-size:12px; font-weight:600; color:var(--text2); background:var(--sunk); border-radius:999px; padding:2px 10px; }
+  #captext { font-size:16px; margin:8px 0 2px; } #caphint { font-size:13px; color:var(--text2); min-height:18px; }
+  .prow { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  button, select { font:inherit; font-size:14px; font-weight:500; line-height:20px; color:var(--text); background:var(--surface); border:1px solid var(--border-strong); border-radius:10px; padding:6px 14px; cursor:pointer; box-shadow:var(--shadow-m); }
+  button:hover, select:hover { background:var(--sunk); box-shadow:none; }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline:2px solid #EF9F27; outline-offset:2px; }
+  #play { background:var(--accent); color:var(--on-accent); border-color:transparent; min-width:96px; } #play:hover { opacity:.8; }
+  #time { font-size:13px; color:var(--text2); margin-left:auto; font-variant-numeric:tabular-nums; }
+  #scrub { position:relative; height:28px; margin:12px 0 8px; cursor:pointer; touch-action:none; }
+  #scrub .track, #scrub .fill { position:absolute; top:11px; height:6px; border-radius:999px; left:0; }
+  #scrub .track { right:0; background:var(--track); } #scrub .fill { background:var(--accent); }
+  #scrub .tick { position:absolute; top:8px; width:2px; height:12px; margin-left:-1px; border-radius:1px; background:var(--muted); }
+  #scrub .knob { position:absolute; top:5px; width:18px; height:18px; margin-left:-9px; border-radius:50%; background:var(--surface); border:1px solid var(--border-emph); box-shadow:var(--shadow-m); }
+  #chips { display:inline-flex; flex-wrap:wrap; gap:4px; margin-top:10px; padding:4px; background:var(--sunk); border-radius:12px; }
+  #chips button { border-color:transparent; background:transparent; box-shadow:none; color:var(--text2); padding:5px 10px; }
+  #chips button.on { background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:var(--shadow-m); }
+  .panel { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px 18px; margin-top:14px; }
+  .ctl { display:grid; grid-template-columns:1fr; gap:10px; }
+  .ctl label { display:grid; grid-template-columns:150px 1fr 120px; gap:10px; align-items:center; font-size:14px; }
+  .ctl output { font-variant-numeric:tabular-nums; text-align:right; font-size:14px; }
+  input[type=range] { width:100%; accent-color:var(--purple-stroke); }
+  .grp { font-size:12px; font-weight:600; color:var(--text2); margin:6px 0 0; }
+  #ex-note { font-size:14px; color:var(--text2); margin:10px 0 0; }
+  .res { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-top:12px; }
+  .res div { background:var(--sunk); border-radius:12px; padding:8px 12px; }
+  .res b { display:block; font-size:20px; font-variant-numeric:tabular-nums; } .res span { font-size:12px; color:var(--text2); }
+  .sources { font-size:14px; color:var(--text2); background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:4px 18px; margin-top:18px; }
+  .sources b { color:var(--text); font-weight:600; } .sources ol, .sources ul { padding-left:20px; }
+  .sources a { color:var(--text); text-decoration:underline; text-decoration-color:var(--border-emph); text-underline-offset:3px; }
+  #tip { position:absolute; display:none; max-width:270px; padding:8px 12px; font-size:13px; line-height:1.45; background:var(--surface); border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow-xl); pointer-events:none; z-index:5; }
+  [hidden] { display:none !important; }
+  @media (max-width:560px) { #wsvg .tm { font-size:18px; } #wsvg .ts { font-size:16px; } #wsvg .th { font-size:19px; } .res { grid-template-columns:1fr 1fr; } .tm { font-size:15px; } .ts { font-size:14px; } .th { font-size:16px; } .ctl label { grid-template-columns:1fr 120px; } .ctl label input { grid-column:1 / -1; grid-row:2; } .ctl label span:first-child { grid-row:1; } .ctl output { grid-row:1; grid-column:2; } }
+
+  #narr.on { background:var(--purple-fill); color:var(--purple-text); border-color:var(--purple-stroke); }
+  .seg { display:inline-flex; gap:4px; padding:4px; background:var(--sunk); border-radius:12px; flex-wrap:wrap; }
+  .seg button { border-color:transparent; background:transparent; box-shadow:none; color:var(--text2); padding:5px 12px; }
+  .seg button.on { background:var(--surface); color:var(--text); border-color:var(--border); box-shadow:var(--shadow-m); }
+  .ops { display:grid; gap:10px; margin-top:12px; }
+  .op { display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; gap:8px; align-items:center; font-size:14px; background:var(--sunk); border-radius:12px; padding:8px 12px; }
+  .op b { font-weight:600; } .op small { display:block; color:var(--text2); font-size:12px; }
+  .op label { display:grid; gap:2px; font-size:12px; color:var(--text2); }
+  .op select { font-size:13px; padding:4px 8px; }
+  h2 { font-size:17px; font-weight:700; margin:0 0 8px; }
+  .quiz-card { font-size:17px; font-weight:600; margin:10px 0; }
+  #qfb { font-size:14px; min-height:44px; color:var(--text2); }
+  #qfb .ok { color:var(--teal-stroke); font-weight:600; } #qfb .no { color:var(--coral-stroke); font-weight:600; }
+  label.seg { align-items:center; gap:6px; padding:6px 12px; font-size:14px; cursor:pointer; }
+  #d-note { font-size:14px; color:var(--text2); }
+  @media (max-width:560px) { .op { grid-template-columns:1fr 1fr; } .op > div:first-child { grid-column:1 / -1; } }
+</style>
+</head>
+<body>
+<main id="app">
+  <h1>排放量計算與係數</h1>
+  <p class="sub">活動數據 × 排放係數 × GWP：用環境部盤查指引的公式與範例，一步步算出公噸 CO₂e。</p>
+  <div id="modes" role="tablist"><button id="m-walk" class="on" role="tab">導覽動畫</button><button id="m-ex" role="tab">動手試</button></div>
+
+  <section id="walk">
+    <svg id="wsvg" viewBox="0 0 680 360" role="img" aria-label="排放量計算導覽動畫"><defs>
+      <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" style="stroke:var(--muted)" stroke-width="1.5"/></marker></defs><g id="dyn"></g></svg>
+    <div id="cap" aria-live="polite"><div id="capch"></div><p id="captext"></p><div id="caphint"></div></div>
+    <div id="scrub" data-tip="拖曳可在動畫中移動。刻度是各章的起點。"><div class="track"></div><div class="fill"></div><div id="ticks"></div><div class="knob"></div></div>
+    <div class="prow"><button id="play">▶ 播放</button><button id="replay">↺ 重播此步</button><button id="next">下一步 ▸</button>
+      <select id="speed" aria-label="播放速度"><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option></select>
+      <button id="narr" aria-pressed="false" data-tip="用裝置內建語音朗讀字幕。開啟後，每步唸完會自動前進。">🔈 旁白：關</button><span id="time"></span></div>
+    <div id="chips"></div>
+  </section>
+
+  <section id="ex" hidden>
+    <div class="panel" style="margin-top:0">
+      <h2>排放量計算器</h2>
+      <p class="ts" style="font-size:13px;color:var(--text2);margin:0 0 8px">熱值與電力係數的預設值取自指引範例，實際盤查要用供應商或檢測熱值，以及經濟部公告的盤查年度電力排碳係數。</p>
+      <p class="ts" style="font-size:13px;margin:0 0 6px">單位：公噸 CO₂e｜<span style="color:var(--coral-stroke)">■</span> 範疇一　<span style="color:var(--teal-stroke)">■</span> 範疇二</p>
+      <svg id="esvg" viewBox="0 0 680 240" role="img" aria-label="各排放源的排放量"></svg>
+      <p class="grp">活動數據</p>
+      <div class="ctl" id="ctl-a"></div>
+      <p class="grp">係數與設定</p>
+      <div class="ctl" id="ctl-b"></div>
+      <div class="prow" style="margin-top:10px">
+        <select id="ref" aria-label="冷媒種類" data-tip="冷媒的 GWP（AR5；勾選 AR6 時改用 AR6）。混合冷媒依成分比例加權。"><option value="r134a">HFC-134a（AR5 GWP 1,300）</option><option value="r32">HFC-32（AR5 GWP 677）</option><option value="r407b">R-407B 混合冷媒（AR5 GWP 2,546.7）</option></select>
+        <label class="seg" data-tip="供應商或實驗室常給高位熱值，要先換成低位熱值：油類 ×95%、氣態燃料 ×90%。"><input type="checkbox" id="hhv"> 熱值是高位熱值</label>
+        <label class="seg" data-tip="指引規定使用 AR5。勾選可比較改用 AR6 的差異。"><input type="checkbox" id="ar6"> 改用 AR6 的 GWP 比較</label>
+      </div>
+      <div class="res" id="res"></div>
+      <p id="ex-note"></p>
+    </div>
+  </section>
+
+  <section class="sources">
+    <p><b>簡化說明：</b>計算器只放了四種常見排放源。冷媒「逸散量」直接輸入，沒有示範如何估算逸散量；排放係數用指引範例中的環境部公告值（柴油、天然氣），實際盤查要用最新公告版本。電力排碳係數預設 0.495 是指引範例的 111 年係數，請改成經濟部公告的盤查年度係數。</p>
+    <p><b>資料來源</b></p>
+    <ol id="srcs"></ol>
+  </section>
+  <div id="tip"></div>
+</main>
+<script>
+
+
+
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+const clamp = u => Math.max(0, Math.min(1, u));
+const E = u => { u = clamp(u); return u < .5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2; };
+const seg = (u, a, b) => clamp((u - a) / (b - a));
+
+/* ---------- 場景動作（純函式：只依進度 u） ---------- */
+function add(S, u, id, it) { S[id] = { ...it, op: (it.op ?? 1) * E(u) }; }
+function del(S, u, id) { if (!S[id]) return; if (u >= 1) delete S[id]; else S[id].op *= 1 - E(u); }
+function delAll(S, u, ids) { ids.forEach(id => del(S, u, id)); }
+function mv(S, u, id, to) { const it = S[id]; if (!it) return; for (const [p, v] of Object.entries(to)) { if (typeof v === 'number' && typeof it[p] === 'number') it[p] += (v - it[p]) * E(u); else if (u >= .5) it[p] = v; } }
+function hl(S, u, ...ids) { if (u > 0) ids.forEach(id => S[id] && (S[id].hl = true)); }
+function fly(S, u, id, a, b, fill = '#7F77DD') { if (u <= 0 || u >= 1) { delete S[id]; return; } S[id] = { type: 'dot', x: a[0] + (b[0] - a[0]) * E(u), y: a[1] + (b[1] - a[1]) * E(u), fill, op: 1 }; }
+const box = (x, y, w, h, c, l1, tip, more = {}) => ({ type: 'box', x, y, w, h, c, l1, tip, ...more });
+const text = (x, y, s, c = 'ts', tip) => ({ type: 'text', x, y, s, c, tip });
+const line = (x1, y1, x2, y2, tip) => ({ type: 'arrow', x1, y1, x2, y2, c1x: x1 + (x2 - x1) / 3, c1y: y1 + (y2 - y1) / 3, c2x: x1 + 2 * (x2 - x1) / 3, c2y: y1 + 2 * (y2 - y1) / 3, tip });
+
+/* ---------- 腳本 ---------- */
+const CH = [], BEATS = [];
+const chapter = name => CH.push({ name, beat: BEATS.length });
+const step = (dur, cap, fn, pause = true) => BEATS.push({ dur, cap, fn, pause, ch: CH.length - 1 });
+
+chapter('1 · 三種方法');
+step(9, '找出排放源之後，就要算排放量。依「溫室氣體排放量盤查登錄及查驗管理辦法」第 4 條，可以用三種方法：排放係數法、質量平衡法、直接監測法。', (S, u) => {
+  [['m1', '排放係數法', 'purple', '活動數據乘排放係數，再乘 GWP。常見的方法。'], ['m2', '質量平衡法', 'teal', '用碳的投入與產出算，常見於鋼鐵、化工。'], ['m3', '直接監測法', 'coral', '連續監測排氣濃度與流量。計畫書要先經主管機關核定。']]
+    .forEach(([id, n, c, tp], i) => add(S, seg(u, .2 + i * .2, .5 + i * .2), id, box(40 + i * 210, 120, 190, 60, c, n, tp)));
+});
+step(9, '常見的是排放係數法：活動數據（例如燃料用量）乘上排放係數，再把每種氣體乘上溫暖化潛勢 (GWP)，換算成公噸 CO₂ 當量 (CO₂e)。', (S, u) => {
+  hl(S, u, 'm1');
+  add(S, seg(u, .3, .7), 'f0', box(40, 230, 600, 50, 'frame', '排放量 = 活動數據 × 排放係數 × GWP', '指引圖 2-3：排放係數法。'));
+});
+
+chapter('2 · 燃料燃燒');
+step(10, '燃料燃燒要多兩個因子：低位熱值和單位轉換因子。公式是：年活動數據 × 低位熱值 × 單位轉換因子 × 排放係數 × GWP。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['m1','m2','m3','f0']);
+  [['a1', '活動數據', 'gray', '盤查年度 1/1～12/31 的燃料用量。'], ['a2', '低位熱值', 'teal', '每單位燃料的熱量，例如 kcal/L。'], ['a3', '單位轉換', 'gray', '1 kcal = 4.1868 × 10⁻⁹ TJ。'], ['a4', '排放係數', 'purple', '每 TJ 熱量排放多少氣體，例如 kgCO₂/TJ。'], ['a5', 'GWP', 'coral', '溫暖化潛勢：把 CH₄、N₂O 換算成 CO₂ 當量。']]
+    .forEach(([id, n, c, tp], i) => {
+      add(S, seg(u, .25 + i * .12, .45 + i * .12), id, box(20 + i * 134, 60, 108, 54, c, n, tp));
+      if (i) add(S, seg(u, .25 + i * .12, .45 + i * .12), 'x' + i, text(7 + i * 134, 87, '×', 'th'));
+    });
+});
+step(10, '檢測報告常給「高位熱值」，要先換成低位熱值：煤類和油類乘 95%，氣態燃料乘 90%。單位轉換因子是 1 kcal = 4.1868 × 10⁻⁹ TJ。', (S, u) => {
+  hl(S, u, 'a2', 'a3');
+  add(S, seg(u, .3, .65), 'h1', box(60, 160, 260, 50, 'teal', '低位 = 高位 × 95%（煤、油）', '指引：比例值煤類及油類 95%。'));
+  add(S, seg(u, .45, .8), 'h2', box(360, 160, 260, 50, 'teal', '低位 = 高位 × 90%（氣態）', '指引：氣態燃料 90%。'));
+});
+step(11, 'GWP 依規定使用 IPCC 第五次評估報告 (AR5)：CO₂ 是 1，甲烷 CH₄ 是 28，氧化亞氮 N₂O 是 265。燃料燃燒會產生這三種氣體，要分開算再加總。', (S, u) => {
+  delAll(S, seg(u, 0, .25), ['h1','h2']);
+  hl(S, u, 'a5');
+  [['g1', 'CO₂ × 1', 'gray'], ['g2', 'CH₄ × 28', 'purple'], ['g3', 'N₂O × 265', 'coral']].forEach(([id, n, c], i) => add(S, seg(u, .25 + i * .15, .5 + i * .15), id, box(60 + i * 200, 170, 160, 48, c, n, '指引附錄一，AR5 數值。')));
+  add(S, seg(u, .75, 1), 'g4', text(340, 250, '三種氣體分別乘 GWP，再加總', 'tm'));
+});
+step(12, '指引範例：緊急發電機一年用柴油 17.495 公秉，熱值 8,500 kcal/L。CO₂ 46.1353 + CH₄ 0.0523 + N₂O 0.0990，合計約 46.29 公噸 CO₂e。CO₂ 幾乎占全部。', (S, u) => {
+  delAll(S, seg(u, 0, .25), ['g1','g2','g3','g4']);
+  add(S, seg(u, .25, .5), 'd0', text(340, 150, '柴油 17.495 公秉 × 8,500 kcal/L', 'th', '指引第 2-8～2-9 頁範例。'));
+  add(S, seg(u, .4, .65), 'd1', box(40, 180, 360, 40, 'gray', 'CO₂：46.1353 公噸 CO₂e', '排放係數 74,100 kgCO₂/TJ，GWP 1。'));
+  add(S, seg(u, .5, .75), 'd2', box(410, 180, 110, 40, 'purple', 'CH₄ 0.0523', '3 kgCH₄/TJ × GWP 28。'));
+  add(S, seg(u, .55, .8), 'd3', box(530, 180, 110, 40, 'coral', 'N₂O 0.0990', '0.6 kgN₂O/TJ × GWP 265。'));
+  add(S, seg(u, .75, 1), 'd4', box(190, 250, 300, 46, 'frame', '合計 46.2866 公噸 CO₂e', '範例答案。'));
+  hl(S, seg(u, .8, 1), 'd4');
+});
+
+chapter('3 · 外購電力與蒸汽');
+step(11, '外購電力：用電度數 × 經濟部公告的電力排碳係數（公斤 CO₂e／度）。這個係數已經換算成 CO₂e，所以不用再分氣體、也不用再乘 GWP。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['a1','a2','a3','a4','a5','x1','x2','x3','x4','d0','d1','d2','d3','d4']);
+  add(S, seg(u, .3, .55), 'e1', box(60, 80, 200, 54, 'teal', '用電度數', '電表紀錄或電費收據。'));
+  add(S, seg(u, .3, .55), 'ex', text(290, 107, '×', 'th'));
+  add(S, seg(u, .4, .65), 'e2', box(320, 80, 300, 54, 'teal', '電力排碳係數 (kgCO₂e/度)', '經濟部公告。已是 CO₂e。'));
+  add(S, seg(u, .65, 1), 'e3', text(340, 170, '範例：128,149.831 千度 × 0.495 = 63,434.17 公噸 CO₂e', 'tm', '指引範例使用 111 年係數 0.495。'));
+});
+step(11, '要用「盤查年度」的係數。如果經濟部還沒公告，可以先用前一年度的係數完成盤查與查驗。外購蒸汽則用供應商提供的蒸汽排放係數。', (S, u) => {
+  add(S, seg(u, 0, .35), 'e4', box(60, 210, 270, 50, 'gray', '當年度係數未公告 → 用前一年', '指引第 2-14 頁。'));
+  add(S, seg(u, .3, .65), 'e5', box(350, 210, 270, 50, 'gray', '外購蒸汽 → 供應商係數', '若是汽電共生，建議用先熱後電法；供應商為公告列管對象時，用最新且經查驗的蒸汽排放係數。'));
+});
+
+chapter('4 · 特殊情況');
+step(11, '生質燃料燃燒的 CO₂ 屬於自然碳循環，要計算後「單獨表列」，不加進排放總量；但它產生的 CH₄ 和 N₂O 仍要加總。', (S, u) => {
+  delAll(S, seg(u, 0, .3), ['e1','ex','e2','e3','e4','e5']);
+  add(S, seg(u, .3, .55), 'b1', box(60, 70, 260, 54, 'gray', '生質 CO₂：單獨表列', '不彙總到排放總量。'));
+  add(S, seg(u, .4, .65), 'b2', box(360, 70, 260, 54, 'coral', '生質 CH₄、N₂O：要加總', '彙總到排放總量。'));
+});
+step(11, '混合冷媒要用成分比例加權 GWP。例如 R-407B 含 HFC-32 10%、HFC-125 70%、HFC-134a 20%：677×10% + 3,170×70% + 1,300×20% = 2,546.7。', (S, u) => {
+  add(S, seg(u, 0, .4), 'r1', box(60, 160, 560, 50, 'purple', 'R-407B 的 GWP = 67.7 + 2,219 + 260 = 2,546.7', '指引附錄一範例二。'));
+  add(S, seg(u, .5, .9), 'r2', text(340, 235, '不屬於應盤查溫室氣體的成分不計（例如 HCFC-22）', 'ts', '指引範例一：R-402A 只計 HFC-125。'));
+});
+step(11, '質量平衡法用碳含量計算 CO₂：活動數據 × 44/12 × 碳含量 × 效率，沒有檢測效率時以 100% 計。指引範例：廢橡膠片 7,202.4 公噸、碳含量 71.5%，CO₂ = 18,882.292 公噸。燃料燃燒時，CH₄ 和 N₂O 仍用排放係數法。', (S, u) => {
+  delAll(S, seg(u, 0, .25), ['b1','b2','r1','r2']);
+  add(S, seg(u, .25, .55), 'q1', box(40, 100, 600, 54, 'teal', 'CO₂ = 活動數據 × 44/12 × 碳含量 × 效率', '44/12 是 CO₂ 與 C 的分子量比。'));
+  add(S, seg(u, .55, .85), 'q2', box(140, 190, 400, 50, 'gray', '燃料燃燒：CH₄、N₂O 仍用係數法', '指引：以質量平衡法計算燃料燃燒，僅限計算 CO₂。'));
+});
+
+/* ---------- 時間與繪製 ---------- */
+const SETTLE = .5, EPS = .001;
+let acc = 0; BEATS.forEach(b => { b.t0 = acc; b.t1 = acc + b.dur + SETTLE; acc = b.t1; });
+const TOTAL = acc; CH.forEach(c => c.t0 = BEATS[c.beat].t0);
+function stateAt(t) {
+  const S = {}; let i = 0;
+  for (; i < BEATS.length && t >= BEATS[i].t1; i++) BEATS[i].fn(S, 1);
+  Object.values(S).forEach(it => it.hl = false);
+  if (i >= BEATS.length) i = BEATS.length - 1; else BEATS[i].fn(S, clamp((t - BEATS[i].t0) / BEATS[i].dur));
+  return { S, i };
+}
+const T = (x, y, s, c, a = 'middle') => `<text class="${c}" x="${x}" y="${y}" text-anchor="${a}" dominant-baseline="central">${esc(s)}</text>`;
+function draw(it, now) {
+  const op = clamp(it.op ?? 1); if (op < .01) return '';
+  const tp = it.tip ? ` data-tip="${esc(it.tip)}"` : '', o = ` opacity="${op.toFixed(3)}"`;
+  if (it.type === 'text') return `<g${o}${tp}>${T(it.x, it.y, it.s, it.c)}</g>`;
+  if (it.type === 'dot') return `<circle cx="${it.x}" cy="${it.y}" r="5" fill="${it.fill}"${o}/>`;
+  if (it.type === 'arrow') return `<path class="arr" d="M${it.x1} ${it.y1}C${it.c1x} ${it.c1y} ${it.c2x} ${it.c2y} ${it.x2} ${it.y2}" marker-end="url(#ah)"${o}${tp}/>`;
+  if (it.h < 1 && !it.l1) return '';
+  const fr = it.c === 'frame';
+  let s = `<g class="${fr ? '' : 'c-' + it.c}"${o}${tp}><rect class="${fr ? 'frame' : ''}" x="${it.x}" y="${it.y}" width="${it.w}" height="${it.h}" rx="${fr ? 10 : 6}" stroke-width="0.8"/>`;
+  if (it.l1) s += T(it.x + it.w / 2, it.y + it.h / 2, it.l1, 'tm');
+  s += '</g>';
+  if (it.hl) s += `<rect class="hl" x="${it.x - 2.5}" y="${it.y - 2.5}" width="${it.w + 5}" height="${it.h + 5}" rx="8" opacity="${(op * (.55 + .45 * Math.sin(now / 260))).toFixed(3)}"/>`;
+  return s;
+}
+
+/* ---------- 播放器 ---------- */
+let t = 0, playing = false, speed = 1, last = null, skipPause = -1, capKey = '', mode = 'walk';
+const beatAt = tt => { let i = 0; while (i < BEATS.length - 1 && tt >= BEATS[i].t1) i++; return i; };
+function setPlaying(p) {
+  playing = p;
+  if (p) { if (t >= TOTAL - 2 * EPS) t = 0; const i = beatAt(t); if (t >= BEATS[i].t1 - 2 * EPS) skipPause = i; }
+  $('play').textContent = p ? '❚❚ 暫停' : '▶ 播放';
+}
+function seek(tt, play) { t = Math.max(0, Math.min(TOTAL - EPS, tt)); skipPause = -1; spokenBeat = -1; autoNext = false; if (TTS && !play) TTS.cancel(); setPlaying(!!play); if (play && narrOn) speak(beatAt(t)); }
+function tick(now) {
+  const dt = last == null ? 0 : Math.min(.1, (now - last) / 1000); last = now;
+  if (mode === 'walk') {
+    if (playing) {
+      const i = beatAt(t), b = BEATS[i]; let nt = t + dt * speed;
+      if (i !== skipPause && b.pause && nt >= b.t1 - EPS) { nt = b.t1 - EPS; setPlaying(false); autoNext = narrOn; }
+      if (nt >= TOTAL - EPS) { nt = TOTAL - EPS; setPlaying(false); }
+      if (beatAt(nt) !== i) skipPause = -1;
+      t = nt;
+    }
+    const { S, i } = stateAt(t);
+    $('dyn').innerHTML = Object.values(S).map(it => draw(it, now)).join('');
+    const b = BEATS[i], atEnd = t >= b.t1 - .03, key = i + '|' + playing + '|' + atEnd + '|' + narrOn + '|' + speechErr;
+    if (key !== capKey) {
+      capKey = key;
+      $('capch').textContent = `${CH[b.ch].name} ・ 第 ${i + 1} / ${BEATS.length} 步`;
+      $('captext').textContent = b.cap;
+      $('caphint').textContent = speechErr ? `旁白無法播放（${speechErr}）。請確認裝置沒有靜音，並已安裝中文語音。` : playing ? '' : atEnd ? (narrOn ? '旁白唸完會自動繼續。' : '已暫停。按「播放」或空白鍵繼續。') : '已暫停。';
+      [...$('chips').children].forEach((c, k) => c.classList.toggle('on', k === b.ch));
+    }
+    const pct = t / TOTAL * 100 + '%';
+    document.querySelector('#scrub .fill').style.width = pct; document.querySelector('#scrub .knob').style.left = pct;
+    const f = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+    $('time').textContent = `${f(t)} / ${f(TOTAL)}`;
+  }
+  narrTick();
+  requestAnimationFrame(tick);
+}
+$('ticks').innerHTML = CH.map(c => `<div class="tick" style="left:${c.t0 / TOTAL * 100}%"></div>`).join('');
+$('chips').innerHTML = CH.map((c, k) => `<button data-ch="${k}">${esc(c.name)}</button>`).join('');
+$('chips').onclick = e => { const b = e.target.closest('[data-ch]'); if (b) seek(CH[+b.dataset.ch].t0, true); };
+$('play').onclick = () => { autoNext = false; if (playing && TTS) TTS.cancel(); if (!playing) { const i = beatAt(t), j = t >= BEATS[i].t1 - .03 && i < BEATS.length - 1 ? i + 1 : i; if (narrOn) speak(j); else spokenBeat = t >= BEATS[i].t1 - .03 ? i : -1; } setPlaying(!playing); };
+$('replay').onclick = () => seek(BEATS[beatAt(t)].t0, true);
+$('next').onclick = () => { const i = beatAt(t); if (i < BEATS.length - 1) seek(BEATS[i + 1].t0, true); };
+$('speed').onchange = e => speed = +e.target.value;
+const sc = $('scrub'), posT = x => { const r = sc.getBoundingClientRect(); return clamp((x - r.left) / r.width) * TOTAL; };
+let drag = false;
+sc.onpointerdown = e => { drag = true; sc.setPointerCapture(e.pointerId); seek(posT(e.clientX), false); };
+sc.onpointermove = e => { if (drag) seek(posT(e.clientX), false); };
+sc.onpointerup = () => drag = false;
+document.addEventListener('keydown', e => {
+  if (mode !== 'walk' || e.target.closest('button, select, input')) return;
+  if (e.key === ' ') { e.preventDefault(); $('play').click(); }
+  else if (e.key === 'ArrowRight') $('next').click(); else if (e.key === 'ArrowLeft') $('replay').click();
+});
+const tipEl = $('tip'), app = $('app');
+function showTip(e) {
+  const el = !drag && e.target.closest && e.target.closest('[data-tip]');
+  if (!el) return tipEl.style.display = 'none';
+  tipEl.textContent = el.dataset.tip; tipEl.style.display = 'block';
+  const a = app.getBoundingClientRect();
+  tipEl.style.left = Math.max(0, Math.min(e.clientX - a.left + 14, a.width - tipEl.offsetWidth - 8)) + 'px';
+  tipEl.style.top = e.clientY - a.top + 18 + 'px';
+}
+document.addEventListener('mousemove', showTip);
+window.addEventListener('resize', () => mode === 'ex' && renderEx());
+document.addEventListener('click', e => { if (!e.target.closest('[data-tip]')) tipEl.style.display = 'none'; else showTip(e); });
+
+/* ---------- 動手試：排放量計算器 ---------- */
+const TJ = 4.1868e-9;
+const REF = { r134a: [1300, 1530], r32: [677, 771], r407b: [2546.7, 771 * .1 + 3740 * .7 + 1530 * .2] };   // [AR5, AR6]，指引附錄一
+const EF = { diesel: { co2: 74100, ch4: 3, n2o: 0.6 }, gas: { co2: 56100, ch4: 1, n2o: 0.1 } };
+const X = { diesel: 17.495, gas: 94.6467, elec: 1000, ref: 10, lhvD: 8500, lhvG: 8845, ef: 0.495 };
+const CA = [
+  { k: 'diesel', label: '柴油（發電機）', min: 0, max: 100, step: 0.005, unit: ' 公秉', d: 3, tip: '盤查年度的柴油用量，1 公秉 = 1,000 公升。' },
+  { k: 'gas', label: '天然氣（鍋爐）', min: 0, max: 500, step: 0.0001, unit: ' 千 m³', d: 4, tip: '盤查年度的天然氣用量。' },
+  { k: 'elec', label: '外購電力', min: 0, max: 5000, step: 50, unit: ' 千度', d: 0, tip: '盤查年度用電量，1 千度 = 1,000 度。' },
+  { k: 'ref', label: '冷媒逸散量', min: 0, max: 100, step: 1, unit: ' kg', d: 0, tip: '假設已知的冷媒逸散量。' },
+];
+const CB = [
+  { k: 'lhvD', label: '柴油熱值', min: 7000, max: 10000, step: 50, unit: ' kcal/L', d: 0, tip: '指引範例：8,500 kcal/L。' },
+  { k: 'lhvG', label: '天然氣熱值', min: 7000, max: 10000, step: 5, unit: ' kcal/m³', d: 0, tip: '指引範例：8,845 kcal/m³。' },
+  { k: 'ef', label: '電力排碳係數', min: 0.3, max: 0.7, step: 0.001, unit: ' kg/度', d: 3, tip: '指引範例用 111 年 0.495。請改成經濟部公告的盤查年度係數。' },
+];
+function mk(list, host) { host.innerHTML = list.map(c => `<label data-tip="${esc(c.tip)}"><span>${esc(c.label)}</span><input type="range" id="r_${c.k}" min="${c.min}" max="${c.max}" step="${c.step}"><output id="o_${c.k}"></output></label>`).join(''); }
+mk(CA, $('ctl-a')); mk(CB, $('ctl-b'));
+[...CA, ...CB].forEach(c => $('r_' + c.k).oninput = e => { X[c.k] = +e.target.value; renderEx(); });
+['ref', 'hhv', 'ar6'].forEach(id => $(id).onchange = renderEx);
+const fmt = (n, d = 2) => (+n).toLocaleString('zh-Hant', { minimumFractionDigits: d, maximumFractionDigits: d });
+function fuel(q, lhv, ef, ratio, gwp) {         // q 公秉或千 m³ → 乘 1000 換成 L 或 m³；kg → 公噸 再除 1000
+  const tj = q * 1000 * lhv * ratio * TJ;
+  const co2 = tj * ef.co2 / 1000, ch4 = tj * ef.ch4 / 1000 * gwp.ch4, n2o = tj * ef.n2o / 1000 * gwp.n2o;
+  return { co2, ch4, n2o, sum: co2 + ch4 + n2o };
+}
+function calc() {
+  const ar6 = $('ar6').checked, gwp = ar6 ? { ch4: 27.9, n2o: 273 } : { ch4: 28, n2o: 265 }, hhv = $('hhv').checked;
+  const d = fuel(X.diesel, X.lhvD, EF.diesel, hhv ? .95 : 1, gwp), g = fuel(X.gas, X.lhvG, EF.gas, hhv ? .90 : 1, gwp);
+  const rg = REF[$('ref').value][ar6 ? 1 : 0], e = X.elec * X.ef, r = X.ref * rg / 1000;
+  return { d, g, e, r, rg, s1: d.sum + g.sum + r, s2: e, gwp, ar6, hhv };
+}
+function renderEx() {
+  [...CA, ...CB].forEach(c => { $('r_' + c.k).value = X[c.k]; $('o_' + c.k).textContent = fmt(X[c.k], c.d) + c.unit; });
+  const c = calc(), narrow = innerWidth < 560, W = narrow ? 420 : 680, lx = narrow ? 8 : 20, bx = narrow ? 130 : 170, bw = W - bx - (narrow ? 90 : 110);
+  $('esvg').setAttribute('viewBox', `0 0 ${W} 240`);
+  const rows = [['柴油', c.d.sum, 'c-coral', `CO₂ ${fmt(c.d.co2, 4)} + CH₄ ${fmt(c.d.ch4, 4)} + N₂O ${fmt(c.d.n2o, 4)}（範疇一）`],
+    ['天然氣', c.g.sum, 'c-coral', `CO₂ ${fmt(c.g.co2, 4)} + CH₄ ${fmt(c.g.ch4, 4)} + N₂O ${fmt(c.g.n2o, 4)}（範疇一）`],
+    ['冷媒逸散', c.r, 'c-coral', `${fmt(X.ref, 0)} kg × GWP ${fmt(c.rg, 1)} ÷ 1,000（範疇一）`],
+    ['外購電力', c.e, 'c-teal', `${fmt(X.elec, 0)} 千度 × ${fmt(X.ef, 3)} kgCO₂e/度（範疇二）`]];
+  const mx = Math.max(1, ...rows.map(r => r[1])), sx = v => bw * v / mx;
+  let s = '';
+  rows.forEach(([n, v, cl, tp], i) => { const y = 16 + i * 54; s += T(lx, y + 16, n, 'tm', 'start') + `<g class="${cl}" data-tip="${esc(tp)}"><rect x="${bx}" y="${y}" width="${Math.max(1, sx(v))}" height="32" rx="5" stroke-width=".8"/></g>` + T(bx + sx(v) + 8, y + 16, fmt(v, 2), 'ts', 'start'); });
+  $('esvg').innerHTML = s;
+  $('res').innerHTML = [['範疇一（直接）', fmt(c.s1, 2)], ['範疇二（外購電力）', fmt(c.s2, 2)], ['合計', fmt(c.s1 + c.s2, 2)], ['柴油中 CO₂ 的占比', c.d.sum ? (c.d.co2 / c.d.sum * 100).toFixed(1) + '%' : '—']]
+    .map(([k, v]) => `<div><b>${esc(v)}</b><span>${esc(k)}（公噸 CO₂e）</span></div>`).join('').replace('%</b><span>柴油中 CO₂ 的占比（公噸 CO₂e）', '%</b><span>柴油中 CO₂ 的占比');
+  let note = `柴油：${fmt(X.diesel, 3)} 公秉 × 1,000 × ${fmt(X.lhvD, 0)} kcal/L${c.hhv ? ' × 95%' : ''} × 4.1868×10⁻⁹ TJ/kcal × 排放係數 × GWP = ${fmt(c.d.sum, 4)} 公噸 CO₂e。`;
+  if (Math.abs(X.diesel - 17.495) < 1e-9 && Math.abs(X.lhvD - 8500) < 1e-9 && !c.hhv && !c.ar6) note += '（與指引範例 46.2866 相同）';
+  if (c.ar6) note += ` 改用 AR6：燃料幾乎不變（CH₄ 27.9、N₂O 273），但冷媒變化很大（HFC-134a 1,300 → 1,530，R-407B 2,546.7 → ${fmt(REF.r407b[1], 1)}）。正式盤查仍依規定使用 AR5。附錄另列石化甲烷 AR6 為 30，這裡沒有使用。`;
+  $('ex-note').textContent = note + ' 試試看：把冷媒換成 R-407B，看少量逸散為什麼影響很大。';
+}
+
+/* ---------- 旁白（瀏覽器內建語音，Web Speech API） ---------- */
+const TTS = 'speechSynthesis' in window ? window.speechSynthesis : null;
+let narrOn = false, spokenBeat = -1, autoNext = false;
+const SAY = s => s.replace(/[（(][A-Za-z0-9₀-₉⁻ .,\/'’\-]*[）)]/g, '').replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂e/g, '二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/CH₄/g, '甲烷').replace(/N₂O/g, '氧化亞氮').replace(/10⁻⁹/g, '十的負九次方').replace(/kcal\/L/g, '大卡每公升').replace(/kcal\/m³/g, '大卡每立方公尺').replace(/kcal/g, '大卡').replace(/\bTJ\b/g, '兆焦耳').replace(/44\/12/g, '十二分之四十四').replace(/kgCO₂e/g, '公斤二氧化碳當量').replace(/\bGWP\b/g, '全球暖化潛勢').replace(/≥/g, '至少').replace(/～/g, '到').replace(/(\d{4})\/(\d{1,2})\/(\d{1,2})/g, '$1年$2月$3日').replace(/(^|[^\d\/])(\d{1,2})\/(\d{1,2})(?=\s|前|：|，|。|$)/g, '$1$2月$3日').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/(甲烷|氧化亞氮|二氧化碳)\s*\1/g, '$1');
+// 優先順序：曉臻（Microsoft Edge 的自然語音）→ 美佳增強／高品質版 → Google 國語（臺灣，Chrome）→ 美佳 → 其他台灣中文 → 其他中文
+function voice() {
+  const v = TTS.getVoices(), tw = v.filter(x => /zh[-_]TW/i.test(x.lang)), mj = tw.filter(x => /Meijia|美佳/i.test(x.name));
+  return v.find(x => /HsiaoChen|曉臻|晓臻/i.test(x.name)) || mj.find(x => /enhanced|premium|增強|高品質|優化/i.test(x.name)) || tw.find(x => /^Google/i.test(x.name)) || mj[0] || tw[0] || v.find(x => /^zh/i.test(x.lang)) || null;
+}
+const ZH_NAME = { HsiaoChen: '曉臻', HsiaoYu: '曉雨', YunJhe: '雲哲', Yating: '雅婷', Hanhan: '涵涵', Zhiwei: '志瑋', Meijia: '美佳', Tingting: '婷婷', 'Sin-ji': '善怡' };
+const voiceName = () => { const v = TTS && voice(); if (!v) return ''; if (/^Google/i.test(v.name)) return 'Google 國語'; const k = Object.keys(ZH_NAME).find(n => v.name.includes(n)); return k ? ZH_NAME[k] + (/enhanced|premium|增強|高品質/i.test(v.name) ? '・高品質' : '') : v.name.replace(/^Microsoft\s+/i, '').replace(/\s*\(.*$|\s+-\s+.*$/, ''); };
+function narrLabel() { $('narr').textContent = narrOn ? `🔊 旁白：開${voiceName() ? '（' + voiceName() + '）' : ''}` : '🔈 旁白：關'; }
+if (TTS && 'onvoiceschanged' in TTS) TTS.onvoiceschanged = () => narrOn && narrLabel();
+let curU = null, speechErr = '';
+// iOS／Safari：第一次朗讀必須在點擊當下呼叫；保留 utterance 參照，避免被回收而中斷。
+function speak(i) {
+  if (!TTS || !narrOn) return;
+  if (TTS.speaking || TTS.pending) TTS.cancel();
+  spokenBeat = i;
+  const u = new SpeechSynthesisUtterance(SAY(BEATS[i].cap)); u.lang = 'zh-TW'; u.rate = speed; const v = voice(); if (v) u.voice = v;
+  u.onstart = () => { if (speechErr) { speechErr = ''; capKey = ''; } };
+  u.onerror = e => { if (e.error && e.error !== 'interrupted' && e.error !== 'canceled') { speechErr = e.error; capKey = ''; } };
+  // 逐句排入佇列：Chrome 的 Google 語音遇到長句會中途停止
+  const parts = SAY(BEATS[i].cap).split(/(?<=[。；！？])/).map(x => x.trim()).filter(Boolean);
+  curU = parts.map((txt, k) => { const w = k ? new SpeechSynthesisUtterance(txt) : u; if (k) { w.lang = u.lang; w.rate = u.rate; if (u.voice) w.voice = u.voice; w.onerror = u.onerror; } else w.text = txt; return w; });
+  curU.forEach(w => TTS.speak(w)); if (TTS.paused) TTS.resume();
+}
+if (!TTS) $('narr').hidden = true;
+$('narr').onclick = () => {
+  narrOn = !narrOn; $('narr').classList.toggle('on', narrOn); $('narr').setAttribute('aria-pressed', narrOn);
+  narrLabel();
+  if (!narrOn) { TTS.cancel(); autoNext = false; speechErr = ''; capKey = ''; } else { speak(beatAt(t)); if (!playing) setPlaying(true); }
+};
+function narrTick() {
+  if (!TTS || !narrOn || mode !== 'walk') return;
+  const i = beatAt(t);
+  if (playing && spokenBeat !== i) speak(i);
+  // 這一步的動畫播完而自動暫停時，等旁白唸完再前進
+  if (!playing && autoNext && !TTS.speaking && !TTS.pending) { autoNext = false; if (i < BEATS.length - 1) seek(BEATS[i + 1].t0, true); }
+}
+function setMode(m) {
+  mode = m; $('walk').hidden = m !== 'walk'; $('ex').hidden = m !== 'ex';
+  $('m-walk').classList.toggle('on', m === 'walk'); $('m-ex').classList.toggle('on', m === 'ex');
+  if (m === 'ex') { setPlaying(false); autoNext = false; if (TTS) TTS.cancel(); renderEx(); }
+}
+$('m-walk').onclick = () => setMode('walk'); $('m-ex').onclick = () => setMode('ex');
+
+$('srcs').innerHTML = [
+  ['環境部：溫室氣體排放量盤查作業指引（113 年版），第貳篇「排放量計算」與附錄一', 'https://ghgregistry.moenv.gov.tw/upload/Tools/%E6%BA%AB%E5%AE%A4%E6%B0%A3%E9%AB%94%E6%8E%92%E6%94%BE%E9%87%8F%E7%9B%A4%E6%9F%A5%E4%BD%9C%E6%A5%AD%E6%8C%87%E5%BC%95113%E5%B9%B4%E7%89%88.pdf'],
+].map(([n, u]) => u ? `<li><a href="${u}" target="_blank" rel="noopener">${esc(n)}</a></li>` : `<li>${esc(n)}</li>`).join('');
+seek(0, false); renderEx(); requestAnimationFrame(tick);
+</script>
+</body>
+</html>

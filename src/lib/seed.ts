@@ -9,6 +9,10 @@ import vParis from '../../visuals/paris-cop.html?raw'
 import vPricing from '../../visuals/carbon-pricing-offsets.html?raw'
 import vCbam from '../../visuals/cbam-carbon-leakage.html?raw'
 import vScopes from '../../visuals/scopes-boundaries.html?raw'
+import vCalc from '../../visuals/emission-calc.html?raw'
+import vQuality from '../../visuals/quality-verification.html?raw'
+import vCfp from '../../visuals/carbon-footprint.html?raw'
+import vDisclosure from '../../visuals/disclosure-initiatives.html?raw'
 
 export const SEED_COURSE_ID = 'seed-ipas-net-zero'
 
@@ -71,6 +75,10 @@ export const seedItems: Item[] = [
   visual('seed-ipas-visual-pricing', '2｜碳權、碳定價與抵換', vPricing, 1),
   visual('seed-ipas-visual-cbam', '3｜CBAM 與碳洩漏', vCbam, 2),
   visual('seed-ipas-visual-scopes', '4｜排放範疇與盤查邊界', vScopes, 3),
+  visual('seed-ipas-visual-calc', '5｜排放量計算與係數', vCalc, 4),
+  visual('seed-ipas-visual-quality', '6｜數據品質、報告書與查證', vQuality, 5),
+  visual('seed-ipas-visual-cfp', '7｜產品碳足跡與生命週期', vCfp, 6),
+  visual('seed-ipas-visual-disclosure', '8｜企業倡議與永續揭露', vDisclosure, 7),
   quiz('seed-ipas-quiz-115-1-s1', '115 年第 1 次｜第一科 淨零碳規劃管理基礎概論（公告試題）', q1s1, 0),
   quiz('seed-ipas-quiz-115-1-s2', '115 年第 1 次｜第二科 淨零碳盤查規範與程序概要（公告試題）', q1s2, 1),
   quiz('seed-ipas-quiz-115-2-s1', '115 年第 2 次｜第一科 淨零碳規劃管理基礎概論（公告試題）', q2s1, 2),
