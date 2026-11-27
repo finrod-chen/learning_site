@@ -5,6 +5,10 @@ import q1s1 from '../../seed/quiz-115-1-s1.md?raw'
 import q1s2 from '../../seed/quiz-115-1-s2.md?raw'
 import q2s1 from '../../seed/quiz-115-2-s1.md?raw'
 import q2s2 from '../../seed/quiz-115-2-s2.md?raw'
+import vParis from '../../visuals/paris-cop.html?raw'
+import vPricing from '../../visuals/carbon-pricing-offsets.html?raw'
+import vCbam from '../../visuals/cbam-carbon-leakage.html?raw'
+import vScopes from '../../visuals/scopes-boundaries.html?raw'
 
 export const SEED_COURSE_ID = 'seed-ipas-net-zero'
 
@@ -59,7 +63,14 @@ export const V1_SEED_IDS = [SEED_COURSE_ID, 'seed-ipas-guide', 'seed-ipas-mindma
 
 const quiz = (id: string, title: string, content: string, order: number): Item => ({ id, courseId: SEED_COURSE_ID, type: 'quiz', title, content: content.trim() + '\n', createdAt: t + 10 + order, updatedAt: t })
 
+/** 視覺學習：列表依 createdAt 由新到舊排，所以第 1 份給最大的值。 */
+const visual = (id: string, title: string, content: string, order: number): Item => ({ id, courseId: SEED_COURSE_ID, type: 'visual', title, content, createdAt: t + 30 - order, updatedAt: t })
+
 export const seedItems: Item[] = [
+  visual('seed-ipas-visual-paris', '1｜巴黎協定與 COP 脈絡', vParis, 0),
+  visual('seed-ipas-visual-pricing', '2｜碳權、碳定價與抵換', vPricing, 1),
+  visual('seed-ipas-visual-cbam', '3｜CBAM 與碳洩漏', vCbam, 2),
+  visual('seed-ipas-visual-scopes', '4｜排放範疇與盤查邊界', vScopes, 3),
   quiz('seed-ipas-quiz-115-1-s1', '115 年第 1 次｜第一科 淨零碳規劃管理基礎概論（公告試題）', q1s1, 0),
   quiz('seed-ipas-quiz-115-1-s2', '115 年第 1 次｜第二科 淨零碳盤查規範與程序概要（公告試題）', q1s2, 1),
   quiz('seed-ipas-quiz-115-2-s1', '115 年第 2 次｜第一科 淨零碳規劃管理基礎概論（公告試題）', q2s1, 2),
