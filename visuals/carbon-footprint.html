@@ -143,7 +143,7 @@
   </section>
 
   <section class="sources">
-    <p><b>簡化說明：</b>「搖籃到大門」（只算到出廠為止）是一般說明，本頁沒有在可讀取的來源中查證到它的正式定義。LCA 四個階段的名稱，依 iPAS 公告試題中出現的用語整理。動手試的產品與數字都是虛構的，不是任何產品類別規則 (PCR) 的值。</p>
+    <p><b>簡化說明：</b>「搖籃到大門」（只算到出廠為止）是一般說明；碳足跡所用電力係數的細節，本頁也未於來源中查證。本頁沒有在可讀取的來源中查證到它的正式定義。LCA 四個階段的名稱，依 iPAS 公告試題中出現的用語整理。動手試的產品與數字都是虛構的，不是任何產品類別規則 (PCR) 的值。</p>
     <p><b>資料來源</b></p>
     <ol id="srclist"></ol>
   </section>
@@ -200,40 +200,40 @@ step(11, '要比較兩個產品，得先有共同的基準，這就是「功能�
   delAll(S, seg(u, 0, .3), ['p0','sv','us']);
   add(S, seg(u, .3, .6), 'fu', box(140, 40, 400, 54, 'purple', '功能單位：量化與比較的基準', '公告試題：功能單位是產品生命週期的量化基準。'));
 });
-step(12, '系統邊界決定哪些流程算進來。產品研發通常不算；「搖籃到墳墓」也不包括消費者往返賣場購物的交通。另外，原料運到工廠屬於原料取得，不屬於製造階段。', (S, u) => {
+step(12, '系統邊界決定哪些流程算進來。產品研發通常不算；「搖籃到墳墓」也不包括消費者往返賣場購物的交通。另外，各原料運到工廠的運輸，不屬於製造階段。', (S, u) => {
   add(S, seg(u, 0, .3), 'bx', box(14, 124, 652, 82, 'frame', null, '系統邊界：搖籃到墳墓涵蓋五個階段。', { dash: true }));
   add(S, seg(u, .3, .6), 'x1', text(130, 240, '✕ 產品研發', 'tm', '公告試題：研發通常不納入。'));
   add(S, seg(u, .4, .7), 'x2', text(400, 240, '✕ 消費者往返賣場的交通', 'tm', '公告試題：搖籃到墳墓通常不納入。'));
 });
-step(11, '只算部分階段的叫「部分碳足跡」(partial CFP)，常見的是算到產品出廠為止，俗稱「搖籃到大門」，多用在企業之間交易的中間產品。', (S, u) => {
+step(11, '只算部分階段的叫「部分碳足跡」(partial CFP)。常見的是算到產品出廠為止，俗稱「搖籃到大門」。', (S, u) => {
   add(S, seg(u, 0, .4), 'gate', box(14, 120, 270, 90, 'frame', null, '搖籃到大門：只到出廠。', { dash: true }));
   hl(S, seg(u, .3, 1), 'g0', 'g1');
   add(S, seg(u, .5, .9), 'gt', text(150, 275, '部分碳足跡（搖籃到大門）', 'th', '一般說明，見簡化說明。'));
 });
 
 chapter('3 · 計算規則');
-step(11, '計算碳足跡要依 ISO 14067，並依環境部公開的「碳足跡產品類別規則」(PCR)。產品已經有適用的 PCR 時，原則上就要照它做，讓同類產品可以比較。', (S, u) => {
+step(11, '申請台灣碳足跡核定時，要依 ISO 14067 和環境部公開的「碳足跡產品類別規則」(PCR)；用未公開的 PCR 要先送審。依 ISO 14067，產品已有適用的 PCR 時，原則上就照它做。', (S, u) => {
   delAll(S, seg(u, 0, .3), [...ST.map((_, i) => 'g' + i), ...ST.map((_, i) => 'ga' + i), 'fu', 'bx', 'x1', 'x2', 'gate', 'gt']);
   add(S, seg(u, .3, .55), 'r1', box(60, 60, 260, 54, 'purple', 'ISO 14067', '辦法第 4 條：最新版 ISO 14067。'));
   add(S, seg(u, .4, .65), 'r2', box(360, 60, 260, 54, 'teal', '碳足跡產品類別規則 (PCR)', '同一類產品用相同的盤查範疇與計算依據。'));
 });
-step(12, '活動資料要在申請核定前兩年內。排放係數可用環境部公開的碳足跡排放係數、國內外生命週期資料庫或自廠係數。GWP 採 100 年的時間範圍。', (S, u) => {
+step(12, '申請核定時，活動資料要在申請前兩年內。排放係數可用環境部公開的碳足跡排放係數、國際文獻或國內外生命週期資料庫，或檢測報告等自廠係數。GWP 採 100 年的時間範圍。', (S, u) => {
   [['c1', '活動資料：2 年內'], ['c2', '係數：公開或資料庫'], ['c3', 'GWP：100 年']].forEach(([id, n], i) => add(S, seg(u, .15 + i * .2, .4 + i * .2), id, box(40 + i * 205, 160, 190, 50, 'gray', n, i === 2 ? '公告試題：採 100 年 GWP。' : '辦法第 4 條。')));
 });
-step(12, '排放極小的項目（例如低於 1% 的輔助材料）可依「截斷規則」排除。一條製程同時產出多種產品時，要分配排放：先避免分配，其次物理分配，最後才是經濟分配。', (S, u) => {
+step(12, '「切斷原則」：單一排放源低於 1% 可以忽略，但所有被忽略的項目合計不得超過 5%。一條製程同時產出多種產品時，要分配排放：先避免分配，其次物理分配，最後才是經濟分配。', (S, u) => {
   delAll(S, seg(u, 0, .25), ['c1','c2','c3']);
-  add(S, seg(u, .25, .5), 'cut', box(40, 160, 270, 50, 'coral', '截斷規則：極小項目可排除', '公告試題：低於 1% 的輔助材料可依截斷規則排除。'));
+  add(S, seg(u, .25, .5), 'cut', box(40, 160, 270, 50, 'coral', '切斷：單一 ≤1%、合計 ≤5%', '公告試題：國內碳足跡相關指引的切斷原則。'));
   add(S, seg(u, .4, .7), 'al', box(330, 160, 310, 50, 'coral', '避免分配 → 物理分配 → 經濟分配', 'ISO 14067 的分配優先順序（公告試題）。'));
 });
-step(11, '電力要特別注意：組織盤查用的電力排碳係數只算發電過程，碳足跡要用涵蓋生命週期的電力係數，所以不能直接拿來用。', (S, u) => {
+step(11, '電力要特別注意：組織盤查用的電力排碳係數只算發電過程，不符合碳足跡的生命週期觀點，所以不能直接拿來用。', (S, u) => {
   add(S, seg(u, 0, .4), 'el', box(90, 250, 500, 50, 'teal', '碳足跡不直接用組織盤查的電力係數', '公告試題：GHG 係數僅計算發電時的排碳。'));
 });
 
 chapter('4 · 碳足跡標籤');
-step(12, '想用台灣的碳足跡標籤，要上傳盤查清冊、報告書與查驗機構的查驗聲明書，向環境部申請核定。標籤心型圖示裡標示碳足跡數值，四捨五入到整數。', (S, u) => {
+step(12, '氣候變遷因應法第 37 條：環境部可公告特定產品必須申請核定並分級標示，其他產品可自願申請。申請時上傳清冊、報告書與查驗聲明書；心型標籤內標示數值與單位，四捨五入到整數。', (S, u) => {
   delAll(S, seg(u, 0, .3), ['r1','r2','cut','al','el']);
   add(S, seg(u, .3, .55), 'l1', box(40, 60, 290, 54, 'purple', '申請：報告書＋查驗聲明書', '辦法第 3、5 條。'));
-  add(S, seg(u, .45, .7), 'l2', box(350, 60, 290, 54, 'teal', '心型標籤內標示數值（取整數）', '辦法第 4、10 條。'));
+  add(S, seg(u, .45, .7), 'l2', box(350, 60, 290, 54, 'teal', '心型內標示數值與單位', '辦法第 4、10 條。'));
 });
 step(12, '核定有效期間 2 年，到期前 3 個月起的 1 個月內要申請展延。使用者每年 1 月 31 日、7 月 31 日前申報前半年標籤使用量，相關資料保存 3 年。', (S, u) => {
   [['l3', '有效期間 2 年', '辦法第 12 條。'], ['l4', '1/31、7/31 申報使用量', '辦法第 14 條。'], ['l5', '資料保存 3 年', '辦法第 16 條。']].forEach(([id, n, tp], i) => add(S, seg(u, .15 + i * .2, .4 + i * .2), id, box(40 + i * 205, 170, 190, 50, 'gray', n, tp)));
@@ -357,14 +357,13 @@ function renderL() {
   ST.forEach((n, i) => {
     const y = 12 + i * 46, on = inc(i), pct = all ? p.v[i] / all * 100 : 0;
     s += T(lx, y + 15, n, 'tm', 'start');
-    s += `<g class="${on ? (i === 3 ? 'c-coral' : 'c-teal') : 'c-gray'}" data-tip="${esc(`${n}：${f2(p.v[i])} kg CO₂e（占全生命週期 ${pct.toFixed(1)}%）${on ? '' : '，不在目前的系統邊界內'}。${pct > 0 && pct < 1 ? '低於 1%，可能可依截斷規則排除。' : ''}`)}" opacity="${on ? 1 : .4}"><rect x="${bx}" y="${y}" width="${Math.max(1, sx(p.v[i]))}" height="30" rx="5" stroke-width=".8"/></g>`;
+    s += `<g class="${on ? (i === 3 ? 'c-coral' : 'c-teal') : 'c-gray'}" data-tip="${esc(`${n}：${f2(p.v[i])} kg CO₂e（占全生命週期 ${pct.toFixed(1)}%）${on ? '' : '，不在目前的系統邊界內'}。`)}" opacity="${on ? 1 : .4}"><rect x="${bx}" y="${y}" width="${Math.max(1, sx(p.v[i]))}" height="30" rx="5" stroke-width=".8"/></g>`;
     s += T(bx + sx(p.v[i]) + 8, y + 15, f2(p.v[i]) + (on ? '' : '（不計）'), 'ts', 'start');
   });
   $('lsvg').innerHTML = s;
   const big = p.v.indexOf(Math.max(...p.v));
-  $('lres').innerHTML = [['功能單位', p.fu], ['碳足跡（kg CO₂e）', f2(total)], ['最大階段', ST[big]]].map(([k, v]) => `<div><b style="font-size:17px">${esc(v)}</b><span>${esc(k)}</span></div>`).join('');
-  const small = p.v.map((v, i) => [v, i]).filter(([v]) => v > 0 && v / all < .01).map(([, i]) => ST[i]);
-  $('l-note').textContent = (bound === 'gate' ? `搖籃到大門只算到出廠，少了 ${f2(all - total)} kg CO₂e。` : '搖籃到墳墓涵蓋五個階段。') + (prod === 'fridge' ? ' 電冰箱的使用階段最大，所以只算到出廠會大幅低估。' : '') + (small.length ? ` 「${small.join('、')}」占比低於 1%。` : '') + ' 試試看：比較三種產品哪個階段最大。';
+  $('lres').innerHTML = [['功能單位', p.fu], ['碳足跡（kg CO₂e）', f2(total)], ['全生命週期最大階段', ST[big]]].map(([k, v]) => `<div><b style="font-size:17px">${esc(v)}</b><span>${esc(k)}</span></div>`).join('');
+    $('l-note').textContent = (bound === 'gate' ? `搖籃到大門只算到出廠，少了 ${f2(all - total)} kg CO₂e。` : '搖籃到墳墓涵蓋五個階段。') + (prod === 'fridge' ? ' 電冰箱的使用階段最大，所以只算到出廠會大幅低估。' : '') + ' 注意：切斷原則是針對單一排放源（例如某個輔助材料），不是整個生命週期階段。' + ' 試試看：比較三種產品哪個階段最大。';
 }
 
 /* ---------- 動手試 2：分配 ---------- */
@@ -382,7 +381,8 @@ function renderA() {
   AC.forEach(c => { $('r_' + c.k).value = A[c.k]; $('o_' + c.k).textContent = A[c.k].toLocaleString() + c.unit; });
   const m = A.ma + A.mb, v = A.ma * A.pa + A.mb * A.pb;
   const phys = m ? A.e * A.ma / m : 0, econ = v ? A.e * A.ma * A.pa / v : 0;
-  const narrow = innerWidth < 560, W = narrow ? 420 : 680, lx = narrow ? 8 : 20, bx = narrow ? 120 : 160, bw = W - bx - 20;
+  if (!m) { $('asvg').innerHTML = T((innerWidth < 560 ? 420 : 680) / 2, 85, '沒有產量，無法分配', 'tm'); $('ares').innerHTML = ''; $('a-note').textContent = '兩種產品的產量都是 0，沒有東西可以分配。'; return; }
+  const narrow = innerWidth < 560, W = narrow ? 420 : 680, lx = narrow ? 8 : 20, bx = narrow ? 150 : 160, bw = W - bx - 20;
   $('asvg').setAttribute('viewBox', `0 0 ${W} 170`);
   let s = '';
   [['物理分配（質量）', phys], ['經濟分配（價值）', econ]].forEach(([n, a], i) => {
@@ -402,7 +402,7 @@ function renderEx() { renderL(); renderA(); }
 /* ---------- 旁白（瀏覽器內建語音，Web Speech API） ---------- */
 const TTS = 'speechSynthesis' in window ? window.speechSynthesis : null;
 let narrOn = false, spokenBeat = -1, autoNext = false;
-const SAY = s => s.replace(/[（(][A-Za-z0-9₀-₉⁻ .,\/'’\-]*[）)]/g, '').replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂e/g, '二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/CH₄/g, '甲烷').replace(/N₂O/g, '氧化亞氮').replace(/10⁻⁹/g, '十的負九次方').replace(/kcal\/L/g, '大卡每公升').replace(/kcal\/m³/g, '大卡每立方公尺').replace(/kcal/g, '大卡').replace(/\bTJ\b/g, '兆焦耳').replace(/44\/12/g, '十二分之四十四').replace(/kgCO₂e/g, '公斤二氧化碳當量').replace(/≥/g, '至少').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/(甲烷|氧化亞氮|二氧化碳)\s*\1/g, '$1');
+const SAY = s => s.replace(/[（(][A-Za-z0-9₀-₉⁻ .,\/'’\-]*[）)]/g, '').replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂e/g, '二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/CH₄/g, '甲烷').replace(/N₂O/g, '氧化亞氮').replace(/10⁻⁹/g, '十的負九次方').replace(/kcal\/L/g, '大卡每公升').replace(/kcal\/m³/g, '大卡每立方公尺').replace(/kcal/g, '大卡').replace(/\bTJ\b/g, '兆焦耳').replace(/44\/12/g, '十二分之四十四').replace(/kgCO₂e/g, '公斤二氧化碳當量').replace(/\bGWP\b/g, '全球暖化潛勢').replace(/≥/g, '至少').replace(/～/g, '到').replace(/(\d+)\/(\d+)(?=\s|前|：|，|。)/g, '$1月$2日').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/(甲烷|氧化亞氮|二氧化碳)\s*\1/g, '$1');
 // 優先順序：曉臻（Microsoft Edge 的自然語音）→ 美佳增強／高品質版 → Google 國語（臺灣，Chrome）→ 美佳 → 其他台灣中文 → 其他中文
 function voice() {
   const v = TTS.getVoices(), tw = v.filter(x => /zh[-_]TW/i.test(x.lang)), mj = tw.filter(x => /Meijia|美佳/i.test(x.name));

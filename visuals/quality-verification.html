@@ -187,7 +187,7 @@ step(10, '環境部指引把盤查分成六大步驟：邊界設定、排放源�
 });
 step(9, '完成清冊和報告書之後，要登錄到事業溫室氣體排放量資訊平台；屬於指定應查驗的事業，還要委託查驗機構查驗。這一頁的重點在第 4 步和查驗。', (S, u) => {
   hl(S, u, 's3', 's5');
-  add(S, seg(u, .4, .8), 'pf', box(160, 290, 360, 46, 'teal', '登錄資訊平台 → 委託查驗', '指引第貳篇開頭。'));
+  add(S, seg(u, .4, .8), 'pf', box(140, 290, 400, 46, 'teal', '登錄資訊平台 →（指定者）委託查驗', '指引第貳篇開頭；查驗只限公告指定應查驗的事業。'));
 });
 
 chapter('2 · 數據品質');
@@ -227,15 +227,15 @@ step(10, '文件被主管機關要求補正時，補正總日數不能超過 30 
 });
 
 chapter('4 · 查驗');
-step(11, '「查驗」是用系統化、文件化、獨立的方式做確認。對過去的盤查數據做的叫「查證」；對自願減量專案「未來」的活動結果做的叫「確證」。', (S, u) => {
+step(11, '「查驗」是用系統化、文件化、獨立的方式做確認。評估盤查、減量專案或碳足跡的歷史數據是否實質上正確，叫「查證」；評估自願減量專案「未來」活動結果的假設是否合理，叫「確證」。', (S, u) => {
   delAll(S, seg(u, 0, .3), ['tl','d1','d2','d3','d4','d5','d6']);
-  add(S, seg(u, .3, .55), 'v0', box(190, 40, 300, 50, 'purple', '查驗：系統化・文件化・獨立', '查驗機構管理辦法第 2 條。'));
+  add(S, seg(u, .3, .55), 'v0', box(190, 40, 300, 50, 'purple', '查驗：系統化・文件化・獨立', '查驗機構管理辦法第 2 條：執行確證、查證或重要項目評估。'));
   add(S, seg(u, .45, .7), 'v1', box(40, 140, 280, 60, 'teal', '查證：歷史數據是否正確', '盤查、減量專案或碳足跡的結果。'));
-  add(S, seg(u, .55, .8), 'v2', box(360, 140, 280, 60, 'coral', '確證：未來結果的假設是否合理', '對自願減量專案的未來活動結果。'));
+  add(S, seg(u, .55, .8), 'v2', box(360, 140, 280, 60, 'coral', '確證：未來結果的假設是否合理', '對自願減量專案的未來活動結果，評估假設、限制及方法是否合理。'));
   add(S, seg(u, .5, .75), 'va', line(290, 92, 180, 138, '一種。'));
   add(S, seg(u, .6, .85), 'vb', line(390, 92, 500, 138, '另一種。'));
 });
-step(11, '列管事業的查驗要達「合理保證等級」。查驗機構以盤查報告書總排放量的 5% 作為「實質性門檻」：錯誤、遺漏累積的差異在門檻內，才符合合理保證。', (S, u) => {
+step(11, '指定應查驗的事業，查驗結果要達「合理保證等級」。查驗機構以盤查報告書總排放量的 5% 作為定量「實質性門檻」，判斷錯誤、遺漏是否重大。查驗結果可以是「符合」或「修改後符合」。', (S, u) => {
   add(S, seg(u, 0, .35), 'v3', box(40, 240, 280, 54, 'purple', '合理保證等級', '管理辦法第 8 條。'));
   add(S, seg(u, .3, .65), 'v4', box(360, 240, 280, 54, 'coral', '實質性門檻 = 總排放量 5%', '查驗機構管理辦法。'));
   hl(S, seg(u, .6, 1), 'v4');
@@ -341,8 +341,8 @@ document.addEventListener('click', e => { if (!e.target.closest('[data-tip]')) t
 /* ---------- 動手試 1：數據品質評分 ---------- */
 const OPT = {
   a1: [['1', '連續監測'], ['2', '定期採樣'], ['3', '自行估算']],
-  a2: [['1', '每年外校 ≥1 次'], ['2', '每年外校 <1 次'], ['3', '非量測估計']],
-  a3: [['1', '自廠／質量平衡／同製程經驗'], ['2', '製造商或區域公告'], ['3', '國家或國際公告']],
+  a2: [['1', '外校 ≥1 次/年'], ['2', '外校 <1 次/年'], ['3', '非量測估計']],
+  a3: [['1', '自廠／質量平衡'], ['2', '製造商／區域'], ['3', '國家／國際公告']],
 };
 const SRC = [
   { n: '鍋爐（天然氣）', share: 50, a1: 1, a2: 1, a3: 3 },
@@ -375,8 +375,9 @@ function renderQ() {
   $('qsvg').innerHTML = s;
   const avg = tot ? SRC.reduce((s, o) => s + o.a1 * o.a2 * o.a3 * o.share / tot, 0) : 0, lv = avg <= 9 ? '第一級' : avg <= 18 ? '第二級' : '第三級';
   $('qres').innerHTML = [['清冊總平均分數', avg.toFixed(2)], ['排放量清冊等級', tot ? lv : '—'], [tot === 100 ? '占比合計' : '占比合計（不是 100% 時自動換算）', tot + '%']].map(([k, v]) => `<div><b>${esc(v)}</b><span>${esc(k)}</span></div>`).join('');
+  if (!tot) { $('q-note').textContent = '請先設定排放量占比。'; return; }
   const worst = SRC.slice().sort((a, b) => b.a1 * b.a2 * b.a3 * b.share - a.a1 * a.a2 * a.a3 * a.share)[0];
-  $('q-note').textContent = `總平均 = Σ（A × 占比）。目前影響分數最多的是「${worst.n}」。注意：A3 用國家公告係數就是 3 分，所以只要大排放源用公告係數，A 至少是 3。試試看：把鍋爐的 A3 改成自廠參數。`;
+  $('q-note').textContent = `總平均 = Σ（A × 占比）。指引的分級表是整數區間，非整數時本頁以 >9 歸第二級、>18 歸第三級（簡化）。目前影響分數最多的是「${worst.n}」。注意：例如 1 × 1 × 3 = 3，屬區間 1。A3 用國家公告係數就是 3 分，所以只要大排放源用公告係數，A 至少是 3。試試看：把鍋爐的 A3 改成自廠參數。`;
 }
 
 /* ---------- 動手試 2：實質性門檻 ---------- */
@@ -396,18 +397,18 @@ function renderM() {
   $('msvg').setAttribute('viewBox', `0 0 ${W} 150`);
   let s = `<g class="c-gray"><rect x="${bx}" y="50" width="${bw}" height="34" rx="6" stroke-width=".8"/></g>`;
   s += `<g class="${over ? 'c-coral' : 'c-teal'}" data-tip="累積差異 ${diff.toLocaleString()} 公噸，占總排放量 ${pct.toFixed(2)}%。"><rect x="${bx}" y="50" width="${Math.max(1, sx(diff))}" height="34" rx="6" stroke-width=".8"/></g>`;
-  s += `<g data-tip="實質性門檻：總排放量的 5%。"><line x1="${bx + sx(th)}" y1="36" x2="${bx + sx(th)}" y2="98" stroke="#EF9F27" stroke-width="2.5"/>${T(Math.min(bx + sx(th), W - 70), 24, '5% 門檻 ' + th.toLocaleString() + ' 公噸', 'ts')}</g>`;
+  s += `<g data-tip="實質性門檻：總排放量的 5%。"><line x1="${bx + sx(th)}" y1="36" x2="${bx + sx(th)}" y2="98" stroke="#EF9F27" stroke-width="2.5"/>${T(Math.max(75, Math.min(bx + sx(th), W - 70)), 24, '5% 門檻 ' + th.toLocaleString() + ' 公噸', 'ts')}</g>`;
   s += T(bx, 120, '累積差異 ' + diff.toLocaleString() + ' 公噸（' + pct.toFixed(2) + '%）', 'tm', 'start');
   $('msvg').innerHTML = s;
   $('mres').innerHTML = [['5% 門檻', th.toLocaleString() + ' 公噸'], ['累積差異', pct.toFixed(2) + '%'], ['結果', over ? '超過門檻' : '在門檻內']].map(([k, v]) => `<div><b>${esc(v)}</b><span>${esc(k)}</span></div>`).join('');
-  $('m-note').textContent = over ? '差異超過 5%：不符合合理保證等級的定量準則。另外，查驗結果與原本登錄的不一致時，10/31 上傳查驗結果要一併附上修正後的清冊和報告書。' : '差異在 5% 內：符合合理保證等級的定量準則。小錯誤累積起來也可能超過，試著把三種錯誤一起拉高。';
+  $('m-note').textContent = over ? '差異超過 5%：屬於實質性錯誤。事業修正後可取得「修改後符合」的查驗結果，並在 10/31 上傳時一併附上修正後的清冊和報告書。' : '差異在 5% 內：未達定量實質性門檻。小錯誤累積起來也可能超過，試著把三種錯誤一起拉高。';
 }
 function renderEx() { renderQ(); renderM(); }
 
 /* ---------- 旁白（瀏覽器內建語音，Web Speech API） ---------- */
 const TTS = 'speechSynthesis' in window ? window.speechSynthesis : null;
 let narrOn = false, spokenBeat = -1, autoNext = false;
-const SAY = s => s.replace(/[（(][A-Za-z0-9₀-₉⁻ .,\/'’\-]*[）)]/g, '').replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂e/g, '二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/CH₄/g, '甲烷').replace(/N₂O/g, '氧化亞氮').replace(/10⁻⁹/g, '十的負九次方').replace(/kcal\/L/g, '大卡每公升').replace(/kcal\/m³/g, '大卡每立方公尺').replace(/kcal/g, '大卡').replace(/\bTJ\b/g, '兆焦耳').replace(/44\/12/g, '十二分之四十四').replace(/kgCO₂e/g, '公斤二氧化碳當量').replace(/≥/g, '至少').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/(甲烷|氧化亞氮|二氧化碳)\s*\1/g, '$1');
+const SAY = s => s.replace(/[（(][A-Za-z0-9₀-₉⁻ .,\/'’\-]*[）)]/g, '').replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂e/g, '二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/CH₄/g, '甲烷').replace(/N₂O/g, '氧化亞氮').replace(/10⁻⁹/g, '十的負九次方').replace(/kcal\/L/g, '大卡每公升').replace(/kcal\/m³/g, '大卡每立方公尺').replace(/kcal/g, '大卡').replace(/\bTJ\b/g, '兆焦耳').replace(/44\/12/g, '十二分之四十四').replace(/kgCO₂e/g, '公斤二氧化碳當量').replace(/\bGWP\b/g, '全球暖化潛勢').replace(/≥/g, '至少').replace(/～/g, '到').replace(/(\d+)\/(\d+)(?=\s|前|：|，|。)/g, '$1月$2日').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/(甲烷|氧化亞氮|二氧化碳)\s*\1/g, '$1');
 // 優先順序：曉臻（Microsoft Edge 的自然語音）→ 美佳增強／高品質版 → Google 國語（臺灣，Chrome）→ 美佳 → 其他台灣中文 → 其他中文
 function voice() {
   const v = TTS.getVoices(), tw = v.filter(x => /zh[-_]TW/i.test(x.lang)), mj = tw.filter(x => /Meijia|美佳/i.test(x.name));
