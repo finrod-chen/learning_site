@@ -312,7 +312,7 @@ function tick(now) {
 $('ticks').innerHTML = CH.map(c => `<div class="tick" style="left:${c.t0 / TOTAL * 100}%"></div>`).join('');
 $('chips').innerHTML = CH.map((c, k) => `<button data-ch="${k}">${esc(c.name)}</button>`).join('');
 $('chips').onclick = e => { const b = e.target.closest('[data-ch]'); if (b) seek(CH[+b.dataset.ch].t0, true); };
-$('play').onclick = () => { autoNext = false; if (playing && TTS) TTS.cancel(); if (!playing) spokenBeat = -1; setPlaying(!playing); };
+$('play').onclick = () => { autoNext = false; if (playing && TTS) TTS.cancel(); if (!playing) { const i = beatAt(t); spokenBeat = t >= BEATS[i].t1 - .03 ? i : -1; } setPlaying(!playing); };
 $('replay').onclick = () => seek(BEATS[beatAt(t)].t0, true);
 $('next').onclick = () => { const i = beatAt(t); if (i < BEATS.length - 1) seek(BEATS[i + 1].t0, true); };
 $('speed').onchange = e => speed = +e.target.value;
@@ -423,7 +423,7 @@ window.addEventListener('resize', () => mode === 'ex' && renderEx());
 /* ---------- 旁白（瀏覽器內建語音，Web Speech API） ---------- */
 const TTS = 'speechSynthesis' in window ? window.speechSynthesis : null;
 let narrOn = false, spokenBeat = -1, autoNext = false;
-const SAY = s => s.replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/≥/g, '至少').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/[（(][A-Za-z][^）)]*[）)]/g, '');
+const SAY = s => s.replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂e/g, '二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/≥/g, '至少').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/[（(][A-Za-z][^）)]*[）)]/g, '');
 function voice() { const v = TTS.getVoices(); return v.find(x => /zh[-_]TW/i.test(x.lang)) || v.find(x => /^zh/i.test(x.lang)) || null; }
 function speak(i) {
   if (!TTS || !narrOn) return;

@@ -130,7 +130,7 @@
     </div>
     <div class="panel">
       <h2>2. 雙重核算：為什麼需要相應調整？</h2>
-      <p class="ts" style="font-size:13px;color:var(--text2);margin:0 0 8px">依巴黎協定第 6 條第 2、5 項的原則做的簡化示意；兩國的排放數字是虛構的。</p>
+      <p class="ts" style="font-size:13px;color:var(--text2);margin:0 0 8px">依巴黎協定第 6 條第 2 項（避免雙重核算）的原則做的簡化示意；兩國的排放數字是虛構的。</p>
       <svg id="dsvg" viewBox="0 0 680 220" role="img" aria-label="雙重核算示意"></svg>
       <div class="ctl" id="ctl2" style="margin-top:12px"></div>
       <div class="prow" style="margin-top:10px"><label class="seg"><input type="checkbox" id="ca"> 賣方國家做「相應調整」</label></div>
@@ -139,7 +139,7 @@
   </section>
 
   <section class="sources">
-    <p><b>簡化說明：</b>計算器省略了先期專案減量額度、增量抵換、電力業扣除與國外減量額度的扣除比率；四捨五入規則只做了碳費取整數。第 1 章碳稅與總量管制的比較是一般說明，<b>未於來源中查證</b>。雙重核算的動手試是簡化示意，實際的相應調整規則更複雜。碳費費率依 113 年公告；環境部 115 年 11 月的審議會仍在討論是否調整。</p>
+    <p><b>簡化說明：</b>計算器省略了先期專案減量額度、增量抵換、電力業扣除與國外減量額度的扣除比率；四捨五入規則只做了碳費取整數。第 1 章碳稅與總量管制的比較是一般說明，<b>未於來源中查證</b>。「相應調整」一詞不在協定本文，是後續締約方會議決議的核算規則；雙重核算的動手試是簡化示意。年份以西元表示：2025 年 = 民國 114 年，2026 年 = 民國 115 年。碳費費率依 113 年公告；環境部 115 年 11 月的審議會仍在討論是否調整。</p>
     <p><b>資料來源</b></p>
     <ol id="srcs"></ol>
   </section>
@@ -170,8 +170,8 @@ const CH = [], BEATS = [];
 const chapter = name => CH.push({ name, beat: BEATS.length });
 const step = (dur, cap, fn, pause = true) => BEATS.push({ dur, cap, fn, pause, ch: CH.length - 1 });
 
-chapter('1 · 碳定價');
-step(7, '碳定價就是讓排放溫室氣體要付出代價，常見兩種工具。（本章是一般說明，未於來源中查證。）', (S, u) => {
+chapter('1 · 碳定價（一般說明）');
+step(7, '碳定價就是讓排放溫室氣體要付出代價，常見兩種工具。（本章前兩步是一般說明，未於來源中查證。）', (S, u) => {
   add(S, seg(u, .1, .4), 'cp', box(240, 30, 200, 50, 'gray', '碳定價', '讓排放有價格。'));
   add(S, seg(u, .4, .7), 'tx', box(60, 130, 230, 56, 'coral', '碳稅／碳費', '政府訂每噸的價格。'));
   add(S, seg(u, .5, .8), 'et', box(390, 130, 230, 56, 'teal', '總量管制與交易', 'Cap-and-trade：政府訂總量，配額可交易。'));
@@ -189,7 +189,7 @@ step(9, '總量管制與交易：政府先訂排放總量並發出配額，配�
 });
 
 chapter('2 · 台灣碳費');
-step(9, '台灣依「氣候變遷因應法」第 28 條徵收碳費。對象是直接排放加上用電間接排放，每年合計達 2.5 萬噸 CO₂e 以上的電力、燃氣供應業及製造業。', (S, u) => {
+step(9, '台灣依「氣候變遷因應法」第 28 條與「碳費收費辦法」第 3 條徵收碳費。對象是直接排放加上用電間接排放，每年合計達 2.5 萬噸 CO₂e 以上的電力、燃氣供應業及製造業。', (S, u) => {
   delAll(S, seg(u, 0, .3), ['cp','tx','et','a1','a2','txt','ett','etn']);
   add(S, seg(u, .3, .55), 'd1', box(60, 40, 180, 50, 'coral', '直接排放', '工廠的燃燒、製程、逸散排放。'));
   add(S, seg(u, .35, .6), 'd2', box(260, 40, 180, 50, 'teal', '用電間接排放', '使用電力的間接排放。'));
@@ -215,7 +215,7 @@ step(10, '高碳洩漏風險事業的 K 值是 0，但調整係數依期別只�
 });
 
 chapter('3 · 減量額度與抵換');
-step(10, '「碳權」在台灣法規裡叫「減量額度」。事業或政府可以提出自願減量專案，經主管機關核准後取得額度，並可以移轉、交易或拍賣。', (S, u) => {
+step(10, '一般俗稱的「碳權」，在台灣法規裡稱為「減量額度」。事業或政府可以提出自願減量專案，經主管機關核准後取得額度，並可以移轉、交易或拍賣。', (S, u) => {
   delAll(S, seg(u, 0, .3), ['h1','h2','h3','h4']);
   add(S, seg(u, .3, .5), 'p1', box(40, 60, 170, 50, 'teal', '自願減量專案', '執行減量措施的專案。'));
   add(S, seg(u, .4, .6), 'p2', box(255, 60, 170, 50, 'gray', '主管機關核准', '依專案類型指定查驗方式。'));
@@ -224,8 +224,8 @@ step(10, '「碳權」在台灣法規裡叫「減量額度」。事業或政府�
   add(S, seg(u, .55, .75), 'pb', line(427, 85, 468, 85, '核發。'));
   fly(S, seg(u, .7, .95), 'dot', [125, 112], [555, 112], '#0F8F6B');
 });
-step(11, '減量額度可以扣除收費排放量。國內額度每 1 噸可扣 1.2 噸，但最多扣收費排放量的 10%。國外額度要先經認可，最多扣 5%，高碳洩漏風險事業不能用。', (S, u) => {
-  add(S, seg(u, 0, .35), 'c1', box(60, 170, 260, 56, 'teal', '國內額度：×1.2，上限 10%', '碳費收費辦法第 9 條。'));
+step(11, '減量額度可以扣除收費排放量。自願減量或抵換專案的額度，每 1 噸可扣 1.2 噸，但最多扣收費排放量的 10%。國外額度要先經認可，最多扣 5%，高碳洩漏風險事業不能用。', (S, u) => {
+  add(S, seg(u, 0, .35), 'c1', box(60, 170, 260, 56, 'teal', '國內額度：×1.2，上限 10%', '碳費收費辦法第 9 條：自願減量或抵換專案額度 ×1.2；先期專案額度另有較低比率。'));
   add(S, seg(u, .3, .65), 'c2', box(360, 170, 260, 56, 'gray', '國外額度：須認可，上限 5%', '碳費收費辦法第 10 條；高碳洩漏風險事業不適用。'));
   add(S, seg(u, .2, .5), 'ca1', line(555, 112, 190, 168, '用來扣除。'));
   add(S, seg(u, .7, 1), 'c3', text(340, 260, '扣的是「收費排放量」，不是年排放量', 'tm'));
@@ -239,9 +239,9 @@ step(10, '巴黎協定第 6 條第 2 項：國家可以自願合作，用「國�
   add(S, seg(u, .4, .65), 'kb', box(420, 80, 200, 60, 'purple', 'B 國：買 100 噸', '買方國家，用來達成自己的 NDC。'));
   add(S, seg(u, .5, .75), 'kab', line(262, 110, 418, 110, '移轉減量成果。'));
   fly(S, seg(u, .6, .9), 'dot', [262, 110], [418, 110], '#0F8F6B');
-  add(S, seg(u, .7, 1), 'kc', box(60, 170, 200, 44, 'coral', '相應調整：+100', '相應調整 (corresponding adjustment)：A 國不再把賣出的 100 噸算進自己的成果。這裡用「加回帳上」簡化表示。'));
+  add(S, seg(u, .7, 1), 'kc', box(60, 170, 200, 44, 'coral', '相應調整：+100', '相應調整 (corresponding adjustment)：A 國不再把賣出的 100 噸算進自己的成果。這個詞不在協定本文，是後續締約方會議決議的核算規則；這裡用「加回帳上」簡化表示。'));
 });
-step(10, '第 6 條第 5 項：減排量如果已被另一國用來表示達成 NDC，東道國就不能再用。否則同一噸會被算兩次，叫「雙重核算」(double counting)。第 4 項另設一個由締約方會議指定機構監督的機制，產生的額度稱為 A6.4ER。', (S, u) => {
+step(10, '第 4 項設立一個由指定機構監督的機制，產生的額度稱為 A6.4ER。第 5 項：這個機制的減排量被另一國用來達成 NDC 後，地主國（東道國）就不能再用，否則會「雙重核算」。第 8 項則是非市場方法。', (S, u) => {
   add(S, seg(u, 0, .4), 'dc', box(140, 260, 400, 50, 'frame', '沒有相應調整 → 同一噸被算兩次', '雙重核算會讓帳面減量大於實際減量。'));
   hl(S, seg(u, .4, 1), 'dc');
 });
@@ -313,7 +313,7 @@ function tick(now) {
 $('ticks').innerHTML = CH.map(c => `<div class="tick" style="left:${c.t0 / TOTAL * 100}%"></div>`).join('');
 $('chips').innerHTML = CH.map((c, k) => `<button data-ch="${k}">${esc(c.name)}</button>`).join('');
 $('chips').onclick = e => { const b = e.target.closest('[data-ch]'); if (b) seek(CH[+b.dataset.ch].t0, true); };
-$('play').onclick = () => { autoNext = false; if (playing && TTS) TTS.cancel(); if (!playing) spokenBeat = -1; setPlaying(!playing); };
+$('play').onclick = () => { autoNext = false; if (playing && TTS) TTS.cancel(); if (!playing) { const i = beatAt(t); spokenBeat = t >= BEATS[i].t1 - .03 ? i : -1; } setPlaying(!playing); };
 $('replay').onclick = () => seek(BEATS[beatAt(t)].t0, true);
 $('next').onclick = () => { const i = beatAt(t); if (i < BEATS.length - 1) seek(BEATS[i + 1].t0, true); };
 $('speed').onchange = e => speed = +e.target.value;
@@ -366,7 +366,7 @@ function renderEx() {
   const lx = narrow ? 10 : 20, bx = narrow ? 150 : 200, bw = W - bx - 20, mx = Math.max(X.e, 25000), sx = v => bw * v / mx;
   const rows = [
     ['年排放量', X.e, 'c-gray', '直接＋用電間接排放。'],
-    ['減 K 值後', Math.max(0, X.e - c.K), 'c-gray', `K 值 = ${fmt(c.K)} 噸。`],
+    ['減 K 值後', c.subject ? Math.max(0, X.e - c.K) : 0, 'c-gray', c.subject ? `K 值 = ${fmt(c.K)} 噸。` : '未達 2.5 萬噸，不是徵收對象。'],
     ['× 調整係數', c.subject ? Math.max(0, X.e - c.K) * c.f : 0, 'c-purple', `排放量調整係數 = ${c.f}。`],
     ['減量額度扣除', c.ded, 'c-teal', `國內額度 ${fmt(X.dom)} 噸 × 1.2，上限 ${fmt(c.cap, 1)} 噸。`],
     ['收費排放量', c.charge, 'c-coral', '乘上費率就是碳費。'],
@@ -414,7 +414,7 @@ window.addEventListener('resize', () => mode === 'ex' && renderEx());
 /* ---------- 旁白（瀏覽器內建語音，Web Speech API） ---------- */
 const TTS = 'speechSynthesis' in window ? window.speechSynthesis : null;
 let narrOn = false, spokenBeat = -1, autoNext = false;
-const SAY = s => s.replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/≥/g, '至少').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/[（(][A-Za-z][^）)]*[）)]/g, '');
+const SAY = s => s.replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂e/g, '二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/≥/g, '至少').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/[（(][A-Za-z][^）)]*[）)]/g, '');
 function voice() { const v = TTS.getVoices(); return v.find(x => /zh[-_]TW/i.test(x.lang)) || v.find(x => /^zh/i.test(x.lang)) || null; }
 function speak(i) {
   if (!TTS || !narrOn) return;
