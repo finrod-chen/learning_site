@@ -78,7 +78,8 @@
   .sources a { color:var(--text); text-decoration:underline; text-decoration-color:var(--border-emph); text-underline-offset:3px; }
   #tip { position:absolute; display:none; max-width:270px; padding:8px 12px; font-size:13px; line-height:1.45; background:var(--surface); border:1px solid var(--border); border-radius:10px; box-shadow:var(--shadow-xl); pointer-events:none; z-index:5; }
   [hidden] { display:none !important; }
-  @media (max-width:560px) { .res { grid-template-columns:1fr 1fr; } .tm { font-size:15px; } .ts { font-size:14px; } .th { font-size:16px; } .ctl label { grid-template-columns:1fr 120px; } .ctl label input { grid-column:1 / -1; grid-row:2; } .ctl label span:first-child { grid-row:1; } .ctl output { grid-row:1; grid-column:2; } }
+  #narr.on { background:var(--purple-fill); color:var(--purple-text); border-color:var(--purple-stroke); }
+  @media (max-width:560px) { #wsvg .tm { font-size:18px; } #wsvg .ts { font-size:16px; } #wsvg .th { font-size:19px; } .res { grid-template-columns:1fr 1fr; } .tm { font-size:15px; } .ts { font-size:14px; } .th { font-size:16px; } .ctl label { grid-template-columns:1fr 120px; } .ctl label input { grid-column:1 / -1; grid-row:2; } .ctl label span:first-child { grid-row:1; } .ctl output { grid-row:1; grid-column:2; } }
 </style>
 </head>
 <body>
@@ -93,7 +94,8 @@
     <div id="cap" aria-live="polite"><div id="capch"></div><p id="captext"></p><div id="caphint"></div></div>
     <div id="scrub" data-tip="拖曳可在動畫中移動。刻度是各章的起點。"><div class="track"></div><div class="fill"></div><div id="ticks"></div><div class="knob"></div></div>
     <div class="prow"><button id="play">▶ 播放</button><button id="replay">↺ 重播此步</button><button id="next">下一步 ▸</button>
-      <select id="speed" aria-label="播放速度"><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option></select><span id="time"></span></div>
+      <select id="speed" aria-label="播放速度"><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option></select>
+      <button id="narr" aria-pressed="false" data-tip="用裝置內建語音朗讀字幕。開啟後，每步唸完會自動前進。">🔈 旁白：關</button><span id="time"></span></div>
     <div id="chips"></div>
   </section>
 
@@ -196,20 +198,20 @@ step(7, '憑證價格會跟著 EU ETS 的價格走。2026 年按季計算，2027
 chapter('3 · 怎麼算');
 step(8, '要繳多少憑證？先看商品的內含排放，單位是每噸商品的 tCO₂e（噸二氧化碳當量）。', (S, u) => {
   delAll(S, seg(u, 0, .3), ['x1','x2','x3','xa','xb','d1','d2','d3','da','t1','t2','t3']);
-  add(S, seg(u, .3, .6), 'f_see', box(40, 120, 150, 56, 'purple', '內含排放 SEE', 'SEE：每噸商品的內含排放，單位 tCO₂e／噸。'));
-  add(S, seg(u, .5, .8), 'f_t1', text(115, 200, '每噸商品的排放', 'ts'));
+  add(S, seg(u, .3, .6), 'f_see', box(20, 120, 165, 56, 'purple', '內含排放 SEE', 'SEE：每噸商品的內含排放，單位 tCO₂e／噸。'));
+  add(S, seg(u, .5, .8), 'f_t1', text(102, 200, '每噸商品的排放', 'ts'));
   hl(S, seg(u, .8, 1), 'f_see');
 });
 step(8, '減去「免費配額調整」(SEFA)：歐盟工廠本來可獲得的免費配額。它會逐年減少，2034 年起歸零。再減去在出口國已付的碳價。', (S, u) => {
-  add(S, seg(u, 0, .3), 'f_m1', text(208, 148, '−', 'th'));
-  add(S, seg(u, 0, .3), 'f_sefa', box(226, 120, 150, 56, 'teal', '免費配額調整 SEFA', 'SEFA：假如在歐盟工廠生產，本來可獲得的免費配額。隨時間遞減。'));
-  add(S, seg(u, .35, .65), 'f_m2', text(394, 148, '−', 'th'));
-  add(S, seg(u, .35, .65), 'f_cp', box(412, 120, 150, 56, 'coral', '已付碳價折算', '在出口國已經實際繳的碳價，折算成排放量後可以扣掉。'));
+  add(S, seg(u, 0, .3), 'f_m1', text(198, 148, '−', 'th'));
+  add(S, seg(u, 0, .3), 'f_sefa', box(210, 120, 180, 56, 'teal', '免費配額調整 SEFA', 'SEFA：假如在歐盟工廠生產，本來可獲得的免費配額。隨時間遞減。'));
+  add(S, seg(u, .35, .65), 'f_m2', text(402, 148, '−', 'th'));
+  add(S, seg(u, .35, .65), 'f_cp', box(415, 120, 165, 56, 'coral', '已付碳價折算', '在出口國已經實際繳的碳價，折算成排放量後可以扣掉。'));
   hl(S, seg(u, .7, 1), 'f_sefa');
 });
 step(8, '結果乘上進口的質量 (M)。如果算出來是負的，就取 0：不會變成倒扣。最後得到要繳的憑證數。', (S, u) => {
-  add(S, seg(u, 0, .3), 'f_x', text(584, 148, '× M', 'th', 'M：進口商品的質量（噸）。'));
-  add(S, seg(u, .3, .65), 'f_max', box(130, 230, 420, 56, 'frame', 'CBAM 義務 = max( 0 ; SEE − SEFA − 已付碳價折算 ) × M', '公式簡化自歐盟指引 No.1，max(0; …) 保證結果不為負。'));
+  add(S, seg(u, 0, .3), 'f_x', text(620, 148, '× M', 'th', 'M：進口商品的質量（噸）。'));
+  add(S, seg(u, .3, .65), 'f_max', box(60, 230, 560, 56, 'frame', 'CBAM 義務 = max( 0 ; SEE − SEFA − 已付碳價折算 ) × M', '公式簡化自歐盟指引 No.1，max(0; …) 保證結果不為負。'));
   hl(S, seg(u, .7, 1), 'f_max');
 });
 
@@ -224,7 +226,7 @@ step(8, '進口量很小的人可以豁免：同一個進口商一年內進口�
 });
 step(8, '注意：一旦超過 50 噸，整年的進口都要算，連超過之前進口的也算。電力與氫沒有這個豁免。', (S, u) => {
   add(S, seg(u, 0, .3), 'th4', box(60, 235, 400, 40, 'purple', '超過後：整年所有進口都要計入', '超過門檻之前進口的商品也要算。'));
-  add(S, seg(u, .4, .7), 'th5', box(480, 235, 140, 40, 'gray', '電力、氫：無豁免', '50 噸門檻不適用於電力和氫。'));
+  add(S, seg(u, .4, .7), 'th5', box(470, 235, 160, 40, 'gray', '電力、氫：無豁免', '50 噸門檻不適用於電力和氫。'));
   hl(S, seg(u, .7, 1), 'th4');
 });
 
@@ -282,25 +284,25 @@ function setPlaying(p) {
   if (p) { if (t >= TOTAL - 2 * EPS) t = 0; const i = beatAt(t); if (t >= BEATS[i].t1 - 2 * EPS) skipPause = i; }
   $('play').textContent = p ? '❚❚ 暫停' : '▶ 播放';
 }
-function seek(tt, play) { t = Math.max(0, Math.min(TOTAL - EPS, tt)); skipPause = -1; setPlaying(!!play); }
+function seek(tt, play) { t = Math.max(0, Math.min(TOTAL - EPS, tt)); skipPause = -1; spokenBeat = -1; autoNext = false; if (TTS && !play) TTS.cancel(); setPlaying(!!play); }
 function tick(now) {
   const dt = last == null ? 0 : Math.min(.1, (now - last) / 1000); last = now;
   if (mode === 'walk') {
     if (playing) {
       const i = beatAt(t), b = BEATS[i]; let nt = t + dt * speed;
-      if (i !== skipPause && b.pause && nt >= b.t1 - EPS) { nt = b.t1 - EPS; setPlaying(false); }
+      if (i !== skipPause && b.pause && nt >= b.t1 - EPS) { nt = b.t1 - EPS; setPlaying(false); autoNext = narrOn; }
       if (nt >= TOTAL - EPS) { nt = TOTAL - EPS; setPlaying(false); }
       if (beatAt(nt) !== i) skipPause = -1;
       t = nt;
     }
     const { S, i } = stateAt(t);
     $('dyn').innerHTML = Object.values(S).map(it => draw(it, now)).join('');
-    const b = BEATS[i], atEnd = t >= b.t1 - .03, key = i + '|' + playing + '|' + atEnd;
+    const b = BEATS[i], atEnd = t >= b.t1 - .03, key = i + '|' + playing + '|' + atEnd + '|' + narrOn;
     if (key !== capKey) {
       capKey = key;
       $('capch').textContent = `${CH[b.ch].name} ・ 第 ${i + 1} / ${BEATS.length} 步`;
       $('captext').textContent = b.cap;
-      $('caphint').textContent = playing ? '' : atEnd ? '已暫停。按「播放」或空白鍵繼續。' : '已暫停。';
+      $('caphint').textContent = playing ? '' : atEnd ? (narrOn ? '旁白唸完會自動繼續。' : '已暫停。按「播放」或空白鍵繼續。') : '已暫停。';
       [...$('chips').children].forEach((c, k) => c.classList.toggle('on', k === b.ch));
     }
     const pct = t / TOTAL * 100 + '%';
@@ -308,12 +310,13 @@ function tick(now) {
     const f = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
     $('time').textContent = `${f(t)} / ${f(TOTAL)}`;
   }
+  narrTick();
   requestAnimationFrame(tick);
 }
 $('ticks').innerHTML = CH.map(c => `<div class="tick" style="left:${c.t0 / TOTAL * 100}%"></div>`).join('');
 $('chips').innerHTML = CH.map((c, k) => `<button data-ch="${k}">${esc(c.name)}</button>`).join('');
 $('chips').onclick = e => { const b = e.target.closest('[data-ch]'); if (b) seek(CH[+b.dataset.ch].t0, true); };
-$('play').onclick = () => setPlaying(!playing);
+$('play').onclick = () => { autoNext = false; if (playing && TTS) TTS.cancel(); if (!playing) spokenBeat = -1; setPlaying(!playing); };
 $('replay').onclick = () => seek(BEATS[beatAt(t)].t0, true);
 $('next').onclick = () => { const i = beatAt(t); if (i < BEATS.length - 1) seek(BEATS[i + 1].t0, true); };
 $('speed').onchange = e => speed = +e.target.value;
@@ -324,7 +327,7 @@ sc.onpointermove = e => { if (drag) seek(posT(e.clientX), false); };
 sc.onpointerup = () => drag = false;
 document.addEventListener('keydown', e => {
   if (mode !== 'walk' || e.target.closest('button, select, input')) return;
-  if (e.key === ' ') { e.preventDefault(); setPlaying(!playing); }
+  if (e.key === ' ') { e.preventDefault(); $('play').click(); }
   else if (e.key === 'ArrowRight') $('next').click(); else if (e.key === 'ArrowLeft') $('replay').click();
 });
 const tipEl = $('tip'), app = $('app');
@@ -394,10 +397,34 @@ function renderEx() {
   $('ex-note').textContent = `持有檢查日（自年初起累計內含排放的 50%；日期依歐盟 Q&A 3.1）：${hold}。` + extra + (c.over && c.rows.some(r => !r.over) ? ' 注意：超過門檻之前進口的量也計入。' : '') + ' 提示：把「出口國已付碳價」拉到接近憑證價格，看每噸要繳的排放怎麼降到 0。';
 }
 
+/* ---------- 旁白（瀏覽器內建語音，Web Speech API） ---------- */
+const TTS = 'speechSynthesis' in window ? window.speechSynthesis : null;
+let narrOn = false, spokenBeat = -1, autoNext = false;
+const SAY = s => s.replace(/tCO₂e/g, '噸二氧化碳當量').replace(/CO₂/g, '二氧化碳').replace(/≥/g, '至少').replace(/×/g, '乘以').replace(/ − /g, ' 減 ').replace(/[（(][A-Za-z][^）)]*[）)]/g, '');
+function voice() { const v = TTS.getVoices(); return v.find(x => /zh[-_]TW/i.test(x.lang)) || v.find(x => /^zh/i.test(x.lang)) || null; }
+function speak(i) {
+  if (!TTS || !narrOn) return;
+  TTS.cancel(); spokenBeat = i;
+  const u = new SpeechSynthesisUtterance(SAY(BEATS[i].cap)); u.lang = 'zh-TW'; u.rate = speed; const v = voice(); if (v) u.voice = v;
+  TTS.speak(u);
+}
+if (!TTS) $('narr').hidden = true;
+$('narr').onclick = () => {
+  narrOn = !narrOn; $('narr').classList.toggle('on', narrOn); $('narr').setAttribute('aria-pressed', narrOn);
+  $('narr').textContent = narrOn ? '🔊 旁白：開' : '🔈 旁白：關';
+  if (!narrOn) { TTS.cancel(); autoNext = false; } else { spokenBeat = -1; if (!playing) setPlaying(true); }
+};
+function narrTick() {
+  if (!TTS || !narrOn || mode !== 'walk') return;
+  const i = beatAt(t);
+  if (playing && spokenBeat !== i) speak(i);
+  // 這一步的動畫播完而自動暫停時，等旁白唸完再前進
+  if (!playing && autoNext && !TTS.speaking && !TTS.pending) { autoNext = false; if (i < BEATS.length - 1) seek(BEATS[i + 1].t0, true); }
+}
 function setMode(m) {
   mode = m; $('walk').hidden = m !== 'walk'; $('ex').hidden = m !== 'ex';
   $('m-walk').classList.toggle('on', m === 'walk'); $('m-ex').classList.toggle('on', m === 'ex');
-  if (m === 'ex') { setPlaying(false); renderEx(); }
+  if (m === 'ex') { setPlaying(false); autoNext = false; if (TTS) TTS.cancel(); renderEx(); }
 }
 $('m-walk').onclick = () => setMode('walk'); $('m-ex').onclick = () => setMode('ex');
 
